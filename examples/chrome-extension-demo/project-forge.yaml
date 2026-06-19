@@ -1,5 +1,5 @@
 project:
-  slug: "chrome-extension"
+  slug: "chrome-extension-demo"
   goal: "A Chrome extension that summarizes selected text on any webpage using a configurable AI backend"
   stack: "chrome-extension"
 commands:

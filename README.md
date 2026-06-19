@@ -1,12 +1,51 @@
-﻿# Project Forge
+# Project Forge
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.2-brightgreen)](CHANGELOG.md)
-[![Tests](https://img.shields.io/badge/tests-79%20passed-brightgreen)](.)
+[![Version](https://img.shields.io/badge/version-0.2.3-brightgreen)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-84%20passed-brightgreen)](.)
 
 **Decide what to build and why — before you write a single line of code.**
 
 Project Forge is a dual-harness plugin for Codex and Claude Code. It adds an AI Creative Design Director and an AI Architect to your workflow, so every project starts with a clear product direction, competitive analysis, evidence-backed architecture, and a verifiable harness — then hands off to Superpowers for implementation.
+
+
+## ?????? (Chinese Quickstart)
+
+### ??? Project Forge?
+
+Project Forge ?????????Codex + Claude Code??? Superpowers ????????????? AI ???
+
+- **AI ??????**???????????????????????????
+- **AI ???**??? GitHub ?????????????????????????? (ADR)?
+- **Harness ???**?????????????????????? CI ?????
+
+### ????
+
+```powershell
+git clone https://github.com/example/project-forge.git $env:USERPROFILE\plugins\project-forge
+Copy-Item -Force "$env:USERPROFILE\plugins\project-forge\install\codex-marketplace.personal.json" "$env:USERPROFILE\.codex\marketplace\personal.json"
+```
+
+### ????
+
+```
+/plugin install $env:USERPROFILE\plugins\project-forge
+```
+
+### ????
+
+1. ?????? ? `forge-intake` ?????
+2. `creative-director` ?? 3 ???????????????
+3. `ai-architect` ???????????? ADR
+4. `harness-engineer` ??????? CI
+5. `forge-project` ?????? ? ??? Superpowers
+
+### ????
+
+```powershell
+python scripts/install_test.py
+python -m unittest tests/test_project_forge.py
+```
 
 ## How It Works
 
@@ -75,10 +114,20 @@ python scripts/cli.py list-templates
 ## Verify
 
 ```powershell
-python -m unittest tests/test_project_forge.py    # 79 tests
+python -m unittest tests/test_project_forge.py    # 84 tests
 python scripts/install_test.py                     # 12-point install check
 python scripts/evals/validate_scenarios.py evals/scenarios  # 6 eval scenarios
 ```
+
+## Update
+
+`powershell
+# Pull latest from GitHub
+git pull origin main
+
+# Re-run install check
+python scripts/install_test.py
+`
 
 ## Documentation
 

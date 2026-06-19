@@ -7,6 +7,18 @@ description: Use when a raw project idea, product brief, or user request needs t
 
 Use this skill to turn an early idea into a practical project brief that another Project Forge worker can build from. The intake worker protects momentum: clarify only what is blocking, infer the rest visibly, and leave a crisp handoff.
 
+
+## Vague Idea Escalation
+
+When the user's idea is too thin to produce a useful brief, do not guess the entire product. Instead:
+
+1. Extract what IS clear: the problem space, any named users, any constraints.
+2. Name what is MISSING: target user, platform, primary workflow, or success criteria.
+3. Propose one concrete clarifying question that would unblock the brief.
+4. If the user cannot answer, hand off to `creative-director` with the seed idea and the label "vague-idea" so the creative director produces recommended angles from first principles.
+
+Never block on a missing detail that a reasonable default can resolve. But never fabricate a user, platform, or workflow that would change the product fundamentally.
+
 ## Core Posture
 
 - Treat vague ideas as normal input, not failure.

@@ -5,7 +5,16 @@ description: Use when Project Forge needs reproducible install, verify, run, smo
 
 # Harness Engineer
 
-Use this skill to make a project easy to install, verify, run, and evaluate. The harness is the contract between implementation workers, CI, future maintainers, and the `forge-project` coordinator flow.
+Use this skill to make a project easy to install, verify, run, and evaluate.
+## Architecture Validation
+
+Before applying a harness template, validate that the architecture decision is coherent:
+
+- If the chosen stack does not match the detected project structure, flag the mismatch and ask the architect to reconcile.
+- If the stack requires runtime dependencies not mentioned in the ADR (e.g., a database, a message queue, a GPU), add them to the harness contract as required services.
+- If the project-forge.yaml already exists and the new harness would overwrite it, refuse and require `--force`.
+- If no evidence.jsonl exists for the project slug, generate provisional evidence rather than proceeding without research backing.
+ The harness is the contract between implementation workers, CI, future maintainers, and the `forge-project` coordinator flow.
 
 ## Required Artifacts
 

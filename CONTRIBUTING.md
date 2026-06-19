@@ -1,4 +1,4 @@
-﻿# Contributing to Project Forge
+# Contributing to Project Forge
 
 ## Setup
 

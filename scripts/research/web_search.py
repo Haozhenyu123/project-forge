@@ -35,7 +35,7 @@ def fetch_duckduckgo(query, limit):
     ctx = ssl.create_default_context()
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "project-forge-web-search/0.2.0"},
+        headers={"User-Agent": "project-forge-web-search/0.2.2"},
     )
     try:
         with urllib.request.urlopen(request, timeout=15, context=ctx) as response:
@@ -63,12 +63,45 @@ def fetch_duckduckgo(query, limit):
     return items[:limit] if items else None
 
 
+
+def fetch_brave(query, limit):
+    """Search Brave Search API (requires BRAVE_API_KEY env var)."""
+    brave_key = os.environ.get("BRAVE_API_KEY", "").strip()
+    if not brave_key:
+        return None
+    encoded = urllib.parse.quote(query)
+    url = f"https://api.search.brave.com/res/v1/web/search?q={encoded}&count={limit}"
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/json",
+            "Accept-Encoding": "gzip",
+            "X-Subscription-Token": brave_key,
+            "User-Agent": "project-forge-web-search/0.2.2",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (urllib.error.URLError, OSError, json.JSONDecodeError):
+        return None
+    items = []
+    for result in (payload.get("web", {}).get("results", []) or [])[:limit]:
+        items.append({
+            "source": "brave",
+            "title": result.get("title", query),
+            "url": result.get("url", ""),
+            "summary": result.get("description", ""),
+        })
+    return items if items else None
+
+
 def fetch_provider(url, query, limit):
     separator = "&" if urllib.parse.urlparse(url).query else "?"
     endpoint = url + separator + urllib.parse.urlencode({"q": query, "limit": limit})
     request = urllib.request.Request(
         endpoint,
-        headers={"Accept": "application/json", "User-Agent": "project-forge-web-search/0.2.0"},
+        headers={"Accept": "application/json", "User-Agent": "project-forge-web-search/0.2.2"},
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
@@ -96,11 +129,19 @@ def main():
         write_jsonl(rows, args.out)
         return 0
 
+    # Try DuckDuckGo first (no key needed)
     rows = fetch_duckduckgo(args.query, args.limit)
     if rows:
         write_jsonl(rows, args.out)
         return 0
 
+    # Try Brave Search as fallback (needs BRAVE_API_KEY)
+    rows = fetch_brave(args.query, args.limit)
+    if rows:
+        write_jsonl(rows, args.out)
+        return 0
+
+    # No search provider succeeded - emit manual fallback
     write_jsonl(
         [{
             "source": "host-web-tool",

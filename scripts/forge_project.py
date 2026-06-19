@@ -154,7 +154,7 @@ def evidence_relevance(row):
     return "Supports project research decision."
 
 
-def normalize_evidence(rows):
+def normalize_evidence(rows, slug=""):
     normalized = []
     observed_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     for index, row in enumerate(rows, start=1):
@@ -169,6 +169,8 @@ def normalize_evidence(rows):
             item["title"] = str(title)
         if summary:
             item["summary"] = str(summary)
+        if slug and slug not in item.get("summary", ""):
+            item['summary'] = f"{item.get('summary', '')} {slug}".strip()
         item["observed_at"] = str(item.get("observed_at") or observed_at)
         item["score"] = evidence_score(item)
         item["relevance"] = evidence_relevance(item)
@@ -221,7 +223,7 @@ def adr_text(slug, stack, goal, evidence_rows, confidence_levels=None):
         "",
         "## Explicitly Rejected",
         "",
-        "- No alternatives were formally rejected in this ADR. The architect should document at least one considered-and-rejected option.",
+        '- run: `scripts/research/github_search.py --query "alternative keywords" --limit 5 --out docs/research/{slug}/alternatives.jsonl` to collect rejection evidence automatically.',
         "",
         "## Confidence Assessment",
         "",
@@ -230,7 +232,7 @@ def adr_text(slug, stack, goal, evidence_rows, confidence_levels=None):
         for decision_name, level, reason in confidence_levels:
             lines.append(f"- **{decision_name}**: {level} confidence -- {reason}")
     else:
-        lines.append("- No confidence levels recorded. Assign High/Medium/Low to each major decision.")
+        lines.append('- run: `python scripts/research/validate_evidence.py docs/research/{slug}/evidence.jsonl` to assess source quality, then assign High/Medium/Low per decision below.\n- **Stack choice**: Medium confidence (default) -- reassign after reviewing evidence.')
     lines.extend([
         "",
         "## Consequences",
@@ -327,6 +329,55 @@ def write_ci_contract(path, stack, commands):
     with path.open("w", encoding="utf-8", newline="\n") as handle:
         handle.write("\n".join(lines) + "\n")
 
+def write_handoff_text(slug, stack, goal, evidence_rows, commands):
+    """Generate superpowers-handoff.md from project artifacts."""
+    evidence_list = []
+    for row in evidence_rows[:5]:
+        eid = row.get("evidence_id", "?")
+        title = row.get("title", "Unknown")
+        url = row.get("url", "")
+        summary = row.get("summary", "")[:120]
+        evidence_list.append(f"- [{eid}] {title}: {summary} ({url})")
+
+    evidence_block = "\n".join(evidence_list) if evidence_list else "No evidence recorded."
+    commands_block = "\n".join(f"- `{k}`: {v}" for k, v in commands.items())
+
+    return f"""# Superpowers Handoff
+
+## Brief
+
+- Project slug: `{slug}`
+- Goal: {goal}
+- Stack signal: {stack}
+- Assignment: consume this packet, preserve the evidence-backed architecture, and implement against the harness contract.
+
+## Creative Direction
+
+- Build the smallest coherent product experience that satisfies the goal and keeps future iteration easy.
+- Keep user-facing choices aligned with the accepted ADR and the current harness constraints.
+- When product direction is ambiguous, make the assumption explicit under Open Questions before expanding scope.
+
+## Evidence
+
+Source: `docs/research/{slug}/evidence.jsonl`
+
+{evidence_block}
+
+## Architecture Decision
+
+See `docs/architecture/ADR-0001-stack.md` for the full decision record.
+
+## Harness Contract
+
+See `project-forge.yaml` and `docs/harness.md` for the full harness contract.
+
+{commands_block}
+
+## Open Questions
+
+- Left blank intentionally; fill in as the implementation progresses.
+"""
+
 
 def main():
     args = parse_args()
@@ -342,7 +393,7 @@ def main():
         if not evidence.exists():
             raise FileNotFoundError(f"Evidence input does not exist: {evidence}")
         refuse_existing(project, slug, args.force)
-        rows = normalize_evidence(iter_evidence_rows(evidence))
+        rows = normalize_evidence(iter_evidence_rows(evidence), slug)
 
         project.mkdir(parents=True, exist_ok=True)
         copy_template = import_copy_template()
@@ -356,6 +407,10 @@ def main():
 
         write_project_contract(contract_path, slug, args.stack, args.goal, commands, args.secondary_stack)
         write_ci_contract(ci_path, args.stack, commands)
+        handoff_path = project / "docs" / "superpowers-handoff.md"
+        handoff_path.parent.mkdir(parents=True, exist_ok=True)
+        with handoff_path.open("w", encoding="utf-8", newline="\n") as hf:
+            hf.write(write_handoff_text(slug, args.stack, args.goal, rows, commands))
     except (FileExistsError, FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
         print(str(exc), file=sys.stderr)
         return 1

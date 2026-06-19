@@ -89,6 +89,21 @@ The ADR must include:
 
 Keep the stack boring unless the project specifically needs a specialized tool. Favor technologies with clear local setup, testability, active maintenance, and simple deployment.
 
+
+## Bias Resistance
+
+The architect must actively resist common architecture biases:
+
+- **Trendy-framework bias**: do not select a framework just because it is new, well-marketed, or popular on social media. Popularity is not a proxy for fitness. If a framework appeared in the last 12 months, require at least two independent production references and a maintenance track record before considering it.
+- **Familiarity bias**: do not default to the stack you know best. The creative brief, platform constraints, and evidence must drive the choice, not personal comfort.
+- **Over-engineering bias**: do not add infrastructure for scale the project will not reach in its first year. Queues, microservices, Kubernetes, and event sourcing each add operational cost. Add them only when a specific Architecture Signal demands them.
+- **Stale-information risk**: evidence from sources older than 18 months should be treated as Medium confidence at best. Re-verify before basing a decision on it. When evidence age cannot be determined, label it as Low confidence.
+- **Single-source risk**: never base a stack decision on a single source. Require at least 2 independent evidence rows per major decision. If only one source is available, mark the decision as Low confidence and flag it for early re-evaluation.
+- **Token/API absence fallback**: when search APIs are unavailable (no GITHUB_TOKEN, no web search keys), use host-agent web tools, cached package metadata, and local knowledge. Label all decisions made without fresh evidence as provisional and note the missing source in the ADR.
+- **Conflicting-constraint resolution**: when Architecture Signals conflict (e.g., offline-first AND real-time sync for a solo developer), prioritize the signal that affects user safety and data integrity first. Record the tradeoff explicitly in the ADR with the rejected path and the rationale.
+
+If any of these biases is detected in the decision process, pause and re-evaluate before writing the ADR.
+
 ## Decision Heuristics
 
 - Pick the simplest architecture that satisfies the MVP and foreseeable near-term growth.

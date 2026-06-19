@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Verify Project Forge installation: manifests, skills, scripts, and templates."""
 
 import json
@@ -59,7 +59,7 @@ def check_codex_manifest():
     path = ROOT / ".codex-plugin" / "plugin.json"
     if not path.is_file():
         return fail(f"Missing Codex manifest: {path}")
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
     for field in ("name", "version", "skills"):
         if field not in data:
             return fail(f"Codex manifest missing field: {field}")
@@ -79,7 +79,7 @@ def check_claude_manifest():
     path = ROOT / ".claude-plugin" / "plugin.json"
     if not path.is_file():
         return fail(f"Missing Claude Code manifest: {path}")
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
     for field in ("name", "version", "skills", "displayName"):
         if field not in data:
             return fail(f"Claude Code manifest missing field: {field}")
@@ -97,7 +97,7 @@ def check_skills():
         return fail(f"Missing skills: {', '.join(sorted(missing))}")
     for skill_name in REQUIRED_SKILLS:
         path = skills_dir / skill_name / "SKILL.md"
-        text = path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8-sig")
         if not text.startswith("---\n"):
             return fail(f"Skill {skill_name} missing YAML frontmatter")
         if "todo" in text.lower() or "tbd" in text.lower() or "[placeholder" in text.lower():
@@ -115,10 +115,10 @@ def check_templates():
         for rel in ("project-forge.yaml", "docs/harness.md", ".github/workflows/project-forge-ci.yml"):
             if not (base / rel).is_file():
                 return fail(f"Template {tmpl} missing file: {rel}")
-            text = (base / rel).read_text(encoding="utf-8")
+            text = (base / rel).read_text(encoding="utf-8-sig")
             if len(text.strip()) < 20:
                 return fail(f"Template {tmpl}/{rel} is too short or empty")
-        contract = (base / "project-forge.yaml").read_text(encoding="utf-8")
+        contract = (base / "project-forge.yaml").read_text(encoding="utf-8-sig")
         for cmd in ("install", "test", "lint", "typecheck", "build", "run", "smoke"):
             if f"{cmd}:" not in contract:
                 return fail(f"Template {tmpl} contract missing command: {cmd}")
@@ -151,7 +151,7 @@ def check_marketplace():
     path = ROOT / "install" / "codex-marketplace.personal.json"
     if not path.is_file():
         return fail("Missing marketplace config: install/codex-marketplace.personal.json")
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
     if not isinstance(data, dict):
         return fail("Marketplace config is not a JSON object")
     if "plugins" not in data and not isinstance(data, list):
@@ -164,7 +164,7 @@ def check_readme():
     path = ROOT / "README.md"
     if not path.is_file():
         return fail("Missing README.md")
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8-sig")
     for section in ("install", "verify", "update"):
         if section not in text.lower():
             return fail(f"README missing section about: {section}")
@@ -177,7 +177,7 @@ def check_docs():
         path = ROOT / doc
         if not path.is_file():
             return fail(f"Missing doc: {doc}")
-        text = path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8-sig")
         if len(text.strip()) < 50:
             return fail(f"Doc too short: {doc}")
     print("  [OK] Docs (4)")
@@ -198,7 +198,7 @@ def check_examples():
         for rel in ("project-forge.yaml", "docs/harness.md", "docs/creative-brief.md"):
             if not (path / rel).is_file():
                 return fail(f"Example {project_dir} missing: {rel}")
-        contract = (path / "project-forge.yaml").read_text(encoding="utf-8")
+        contract = (path / "project-forge.yaml").read_text(encoding="utf-8-sig")
         if slug not in contract:
             return fail(f"Example {project_dir} contract missing slug {slug}")
     print("  [OK] Examples (4)")
@@ -209,7 +209,7 @@ def check_makefile():
     path = ROOT / "Makefile"
     if not path.is_file():
         return fail("Missing Makefile")
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8-sig")
     for target in ("test", "verify", "clean", "smoke"):
         if target not in text:
             return fail(f"Makefile missing target: {target}")
@@ -221,7 +221,7 @@ def check_editorconfig():
     path = ROOT / ".editorconfig"
     if not path.is_file():
         return fail("Missing .editorconfig")
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8-sig")
     if "root = true" not in text:
         return fail(".editorconfig missing root declaration")
     print("  [OK] .editorconfig")

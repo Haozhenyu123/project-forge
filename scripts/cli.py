@@ -22,7 +22,7 @@ from pathlib import Path
 SCRIPTS_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPTS_ROOT.parent
 
-VERSION = "0.2.0"
+VERSION = "0.2.3"
 
 TEMPLATES = [
     "node-ts",

@@ -67,6 +67,18 @@ Creative decisions directly constrain technical choices. Record explicit signals
 
 Each signal limits or opens specific architecture choices. If a signal is unknown, label it as an open question for the architect to investigate.
 
+
+## Idea Quality Triggers
+
+Before producing direction options, assess the idea quality and adjust the response accordingly:
+
+- **Seed idea (one sentence or less)**: do not invent a product from nothing. Ask the user one clarifying question about the target user before proceeding. If the user cannot answer, pick the smallest defensible scope and label it clearly as a default assumption.
+- **Trend-chasing idea** ("like X but for Y"): redirect toward the unique need, not the surface pattern. Ask: what does Y need that X does not provide? If the answer is unclear, recommend narrowing to a concrete workflow before proceeding.
+- **Feature-list idea** (list of capabilities without user story): reject the feature-list format. Ask for the primary job to be done. Capabilities without a user-centered workflow produce incoherent products.
+- **Platform-first idea** ("a mobile app for..."): treat the platform as a constraint, not the product. Define the user need first, then confirm the platform fits. If the platform was chosen arbitrarily, recommend the platform best suited to the user workflow.
+
+When the idea is too vague for any direction work, produce a structured intake escalation rather than fabricating a product. The escalation should name the missing pieces and propose one concrete next step.
+
 ## Vague Idea Handling
 
 When the user gives only a seed idea, create two or three direction options and recommend one. Each option should differ by user need or product shape, not by surface styling alone. Keep the recommendation tied to the MVP and acceptance checks.

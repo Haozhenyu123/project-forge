@@ -1,10 +1,14 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Detect a project stack and emit a Project Forge harness command contract."""
 
 import argparse
 import json
 import sys
 from pathlib import Path
+KNOWN_TEMPLATES = {"node-ts", "python", "generic", "nextjs", "fastapi", "electron", "cli", "chrome-extension"}
+
+KNOWN_TEMPLATES = {"node-ts", "python", "generic", "nextjs", "fastapi", "electron", "cli", "chrome-extension"}
+
 
 
 COMMANDS = {
@@ -125,6 +129,26 @@ def detect_template(project):
         if "fastapi" in main_text.lower():
             return "fastapi"
         return "python"
+    # Fallback: read stack from existing project-forge.yaml (Forge workspace)
+    forge_yaml = root / "project-forge.yaml"
+    if forge_yaml.exists():
+        import re
+        yaml_text = forge_yaml.read_text(encoding="utf-8")
+        match = re.search(r'stack:\s*"?(\S+)"?', yaml_text)
+        if match:
+            known = match.group(1).strip('"')
+            if known in KNOWN_TEMPLATES:
+                return known
+    # Fallback: read stack from existing project-forge.yaml
+    forge_yaml = root / "project-forge.yaml"
+    if forge_yaml.exists():
+        import re
+        yaml_text = forge_yaml.read_text(encoding="utf-8")
+        match = re.search(r"stack:\\s*\"?([\\S]+)\"?", yaml_text)
+        if match:
+            known = match.group(1).strip('"')
+            if known in KNOWN_TEMPLATES:
+                return known
     return "generic"
 
 

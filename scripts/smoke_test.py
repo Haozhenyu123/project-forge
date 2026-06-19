@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Validate the Project Forge smoke-test example project."""
 
 import argparse
