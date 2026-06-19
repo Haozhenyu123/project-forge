@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument("--project", required=True)
     parser.add_argument("--slug", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--json-out", help="Optional structured handoff JSON output path.")
     return parser.parse_args()
 
 
@@ -113,9 +114,110 @@ def risk_lines(evidence_rows, commands):
     return markdown_list(risks, "No risks recorded.")
 
 
-def render_handoff(slug, project_meta, evidence_rows, adr_text, forge_text, harness_text, commands):
+def evidence_summary(rows):
+    summary = []
+    for index, row in enumerate(rows[:12], start=1):
+        summary.append(
+            {
+                "evidence_id": str(row.get("evidence_id") or f"E{index}"),
+                "title": row.get("title") or row.get("name") or "Evidence item",
+                "url": row.get("url") or row.get("html_url") or row.get("link"),
+                "summary": row.get("summary") or row.get("description") or row.get("relevance") or "",
+                "source": row.get("source"),
+                "source_quality": row.get("source_quality"),
+                "observed_at": row.get("observed_at"),
+                "provisional": bool(row.get("provisional")),
+            }
+        )
+    return summary
+
+
+def build_handoff_packet(slug, project_meta, evidence_rows, commands):
     goal = project_meta.get("goal") or "Read the Forge artifacts and implement the next scoped feature."
     stack = project_meta.get("stack") or project_meta.get("chosen_stack") or "See ADR-0001-stack.md"
+    missing_commands = [name for name in COMMAND_ORDER if name not in commands]
+    first_task = (
+        "Implement the smallest user-visible workflow that satisfies the brief, then prove it with "
+        "the Project Forge harness commands."
+    )
+    return {
+        "schema_version": 1,
+        "kind": "project-forge.superpowers-handoff",
+        "project": {
+            "slug": slug,
+            "goal": goal,
+            "stack_signal": stack,
+        },
+        "artifacts": {
+            "evidence": f"docs/research/{slug}/evidence.jsonl",
+            "adr": "docs/architecture/ADR-0001-stack.md",
+            "contract": "project-forge.yaml",
+            "harness": "docs/harness.md",
+            "handoff_markdown": "docs/superpowers-handoff.md",
+            "handoff_json": "docs/superpowers-handoff.json",
+        },
+        "evidence": evidence_summary(evidence_rows),
+        "harness": {
+            "required_commands": list(COMMAND_ORDER),
+            "commands": {name: commands[name] for name in COMMAND_ORDER if name in commands},
+            "extra_commands": {
+                name: value
+                for name, value in sorted(commands.items())
+                if name not in COMMAND_ORDER
+            },
+            "missing_commands": missing_commands,
+        },
+        "superpowers": {
+            "assignment": (
+                "Consume this packet, preserve the evidence-backed architecture, and implement against "
+                "the harness contract."
+            ),
+            "first_task": first_task,
+            "acceptance_criteria": [
+                "The implementation keeps the accepted stack and ADR assumptions unless the ADR is updated with new evidence.",
+                "The relevant commands in project-forge.yaml pass, or every remaining failure is explained with an owner.",
+                "User-facing scope stays inside the creative direction and smallest useful version.",
+                "The handoff is refreshed if implementation changes risks, commands, or architecture assumptions.",
+            ],
+            "guardrails": [
+                "Do not treat Project Forge as the TDD, debugging, code-review, worktree, or branch-completion workflow.",
+                "Escalate back to Project Forge if the product direction, architecture, or harness contract becomes stale.",
+                "Do not silently replace provisional evidence with claims; cite updated sources first.",
+            ],
+            "open_questions": [
+                "Which feature or workflow should Superpowers implement first if the brief does not name one?",
+                "Are any provisional evidence rows strong enough to keep, or should they be replaced with verified sources?",
+                "Do harness failures represent implementation defects, missing dependencies, or an outdated command contract?",
+            ],
+            "consume_steps": [
+                "Read docs/superpowers-handoff.md first.",
+                "Open the ADR, evidence JSONL, project-forge.yaml, and docs/harness.md only when detail is needed.",
+                "Use Superpowers implementation workflows after the Project Forge decision packet is accepted.",
+            ],
+        },
+        "boundary": {
+            "project_forge_owns": [
+                "product direction",
+                "evidence",
+                "architecture decision",
+                "harness contract",
+                "Superpowers handoff",
+            ],
+            "superpowers_owns": [
+                "implementation planning",
+                "TDD",
+                "debugging",
+                "code review",
+                "worktree and branch completion",
+            ],
+        },
+    }
+
+
+def render_handoff(slug, project_meta, evidence_rows, adr_text, forge_text, harness_text, commands):
+    packet = build_handoff_packet(slug, project_meta, evidence_rows, commands)
+    goal = packet["project"]["goal"]
+    stack = packet["project"]["stack_signal"]
     adr_excerpt = first_nonempty_lines(adr_text, 12)
     harness_excerpt = first_nonempty_lines(harness_text, 12)
 
@@ -127,7 +229,8 @@ def render_handoff(slug, project_meta, evidence_rows, adr_text, forge_text, harn
         f"- Project slug: `{slug}`",
         f"- Goal: {goal}",
         f"- Stack signal: {stack}",
-        "- Assignment: consume this packet, preserve the evidence-backed architecture, and implement against the harness contract.",
+        f"- Assignment: {packet['superpowers']['assignment']}",
+        f"- First task: {packet['superpowers']['first_task']}",
         "",
         "## Creative Direction",
         "",
@@ -167,9 +270,19 @@ def render_handoff(slug, project_meta, evidence_rows, adr_text, forge_text, harn
         "",
         "## Open Questions",
         "",
-        "- Which feature or workflow should Superpowers implement first if the brief does not name one?",
-        "- Are any provisional evidence rows strong enough to keep, or should they be replaced with verified sources?",
-        "- Do harness failures represent implementation defects, missing dependencies, or an outdated command contract?",
+        *markdown_list(packet["superpowers"]["open_questions"], "No open questions recorded."),
+        "",
+        "## Acceptance Criteria",
+        "",
+        *markdown_list(packet["superpowers"]["acceptance_criteria"], "No acceptance criteria recorded."),
+        "",
+        "## Guardrails",
+        "",
+        *markdown_list(packet["superpowers"]["guardrails"], "No guardrails recorded."),
+        "",
+        "## Machine-Readable Packet",
+        "",
+        "Source: `docs/superpowers-handoff.json`",
         "",
         "## How Superpowers Should Consume This",
         "",
@@ -187,7 +300,15 @@ def render_handoff(slug, project_meta, evidence_rows, adr_text, forge_text, harn
     return "\n".join(lines)
 
 
-def export_handoff(project, slug, out):
+def default_json_out(out_path):
+    if out_path.name == "superpowers-handoff.md":
+        return out_path.with_name("superpowers-handoff.json")
+    if out_path.suffix.lower() == ".md":
+        return out_path.with_suffix(".json")
+    return out_path.parent / "superpowers-handoff.json"
+
+
+def export_handoff(project, slug, out, json_out=None):
     project = Path(project)
     paths = {
         "evidence": project / "docs" / "research" / slug / "evidence.jsonl",
@@ -209,12 +330,17 @@ def export_handoff(project, slug, out):
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8", newline="\n") as handle:
         handle.write(render_handoff(slug, project_meta, evidence_rows, adr_text, forge_text, harness_text, commands))
+    packet = build_handoff_packet(slug, project_meta, evidence_rows, commands)
+    json_path = Path(json_out) if json_out else default_json_out(out_path)
+    json_path.parent.mkdir(parents=True, exist_ok=True)
+    json_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {"markdown": out_path, "json": json_path, "packet": packet}
 
 
 def main():
     args = parse_args()
     try:
-        export_handoff(args.project, args.slug, args.out)
+        export_handoff(args.project, args.slug, args.out, args.json_out)
     except (FileNotFoundError, ValueError, OSError) as exc:
         print(str(exc), file=sys.stderr)
         return 1

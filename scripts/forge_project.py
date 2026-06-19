@@ -15,6 +15,7 @@ GENERATED_FILES = (
     Path("project-forge.yaml"),
     Path("docs") / "harness.md",
     Path("docs") / "superpowers-handoff.md",
+    Path("docs") / "superpowers-handoff.json",
     Path(".github") / "workflows" / "project-forge-ci.yml",
 )
 
@@ -74,6 +75,19 @@ def import_state_helpers():
         except ValueError:
             pass
     return backup_files, record_run
+
+
+def import_handoff_helpers():
+    scripts_dir = repo_root() / "scripts"
+    sys.path.insert(0, str(scripts_dir))
+    try:
+        from export_handoff import export_handoff
+    finally:
+        try:
+            sys.path.remove(str(scripts_dir))
+        except ValueError:
+            pass
+    return export_handoff
 
 
 def validate_slug(slug):
@@ -537,9 +551,9 @@ def main():
         )
         write_ci_contract(ci_path, args.stack, commands)
         handoff_path = project / "docs" / "superpowers-handoff.md"
-        handoff_path.parent.mkdir(parents=True, exist_ok=True)
-        with handoff_path.open("w", encoding="utf-8", newline="\n") as hf:
-            hf.write(write_handoff_text(slug, args.stack, args.goal, rows, commands))
+        handoff_json_path = project / "docs" / "superpowers-handoff.json"
+        export_handoff = import_handoff_helpers()
+        export_handoff(project, slug, handoff_path, handoff_json_path)
 
         _, record_run = import_state_helpers()
         history_path = record_run(

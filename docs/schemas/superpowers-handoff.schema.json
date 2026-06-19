@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Haozhenyu123/project-forge/docs/schemas/superpowers-handoff.schema.json",
+  "title": "Project Forge Superpowers Handoff",
+  "type": "object",
+  "required": ["schema_version", "kind", "project", "artifacts", "evidence", "harness", "superpowers", "boundary"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "kind": {"const": "project-forge.superpowers-handoff"},
+    "project": {
+      "type": "object",
+      "required": ["slug", "goal", "stack_signal"],
+      "properties": {
+        "slug": {"type": "string"},
+        "goal": {"type": "string"},
+        "stack_signal": {"type": "string"}
+      }
+    },
+    "artifacts": {"type": "object"},
+    "evidence": {"type": "array", "items": {"type": "object"}},
+    "harness": {
+      "type": "object",
+      "required": ["required_commands", "commands", "missing_commands"],
+      "properties": {
+        "required_commands": {"type": "array", "items": {"type": "string"}},
+        "commands": {"type": "object"},
+        "extra_commands": {"type": "object"},
+        "missing_commands": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "superpowers": {
+      "type": "object",
+      "required": ["assignment", "first_task", "acceptance_criteria", "guardrails", "open_questions", "consume_steps"],
+      "properties": {
+        "assignment": {"type": "string"},
+        "first_task": {"type": "string"},
+        "acceptance_criteria": {"type": "array", "items": {"type": "string"}},
+        "guardrails": {"type": "array", "items": {"type": "string"}},
+        "open_questions": {"type": "array", "items": {"type": "string"}},
+        "consume_steps": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "required": ["project_forge_owns", "superpowers_owns"],
+      "properties": {
+        "project_forge_owns": {"type": "array", "items": {"type": "string"}},
+        "superpowers_owns": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

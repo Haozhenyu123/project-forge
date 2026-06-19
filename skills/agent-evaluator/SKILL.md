@@ -17,6 +17,7 @@ Read the intake brief, creative direction, architecture ADR, and harness docs wh
 - technical constraints
 - harness commands
 - known risks
+- Superpowers handoff readiness from `docs/superpowers-handoff.json` or `project-forge superpowers-ready`
 
 If inputs are thin, write scenarios from the clearest user outcome and label assumptions.
 
@@ -49,6 +50,8 @@ Avoid judging private reasoning. Evaluate artifacts and behavior.
 ## Harness Integration
 
 Tie evaluation to commands from `project-forge.yaml`. At minimum, identify which scenarios require `test`, `build`, `run`, or `smoke`. If a scenario cannot be automated yet, define the manual evidence needed and the path toward automation.
+
+For Project Forge-to-Superpowers integration, include at least one scenario that checks whether the generated handoff packet has a first task, acceptance criteria, guardrails, and the correct boundary between Project Forge and Superpowers.
 
 ## Research Fallback
 

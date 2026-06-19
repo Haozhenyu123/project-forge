@@ -13,6 +13,7 @@ REQUIRED_FILES = (
     Path("project-forge.yaml"),
     Path("docs") / "harness.md",
     Path("docs") / "superpowers-handoff.md",
+    Path("docs") / "superpowers-handoff.json",
 )
 
 
@@ -60,6 +61,25 @@ def validate_evidence(path, slug):
     return len(rows)
 
 
+def validate_handoff_json(path, slug):
+    payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    if payload.get("schema_version") != 1:
+        raise ValueError(f"{path}: expected schema_version 1")
+    if payload.get("kind") != "project-forge.superpowers-handoff":
+        raise ValueError(f"{path}: unexpected handoff kind")
+    if (payload.get("project") or {}).get("slug") != slug:
+        raise ValueError(f"{path}: project slug does not match {slug!r}")
+    commands = ((payload.get("harness") or {}).get("commands") or {})
+    missing = [name for name in ("install", "test", "lint", "typecheck", "build", "run", "smoke") if name not in commands]
+    if missing:
+        raise ValueError(f"{path}: missing harness command(s): {', '.join(missing)}")
+    superpowers = payload.get("superpowers") or {}
+    for key in ("assignment", "first_task", "acceptance_criteria", "guardrails", "consume_steps"):
+        if not superpowers.get(key):
+            raise ValueError(f"{path}: missing superpowers.{key}")
+    return payload
+
+
 def fail(message):
     print(json.dumps({"status": "error", "error": message}, sort_keys=True), file=sys.stderr)
     return 1
@@ -89,6 +109,7 @@ def main():
             project / "docs" / "research" / slug / "evidence.jsonl",
             slug,
         )
+        validate_handoff_json(project / "docs" / "superpowers-handoff.json", slug)
     except (OSError, UnicodeDecodeError, ValueError) as exc:
         return fail(str(exc))
 

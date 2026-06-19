@@ -2,20 +2,26 @@
   "author": {
     "name": "Project Forge Contributors"
   },
-  "description": "Decide what to build and why before coding. AI Creative Director + AI Architect + Harness Engineer for evidence-backed project architecture.",
+  "description": "Decide what to build and why before coding. AI Creative Director + AI Architect + Harness Engineer for evidence-backed architecture and Superpowers-ready handoffs.",
   "displayName": "Project Forge",
   "homepage": "https://github.com/Haozhenyu123/project-forge",
   "hooks": "./hooks/hooks.json",
   "keywords": [
+    "codex",
+    "claude-code",
+    "superpowers",
+    "ai-architect",
+    "creative-director",
     "architecture",
     "harness",
-    "agents",
-    "evaluation"
+    "adr",
+    "mcp",
+    "agent-evaluation"
   ],
   "license": "MIT",
   "mcpServers": "./scripts/runtime/claude.mcp.json",
   "name": "project-forge",
   "repository": "https://github.com/Haozhenyu123/project-forge",
   "skills": "./skills/",
-  "version": "0.2.4"
+  "version": "0.2.5"
 }

@@ -28,9 +28,12 @@ SCOPE_CONTEXT = (
     "Project Forge is the decision and handoff layer. It owns deciding what to build, "
     "why it matters, which architecture and stack fit the evidence, what harness "
     "contract proves readiness, and what implementation handoff is required. "
+    "When a user asks for a new project, has a vague idea, asks which stack to use, "
+    "or asks whether a handoff is ready, route through Project Forge before implementation. "
     "It does not own TDD, debugging, code review, worktree management, or implementation "
     "workflows. Stop at an implementation-ready architecture, harness, and handoff; "
-    "leave code execution and implementation process to the receiving workflow."
+    "run the Superpowers-ready check before claiming handoff readiness; leave code execution "
+    "and implementation process to the receiving workflow."
 )
 
 

@@ -54,7 +54,7 @@ jobs:
       - run: python scripts/research/validate_evidence.py examples/team-research/docs/research/team-research/evidence.jsonl
 
   smoke-test:
-    name: Smoke Test Example Project
+    name: Smoke and Superpowers Ready Example Project
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -62,6 +62,7 @@ jobs:
         with:
           python-version: '3.x'
       - run: python scripts/smoke_test.py --project examples/team-research --slug team-research
+      - run: python scripts/cli.py superpowers-ready --slug team-research examples/team-research
 
   install-test:
     name: Installation Smoke Test

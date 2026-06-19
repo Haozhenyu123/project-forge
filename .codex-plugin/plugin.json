@@ -2,7 +2,7 @@
   "author": {
     "name": "Project Forge Contributors"
   },
-  "description": "Decide what to build and why before coding. AI Creative Director + AI Architect + Harness Engineer for evidence-backed project architecture.",
+  "description": "Decide what to build and why before coding. AI Creative Director + AI Architect + Harness Engineer for evidence-backed architecture and Superpowers-ready handoffs.",
   "homepage": "https://github.com/Haozhenyu123/project-forge",
   "hooks": "./hooks/hooks.json",
   "interface": {
@@ -15,23 +15,30 @@
     "defaultPrompt": [
       "Use Project Forge to turn this idea into an implementation-ready architecture and harness plan.",
       "Review this project with Project Forge and identify the evidence, verification, and CI gaps.",
+      "Check whether this project is Superpowers-ready and explain any blocking gaps.",
       "Help me define a Project Forge evaluation scenario for this agent workflow."
     ],
     "developerName": "Project Forge Contributors",
     "displayName": "Project Forge",
-    "longDescription": "Project Forge adds two AI identities to your workflow: a Creative Design Director who turns vague ideas into product direction with competitive analysis and architecture signals, and an AI Architect who picks the right stack backed by GitHub/web evidence. It generates a complete harness contract (install/test/lint/build/run/smoke commands), CI workflows, and a Superpowers implementation handoff.",
-    "shortDescription": "AI project architect: research-backed stack selection, creative direction, and auto-generated harness contracts."
+    "longDescription": "Project Forge adds a Creative Design Director, AI Architect, Harness Engineer, and evaluator to the front of a coding workflow. It turns vague ideas into product direction, researches GitHub/web evidence, compares architecture options, writes ADRs, generates harness contracts and CI, and exports Markdown plus JSON handoff packets that can be checked with superpowers-ready before Superpowers takes over implementation.",
+    "shortDescription": "AI project architect: research-backed stack selection, creative direction, harness contracts, and Superpowers-ready handoffs."
   },
   "keywords": [
+    "codex",
+    "claude-code",
+    "superpowers",
+    "ai-architect",
+    "creative-director",
     "architecture",
     "harness",
-    "agents",
-    "evaluation"
+    "adr",
+    "mcp",
+    "agent-evaluation"
   ],
   "license": "MIT",
   "mcpServers": "./scripts/runtime/codex.mcp.json",
   "name": "project-forge",
   "repository": "https://github.com/Haozhenyu123/project-forge",
   "skills": "./skills/",
-  "version": "0.2.4"
+  "version": "0.2.5"
 }

@@ -1,27 +1,30 @@
-﻿---
+---
 name: Bug report
-about: Report a bug in Project Forge
-title: "[Bug] "
+about: Report a Project Forge workflow, artifact, or packaging issue
+title: "[Bug]: "
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
-## Description
+## What happened?
 
-A clear description of the bug.
+## Expected behavior
 
-## Steps to Reproduce
+## Project Forge artifacts involved
 
-1.
-2.
-3.
+- [ ] `docs/creative-brief.md`
+- [ ] `docs/research/<slug>/evidence.jsonl`
+- [ ] `docs/architecture/ADR-0001-stack.md`
+- [ ] `project-forge.yaml`
+- [ ] `docs/harness.md`
+- [ ] `docs/superpowers-handoff.md`
+- [ ] `docs/superpowers-handoff.json`
 
-## Expected Behavior
+## Verification
 
-## Actual Behavior
+Paste the output from:
 
-## Environment
-
-- OS: [e.g. Windows 11, Ubuntu 24.04]
-- Python version: [e.g. 3.12.3]
-- Project Forge version: [e.g. 0.2.0]
+```text
+python scripts/cli.py doctor
+python scripts/cli.py superpowers-ready --slug <slug> --json <project>
+```

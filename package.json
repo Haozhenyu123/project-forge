@@ -8,20 +8,31 @@
     "scripts",
     "templates",
     "docs",
+    "assets",
+    "examples",
+    "evals",
     "install",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "RELEASE-NOTES.md",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md"
   ],
   "keywords": [
     "codex",
     "claude-code",
+    "superpowers",
+    "ai-architect",
+    "creative-director",
     "architecture",
     "harness",
-    "superpowers",
-    "adr"
+    "adr",
+    "mcp",
+    "agent-evaluation"
   ],
   "license": "MIT",
   "name": "project-forge",
-  "version": "0.2.4"
+  "version": "0.2.5"
 }

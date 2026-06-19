@@ -8,12 +8,21 @@ Create or refresh the handoff after research, ADR, and harness setup are complet
 
 `python scripts/export_handoff.py --project <target-project> --slug <project-slug> --out <target-project>/docs/superpowers-handoff.md`
 
+This writes both:
+
+- `docs/superpowers-handoff.md`
+- `docs/superpowers-handoff.json`
+
 The exporter reads:
 
 - `docs/research/<project-slug>/evidence.jsonl`
 - `docs/architecture/ADR-0001-stack.md`
 - `project-forge.yaml`
 - `docs/harness.md`
+
+Validate the packet before giving it to Superpowers:
+
+`python scripts/cli.py superpowers-ready --slug <project-slug> <target-project>`
 
 ## Handoff Contents
 
@@ -26,7 +35,13 @@ The handoff should include:
 - Harness commands: install, test, lint, typecheck, build, run, and smoke commands from `project-forge.yaml`, with supporting notes from `docs/harness.md`.
 - Risks: assumptions, provisional evidence, fragile dependencies, and any command that has not been verified.
 - Open questions: decisions that Superpowers should resolve before broad implementation.
+- Machine-readable packet: `docs/superpowers-handoff.json`, matching
+  `docs/schemas/superpowers-handoff.schema.json`.
 
 ## How Superpowers Should Consume It
 
 Superpowers should read the handoff first, then open the linked ADR, evidence, and harness files only when more detail is needed. Treat `project-forge.yaml` as the command contract: implementation is not complete until the relevant harness commands pass or the remaining failures are clearly explained. Preserve evidence citations when changing stack or architecture choices, and update the handoff when implementation changes the risk profile or verification path.
+
+Project Forge should re-run `superpowers-ready` whenever direction, architecture, evidence, or
+harness commands change. Warnings are acceptable only when the receiving implementation worker has
+explicitly accepted the risk.

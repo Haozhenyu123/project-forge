@@ -8,7 +8,7 @@ Use this smoke test when you need a fast confidence check that a generated Proje
 python scripts/smoke_test.py --project examples/team-research --slug team-research
 ```
 
-The script checks that the example project contains its normalized research evidence, ADR, harness contract, harness guide, and Superpowers handoff. It also verifies that each artifact names the requested slug so a stale or copied project is caught early.
+The script checks that the example project contains its normalized research evidence, ADR, harness contract, harness guide, Markdown handoff, and structured JSON handoff. It also verifies that each slug-bearing artifact names the requested slug so a stale or copied project is caught early.
 
 ## Expected output
 
@@ -17,3 +17,9 @@ The script checks that the example project contains its normalized research evid
 ```
 
 Run this before publishing docs or packaging a release candidate.
+
+For the stricter handoff-level check, run:
+
+```bash
+python scripts/cli.py superpowers-ready --project examples/team-research --slug team-research
+```

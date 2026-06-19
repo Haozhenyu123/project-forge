@@ -22,6 +22,7 @@ Create or update:
 
 - `project-forge.yaml`
 - `docs/harness.md`
+- `docs/superpowers-handoff.json` through the coordinator or handoff exporter
 
 The contract file defines commands. The documentation explains how humans use them, what they prove, and how to troubleshoot common failures.
 
@@ -102,4 +103,8 @@ When the harness contract is applied and verified, immediately hand off to `forg
 - Any low-confidence architecture decisions that need smoke-test verification
 
 The coordinator runs the end-to-end forge flow to produce the final artifact bundle: evidence, ADR, harness contract, CI workflow, and Superpowers handoff. Do not wait for the user to ask for the coordinator; the harness is the last step before the project is ready for implementation.
+
+Before saying the packet is ready for Superpowers, run:
+
+`python scripts/cli.py superpowers-ready --slug <project-slug> <target-project>`
 

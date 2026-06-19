@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Project Forge logo</title>
+  <desc id="desc">A geometric forge mark combining a spark, blueprint grid, and architecture arch.</desc>
+  <rect width="512" height="512" rx="96" fill="#101820"/>
+  <path d="M96 360h320v40H96z" fill="#f2aa4c"/>
+  <path d="M136 344V184l120-72 120 72v160h-44V208l-76-46-76 46v136z" fill="#f7f4ea"/>
+  <path d="M216 344V232h80v112z" fill="#2f80ed"/>
+  <path d="M256 62l18 50 50 18-50 18-18 50-18-50-50-18 50-18z" fill="#f2aa4c"/>
+  <path d="M126 130h50M336 130h50M126 176h42M344 176h42M126 222h34M352 222h34" stroke="#7fb3ff" stroke-width="10" stroke-linecap="round" opacity=".75"/>
+</svg>

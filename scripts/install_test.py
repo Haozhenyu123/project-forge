@@ -35,6 +35,7 @@ REQUIRED_SCRIPTS = [
     "forge_project.py",
     "smoke_test.py",
     "export_handoff.py",
+    "superpowers_ready.py",
     "creative_brief.py",
     "clean.py",
     "install_test.py",
@@ -173,14 +174,23 @@ def check_readme():
 
 
 def check_docs():
-    for doc in ("docs/architecture.md", "docs/quickstart.md", "docs/smoke-test.md", "docs/superpowers-handoff.md"):
+    required_docs = (
+        "docs/architecture.md",
+        "docs/quickstart.md",
+        "docs/smoke-test.md",
+        "docs/superpowers-handoff.md",
+        "docs/superpowers-ready.md",
+        "docs/showcase.md",
+        "docs/marketplace.md",
+    )
+    for doc in required_docs:
         path = ROOT / doc
         if not path.is_file():
             return fail(f"Missing doc: {doc}")
         text = path.read_text(encoding="utf-8-sig")
         if len(text.strip()) < 50:
             return fail(f"Doc too short: {doc}")
-    print("  [OK] Docs (4)")
+    print("  [OK] Docs ({})".format(len(required_docs)))
     return True
 
 
@@ -195,7 +205,7 @@ def check_examples():
         path = ROOT / project_dir
         if not path.is_dir():
             return fail(f"Missing example: {project_dir}")
-        for rel in ("project-forge.yaml", "docs/harness.md", "docs/creative-brief.md"):
+        for rel in ("project-forge.yaml", "docs/harness.md", "docs/creative-brief.md", "docs/superpowers-handoff.json"):
             if not (path / rel).is_file():
                 return fail(f"Example {project_dir} missing: {rel}")
         contract = (path / "project-forge.yaml").read_text(encoding="utf-8-sig")

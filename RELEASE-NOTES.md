@@ -1,5 +1,19 @@
 # Release Notes
 
+## 0.2.5
+
+Project Forge 0.2.5 completes the Superpowers integration maturity pass while preserving the
+boundary: Project Forge decides and packages; Superpowers implements.
+
+Highlights:
+
+- Markdown and JSON Superpowers handoff packets;
+- `superpowers-ready` CLI/script/MCP checks for handoff completeness;
+- smoke tests that validate the structured handoff contract;
+- showcase examples with ready-checkable packets;
+- marketplace copy, logo assets, issue/PR templates, and cleaner project docs;
+- clean UTF-8 README with synchronized badges.
+
 ## 0.2.4
 
 Project Forge 0.2.4 turns the V2 comparison work into a releaseable, safer closed loop.

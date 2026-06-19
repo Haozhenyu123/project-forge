@@ -1,21 +1,25 @@
 # Project Forge
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.3-brightgreen)](CHANGELOG.md)
-[![Tests](https://img.shields.io/badge/tests-84%20passed-brightgreen)](.)
+[![Version](https://img.shields.io/badge/version-0.2.5-brightgreen)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-92%20passed-brightgreen)](.)
 
 **Decide what to build, why it should exist, and which architecture fits before implementation begins.**
 
-Project Forge is a decision and architecture plugin for Codex and Claude Code. It turns an early idea into:
+Project Forge is a decision and architecture plugin for Codex and Claude Code. It turns an early
+idea into:
 
 - a recommended product direction;
 - current research evidence;
 - compared architecture candidates;
 - an accepted architecture decision record;
 - a reproducible harness contract;
-- a clean handoff to Superpowers.
+- Markdown and JSON handoff packets for Superpowers.
 
-Project Forge does not replace Superpowers. Project Forge owns product direction, evidence, architecture, and verification contracts. Superpowers owns implementation disciplines such as planning, TDD, debugging, code review, and branch completion.
+Project Forge does not replace Superpowers. Project Forge owns product direction, evidence,
+architecture, harness contracts, readiness checks, and handoff packets. Superpowers owns
+implementation disciplines such as planning, TDD, debugging, code review, worktrees, and branch
+completion.
 
 ## Workflow
 
@@ -27,7 +31,7 @@ flowchart LR
     D --> E[Architecture candidates]
     E --> F[Selected stack and ADR]
     F --> G[Harness and CI]
-    G --> H[Superpowers handoff]
+    G --> H[Superpowers-ready packet]
 ```
 
 ## What You Get
@@ -37,7 +41,8 @@ flowchart LR
 | Creative Design Director | Product angles, target user, competitive gap, differentiation | `docs/creative-brief.md` |
 | AI Architect | Candidate comparison, stack selection, rejected options, confidence | `docs/architecture/ADR-0001-stack.md` |
 | Harness Engineer | Install, test, lint, typecheck, build, run, smoke, and CI contracts | `project-forge.yaml` |
-| Forge Coordinator | Research, decision history, backups, and Superpowers handoff | `.project-forge/` and `docs/superpowers-handoff.md` |
+| Forge Coordinator | Research, decision history, backups, and Superpowers handoff | `.project-forge/`, `docs/superpowers-handoff.md`, `docs/superpowers-handoff.json` |
+| Agent Evaluator | Pressure scenarios and readiness checks | `evals/`, `superpowers-ready` |
 
 ## Install
 
@@ -69,6 +74,12 @@ Create the decision and harness artifacts:
 
 ```powershell
 python scripts/cli.py init my-app --stack nextjs --goal "A focused sprint dashboard"
+```
+
+Check that the packet is ready for Superpowers:
+
+```powershell
+python scripts/cli.py superpowers-ready --slug my-app my-app
 ```
 
 Inspect the installation and available runtime integrations:
@@ -103,6 +114,7 @@ python scripts/cli.py restore <backup-id> my-app --force
 - Every successful Forge run records decision history under `.project-forge/history/`.
 - `--dry-run` reports planned files and conflicts without modifying the project.
 - Missing search credentials produce provisional evidence instead of fabricated claims.
+- `superpowers-ready --strict` blocks handoff when warnings should be treated as failures.
 
 ## Available Templates
 
@@ -123,7 +135,13 @@ python scripts/cli.py restore <backup-id> my-app --force
 python -m unittest tests/test_project_forge.py
 python scripts/install_test.py
 python scripts/evals/validate_scenarios.py evals/scenarios
+python scripts/cli.py superpowers-ready --slug team-research examples/team-research
 ```
+
+## Showcase
+
+See [examples](examples/README.md) and [showcase docs](docs/showcase.md). Each showcase includes
+creative direction, evidence, ADR, harness contract, Markdown handoff, and JSON handoff.
 
 ## Update
 
@@ -135,17 +153,19 @@ python scripts/cli.py doctor
 
 ## 中文快速入门
 
-Project Forge 负责在编码之前回答三个问题：
+Project Forge 负责编码之前的三件事：
 
-1. 做什么产品，面向谁，从哪个切入点开始。
-2. 为什么选择这个方向，证据是什么。
-3. 使用什么架构、框架和 Harness，为什么这样选择。
+1. 决定做什么产品、面向谁、从哪个切入点开始。
+2. 说明为什么选择这个方向，证据是什么。
+3. 选择架构、框架和 harness，并解释为什么这样选择。
 
-它会生成创意简报、研究证据、候选架构比较、ADR、命令契约、CI 和 Superpowers 交接文件。它不会重新实现 Superpowers 的 TDD、调试、代码审查或 Git 工作流。
+它会生成创意简报、研究证据、候选架构比较、ADR、命令契约、CI、Markdown 交接文件和
+JSON 交接文件。它不会重新实现 Superpowers 的 TDD、调试、代码审查或 Git 工作流。
 
 ```powershell
 python scripts/cli.py init my-app --stack nextjs --goal "一个帮助小团队聚焦冲刺目标的仪表盘" --dry-run
 python scripts/cli.py init my-app --stack nextjs --goal "一个帮助小团队聚焦冲刺目标的仪表盘"
+python scripts/cli.py superpowers-ready --slug my-app my-app
 ```
 
 ## Documentation
@@ -153,6 +173,8 @@ python scripts/cli.py init my-app --stack nextjs --goal "一个帮助小团队�
 - [Architecture overview](docs/architecture.md)
 - [Quickstart guide](docs/quickstart.md)
 - [Superpowers handoff protocol](docs/superpowers-handoff.md)
+- [Superpowers ready check](docs/superpowers-ready.md)
+- [Marketplace preparation](docs/marketplace.md)
 - [Contributing](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 

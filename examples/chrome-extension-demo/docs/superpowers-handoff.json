@@ -1,0 +1,102 @@
+{
+  "artifacts": {
+    "adr": "docs/architecture/ADR-0001-stack.md",
+    "contract": "project-forge.yaml",
+    "evidence": "docs/research/chrome-extension/evidence.jsonl",
+    "handoff_json": "docs/superpowers-handoff.json",
+    "handoff_markdown": "docs/superpowers-handoff.md",
+    "harness": "docs/harness.md"
+  },
+  "boundary": {
+    "project_forge_owns": [
+      "product direction",
+      "evidence",
+      "architecture decision",
+      "harness contract",
+      "Superpowers handoff"
+    ],
+    "superpowers_owns": [
+      "implementation planning",
+      "TDD",
+      "debugging",
+      "code review",
+      "worktree and branch completion"
+    ]
+  },
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "observed_at": "2026-06-19T09:47:41.713131Z",
+      "provisional": false,
+      "source": "github",
+      "source_quality": null,
+      "summary": "Official Chrome Extension samples repository with Manifest V3 examples",
+      "title": "GoogleChrome/chrome-extensions-samples",
+      "url": "https://github.com/GoogleChrome/chrome-extensions-samples"
+    },
+    {
+      "evidence_id": "E2",
+      "observed_at": "2026-06-19T09:47:41.713131Z",
+      "provisional": false,
+      "source": "web",
+      "source_quality": null,
+      "summary": "Manifest V3 is the latest version of the Chrome Extensions platform with improved security and performance.",
+      "title": "Chrome Extension Manifest V3 Overview",
+      "url": "https://developer.chrome.com/docs/extensions/mv3/intro/"
+    }
+  ],
+  "harness": {
+    "commands": {
+      "build": "npm run build",
+      "install": "npm ci",
+      "lint": "npm run lint",
+      "run": "echo Load from chrome://extensions in developer mode",
+      "smoke": "npm run smoke",
+      "test": "npm run test",
+      "typecheck": "npm run typecheck"
+    },
+    "extra_commands": {},
+    "missing_commands": [],
+    "required_commands": [
+      "install",
+      "test",
+      "lint",
+      "typecheck",
+      "build",
+      "run",
+      "smoke"
+    ]
+  },
+  "kind": "project-forge.superpowers-handoff",
+  "project": {
+    "goal": "A Chrome extension that summarizes selected text on any webpage using a configurable AI backend",
+    "slug": "chrome-extension",
+    "stack_signal": "chrome-extension"
+  },
+  "schema_version": 1,
+  "superpowers": {
+    "acceptance_criteria": [
+      "The implementation keeps the accepted stack and ADR assumptions unless the ADR is updated with new evidence.",
+      "The relevant commands in project-forge.yaml pass, or every remaining failure is explained with an owner.",
+      "User-facing scope stays inside the creative direction and smallest useful version.",
+      "The handoff is refreshed if implementation changes risks, commands, or architecture assumptions."
+    ],
+    "assignment": "Consume this packet, preserve the evidence-backed architecture, and implement against the harness contract.",
+    "consume_steps": [
+      "Read docs/superpowers-handoff.md first.",
+      "Open the ADR, evidence JSONL, project-forge.yaml, and docs/harness.md only when detail is needed.",
+      "Use Superpowers implementation workflows after the Project Forge decision packet is accepted."
+    ],
+    "first_task": "Implement the smallest user-visible workflow that satisfies the brief, then prove it with the Project Forge harness commands.",
+    "guardrails": [
+      "Do not treat Project Forge as the TDD, debugging, code-review, worktree, or branch-completion workflow.",
+      "Escalate back to Project Forge if the product direction, architecture, or harness contract becomes stale.",
+      "Do not silently replace provisional evidence with claims; cite updated sources first."
+    ],
+    "open_questions": [
+      "Which feature or workflow should Superpowers implement first if the brief does not name one?",
+      "Are any provisional evidence rows strong enough to keep, or should they be replaced with verified sources?",
+      "Do harness failures represent implementation defects, missing dependencies, or an outdated command contract?"
+    ]
+  }
+}

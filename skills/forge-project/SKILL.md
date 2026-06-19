@@ -16,7 +16,7 @@ Run commands from the plugin root, using plugin-root-relative script paths. If t
 3. Write the architecture decision record.
 4. Apply the harness template and command contract.
 5. Verify the generated artifacts and report the paths that changed.
-6. Export the Superpowers handoff when the project is ready for implementation.
+6. Export the Superpowers handoff and run the readiness check when the project is ready for implementation.
 
 Prefer the coordinator script when the user wants the whole Forge flow:
 
@@ -27,7 +27,8 @@ Use `--evidence <path>` when evidence already exists. Use `--force` only when th
 ## Script Map
 
 - `scripts/forge_project.py`: orchestrates research ingestion, ADR creation, and harness generation.
-- `scripts/export_handoff.py`: writes `docs/superpowers-handoff.md` from evidence, ADR, harness docs, and `project-forge.yaml`.
+- `scripts/export_handoff.py`: writes `docs/superpowers-handoff.md` and `docs/superpowers-handoff.json` from evidence, ADR, harness docs, and `project-forge.yaml`.
+- `scripts/superpowers_ready.py`: verifies that the handoff packet is ready for Superpowers consumption.
 - `scripts/harness/apply_template.py`: applies a harness template directly when only the command contract is needed.
 - `scripts/research/github_search.py`: collects GitHub repository evidence into JSONL.
 - `scripts/research/web_search.py`: records web evidence or host-tool search instructions.
@@ -46,10 +47,15 @@ The completed coordinator flow should produce or update:
 - `project-forge.yaml`
 - `docs/harness.md`
 - `docs/superpowers-handoff.md`
+- `docs/superpowers-handoff.json`
 
 The harness template may also add CI files when supported by the selected stack. Create the handoff with:
 
 `python scripts/export_handoff.py --project <target-project> --slug <project-slug> --out <target-project>/docs/superpowers-handoff.md`
+
+Validate the final packet with:
+
+`python scripts/cli.py superpowers-ready --slug <project-slug> <target-project>`
 
 ## Worker Coordination
 
@@ -59,7 +65,7 @@ When other workers are active, do not overwrite their edits casually. Inspect ex
 
 ## Quality Bar
 
-The target project should be left with evidence-backed architecture, a runnable command contract, and a Superpowers handoff. A future worker should be able to read the ADR, run the commands in `project-forge.yaml`, understand the verification path from `docs/harness.md`, and consume `docs/superpowers-handoff.md` as the implementation packet.
+The target project should be left with evidence-backed architecture, a runnable command contract, and a Superpowers handoff. A future worker should be able to read the ADR, run the commands in `project-forge.yaml`, understand the verification path from `docs/harness.md`, and consume `docs/superpowers-handoff.md` plus `docs/superpowers-handoff.json` as the implementation packet.
 
 ## Full Pipeline Handoff
 
@@ -68,7 +74,8 @@ When `forge-project` completes, the entire Project Forge pipeline is done. Repor
 1. The complete list of generated artifacts and their paths.
 2. A summary of the architecture decision and evidence quality.
 3. Instructions for running the harness commands.
-4. A pointer to `docs/superpowers-handoff.md` for Superpowers consumption.
+4. The `superpowers-ready` status.
+5. Pointers to `docs/superpowers-handoff.md` and `docs/superpowers-handoff.json` for Superpowers consumption.
 
 The project is now ready for implementation. If the user wants adjustments to any layer (direction, architecture, harness), the relevant skill can be re-invoked independently without re-running the full pipeline.
 

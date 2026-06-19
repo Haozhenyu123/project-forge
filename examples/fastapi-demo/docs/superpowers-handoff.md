@@ -5,7 +5,8 @@
 - Project slug: `fastapi-demo`
 - Goal: Test
 - Stack signal: fastapi
-- Assignment: consume this packet, preserve the evidence-backed architecture, and implement against the harness contract.
+- Assignment: Consume this packet, preserve the evidence-backed architecture, and implement against the harness contract.
+- First task: Implement the smallest user-visible workflow that satisfies the brief, then prove it with the Project Forge harness commands.
 
 ## Creative Direction
 
@@ -29,14 +30,14 @@ Read `docs/architecture/ADR-0001-stack.md` before changing architecture or depen
 ## Status
 Accepted
 ## Context
-- Project slug: fastapi-demo
-- Goal: Test
-- Selected stack: fastapi
+- Project slug: `fastapi-demo`
+- Goal: Show an API-first planning service with typed endpoints and a Python verification harness.
+- Selected stack: `fastapi`
 ## Evidence
-- [E1] FastAPI framework, high performance, easy to learn, fast to code, ready for production: https://github.com/tiangolo/fastapi
-- [E2] FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.7+ based on standard Python type hints.: https://fastapi.tiangolo.com/
-## Decision
-Use the fastapi harness and architecture baseline for fastapi-demo.
+- [E1] FastAPI framework repository demonstrates a maintained Python API framework with production usage.
+- [E2] FastAPI documentation emphasizes standard Python type hints, OpenAPI generation, and fast local development.
+## Considered Options
+- `fastapi` (score: 89): Strong fit for typed APIs, generated docs, and simple Python CI.
 ```
 
 ## Harness Commands
@@ -69,6 +70,23 @@ Run the commands listed in `project-forge.yaml` from the project root. At minimu
 - Which feature or workflow should Superpowers implement first if the brief does not name one?
 - Are any provisional evidence rows strong enough to keep, or should they be replaced with verified sources?
 - Do harness failures represent implementation defects, missing dependencies, or an outdated command contract?
+
+## Acceptance Criteria
+
+- The implementation keeps the accepted stack and ADR assumptions unless the ADR is updated with new evidence.
+- The relevant commands in project-forge.yaml pass, or every remaining failure is explained with an owner.
+- User-facing scope stays inside the creative direction and smallest useful version.
+- The handoff is refreshed if implementation changes risks, commands, or architecture assumptions.
+
+## Guardrails
+
+- Do not treat Project Forge as the TDD, debugging, code-review, worktree, or branch-completion workflow.
+- Escalate back to Project Forge if the product direction, architecture, or harness contract becomes stale.
+- Do not silently replace provisional evidence with claims; cite updated sources first.
+
+## Machine-Readable Packet
+
+Source: `docs/superpowers-handoff.json`
 
 ## How Superpowers Should Consume This
 

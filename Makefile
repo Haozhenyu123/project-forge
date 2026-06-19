@@ -8,10 +8,12 @@ test:
 verify: test
 	$(PYTHON) scripts/evals/validate_scenarios.py evals/scenarios
 	$(PYTHON) scripts/smoke_test.py --project examples/team-research --slug team-research
+	$(PYTHON) scripts/cli.py superpowers-ready --slug team-research examples/team-research
 	$(PYTHON) scripts/install_test.py
 
 smoke:
 	$(PYTHON) scripts/smoke_test.py --project examples/team-research --slug team-research
+	$(PYTHON) scripts/cli.py superpowers-ready --slug team-research examples/team-research
 
 evals:
 	$(PYTHON) scripts/evals/validate_scenarios.py evals/scenarios

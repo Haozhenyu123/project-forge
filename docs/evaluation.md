@@ -11,6 +11,7 @@ Live agent scenarios under `evals/agent/` can run Codex or Claude Code in an iso
 - response assertions;
 - generated artifacts;
 - command assertions.
+- Superpowers-ready packet assertions when the scenario reaches handoff.
 
 Run a live scenario when the relevant CLI is installed:
 
@@ -18,4 +19,4 @@ Run a live scenario when the relevant CLI is installed:
 python scripts/evals/agent_runner.py --provider codex --scenario evals/agent/vague-idea.json
 ```
 
-The live scenarios stop at Project Forge's boundary: creative direction, evidence, architecture, harness, and Superpowers handoff.
+The live scenarios stop at Project Forge's boundary: creative direction, evidence, architecture, harness, and Superpowers handoff. They should not require Superpowers to execute TDD, debugging, review, worktree, or branch workflows; they only verify that Project Forge produced a packet those workflows can consume.

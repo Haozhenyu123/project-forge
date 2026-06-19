@@ -6,6 +6,7 @@ Usage:
   project-forge detect [--json] [PROJECT_DIR]
   project-forge research --query QUERY [--limit N] [--out DIR]
   project-forge handoff --slug SLUG [--out FILE] [PROJECT_DIR]
+  project-forge superpowers-ready --slug SLUG [--json] [--strict] [PROJECT_DIR]
   project-forge smoke --slug SLUG [PROJECT_DIR]
   project-forge validate-evidence [EVIDENCE_FILE]
   project-forge list-templates
@@ -24,7 +25,7 @@ from pathlib import Path
 SCRIPTS_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPTS_ROOT.parent
 
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 
 TEMPLATES = [
     "node-ts",
@@ -105,6 +106,7 @@ def cmd_init(args):
                         "project-forge.yaml",
                         "docs/harness.md",
                         "docs/superpowers-handoff.md",
+                        "docs/superpowers-handoff.json",
                         ".github/workflows/project-forge-ci.yml",
                     ],
                     "force": args.force,
@@ -190,12 +192,14 @@ def cmd_init(args):
     forge_output = run_script(*forge_args)
 
     handoff = project / "docs" / "superpowers-handoff.md"
+    handoff_json = project / "docs" / "superpowers-handoff.json"
     print(f"Project Forge initialized: {project}")
     print(f"  Stack: {stack}")
     print(f"  Slug: {args.slug}")
     print(f"  ADR: {project / 'docs' / 'architecture' / 'ADR-0001-stack.md'}")
     print(f"  Contract: {project / 'project-forge.yaml'}")
     print(f"  Handoff: {handoff}")
+    print(f"  Handoff JSON: {handoff_json}")
     if generated_decision:
         print(f"  Decision: {generated_decision}")
     if forge_output.strip():
@@ -241,13 +245,32 @@ def cmd_handoff(args):
     project = Path(args.project or ".")
     slug = args.slug
     out = args.out or str(project / "docs" / "superpowers-handoff.md")
-    run_script(
+    handoff_args = [
         "export_handoff.py",
         "--project", str(project),
         "--slug", slug,
         "--out", out,
-    )
+    ]
+    if args.json_out:
+        handoff_args.extend(["--json-out", args.json_out])
+    run_script(*handoff_args)
     print(f"Handoff written: {out}")
+    print(f"Handoff JSON written: {args.json_out or str(Path(out).with_suffix('.json'))}")
+
+
+def cmd_superpowers_ready(args):
+    project = Path(args.project or ".")
+    ready_args = [
+        "superpowers_ready.py",
+        "--project", str(project),
+        "--slug", args.slug,
+    ]
+    if args.json:
+        ready_args.append("--json")
+    if args.strict:
+        ready_args.append("--strict")
+    output = run_script(*ready_args)
+    print(output, end="")
 
 
 def cmd_smoke(args):
@@ -358,7 +381,14 @@ def main():
     handoff_parser = subparsers.add_parser("handoff", help="Export Superpowers handoff")
     handoff_parser.add_argument("--slug", required=True, help="Project slug")
     handoff_parser.add_argument("--out", help="Output file path")
+    handoff_parser.add_argument("--json-out", help="Structured handoff JSON output path")
     handoff_parser.add_argument("project", nargs="?", default=".", help="Project directory")
+
+    ready_parser = subparsers.add_parser("superpowers-ready", help="Check Superpowers handoff readiness")
+    ready_parser.add_argument("--slug", required=True, help="Project slug")
+    ready_parser.add_argument("--json", action="store_true", help="Output JSON")
+    ready_parser.add_argument("--strict", action="store_true", help="Treat warnings as failures")
+    ready_parser.add_argument("project", nargs="?", default=".", help="Project directory")
 
     smoke_parser = subparsers.add_parser("smoke", help="Validate project artifacts")
     smoke_parser.add_argument("--slug", required=True, help="Project slug")
@@ -390,6 +420,7 @@ def main():
         "detect": cmd_detect,
         "research": cmd_research,
         "handoff": cmd_handoff,
+        "superpowers-ready": cmd_superpowers_ready,
         "smoke": cmd_smoke,
         "validate-evidence": cmd_validate_evidence,
         "list-templates": cmd_list_templates,

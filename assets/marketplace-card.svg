@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Project Forge marketplace card</title>
+  <desc id="desc">Project Forge card for plugin marketplaces.</desc>
+  <rect width="1200" height="630" fill="#101820"/>
+  <rect x="72" y="72" width="1056" height="486" rx="28" fill="#172532" stroke="#f2aa4c" stroke-width="4"/>
+  <text x="120" y="190" fill="#f7f4ea" font-family="Segoe UI, Arial, sans-serif" font-size="76" font-weight="700">Project Forge</text>
+  <text x="120" y="265" fill="#f2aa4c" font-family="Segoe UI, Arial, sans-serif" font-size="34">Creative direction + AI architecture + harness handoff</text>
+  <text x="120" y="350" fill="#d9e6f2" font-family="Segoe UI, Arial, sans-serif" font-size="30">Decide what to build, why it matters, and which stack fits before implementation begins.</text>
+  <text x="120" y="420" fill="#d9e6f2" font-family="Segoe UI, Arial, sans-serif" font-size="28">Exports evidence, ADRs, command contracts, and Superpowers-ready packets.</text>
+  <path d="M890 160l28 78 78 28-78 28-28 78-28-78-78-28 78-28z" fill="#f2aa4c"/>
+  <path d="M790 470h270v38H790zM830 450V320l95-56 95 56v130h-38V342l-57-34-57 34v108z" fill="#f7f4ea"/>
+</svg>

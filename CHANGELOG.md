@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.5] - 2026-06-20
+
+### Added
+- Structured `docs/superpowers-handoff.json` packets alongside Markdown handoffs.
+- `scripts/superpowers_ready.py` and `project-forge superpowers-ready` for handoff readiness checks.
+- MCP `superpowers_ready` tool for host-driven handoff validation.
+- JSON schema for Superpowers handoff packets.
+- Showcase docs, examples index, marketplace preparation copy, logo/card assets, and issue/PR templates.
+
+### Changed
+- Forge runs now generate both Markdown and JSON Superpowers handoff artifacts.
+- Smoke tests now validate the structured handoff packet.
+- Runtime context now routes vague ideas, new projects, stack decisions, and handoff readiness through Project Forge.
+- README, docs, skills, CI, and install smoke checks now describe the Project Forge-to-Superpowers boundary and readiness flow.
+
+### Fixed
+- Restored clean UTF-8 Chinese README content and synchronized the README version badge.
+
 ## [0.2.4] - 2026-06-19
 
 ### Added

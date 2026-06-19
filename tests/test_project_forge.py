@@ -73,7 +73,8 @@ class ManifestTests(unittest.TestCase):
         self.assertIn("Interactive", interface["capabilities"])
         self.assertIn("Read", interface["capabilities"])
         self.assertIn("Write", interface["capabilities"])
-        self.assertEqual(len(interface["defaultPrompt"]), 3)
+        self.assertGreaterEqual(len(interface["defaultPrompt"]), 4)
+        self.assertIn("superpowers", " ".join(interface["defaultPrompt"]).lower())
 
     def test_repo_has_ci_and_reproducible_install_docs(self):
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
@@ -103,7 +104,8 @@ class ManifestTests(unittest.TestCase):
         text = raw.decode("utf-8")
         self.assertIn("## 中文快速入门", text)
         self.assertIn("```powershell\n", text)
-        for broken in ("鈥?", "浠€", "鏄", "锛?", "??????"):
+        self.assertIn("Project Forge 负责编码之前", text)
+        for broken in ("\u9225?", "\u6d60\u20ac", "\u93c4\ue219", "\u951b?", "\u9225", "\ufffd", "\u00c3", "\u00c2", "\u951f", "??????"):
             self.assertNotIn(broken, text)
 
 
@@ -145,6 +147,7 @@ class SkillTests(unittest.TestCase):
         self.assertIn("--evidence", forge_project)
         self.assertIn("scripts/harness/apply_template.py", forge_project)
         self.assertIn("docs/architecture/ADR-0001-stack.md", forge_project)
+        self.assertIn("docs/superpowers-handoff.json", forge_project)
 
 
 class ScriptTests(unittest.TestCase):
@@ -410,9 +413,11 @@ class ScriptTests(unittest.TestCase):
             adr = project / "docs/architecture/ADR-0001-stack.md"
             contract = project / "project-forge.yaml"
             harness = project / "docs/harness.md"
+            handoff = project / "docs/superpowers-handoff.md"
+            handoff_json = project / "docs/superpowers-handoff.json"
             ci = project / ".github/workflows/project-forge-ci.yml"
 
-            for path in (research, adr, contract, harness, ci):
+            for path in (research, adr, contract, harness, handoff, handoff_json, ci):
                 self.assertTrue(path.exists(), str(path))
 
             self.assertIn("https://github.com/example/project", research.read_text(encoding="utf-8"))
@@ -422,6 +427,20 @@ class ScriptTests(unittest.TestCase):
             self.assertIn("Reference architecture example", adr_text)
             self.assertIn("[E1]", adr_text)
             self.assertIn("Help small teams", contract.read_text(encoding="utf-8"))
+            packet = load_json(handoff_json)
+            self.assertEqual(packet["project"]["slug"], "team-research")
+            self.assertEqual(packet["kind"], "project-forge.superpowers-handoff")
+            self.assertIn("first_task", packet["superpowers"])
+
+            ready = self.run_script(
+                "scripts/superpowers_ready.py",
+                "--project",
+                str(project),
+                "--slug",
+                "team-research",
+                "--json",
+            )
+            self.assertIn(json.loads(ready.stdout)["status"], ("ready", "attention"))
 
     def test_forge_project_dry_run_does_not_write_files(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -456,6 +475,9 @@ class ScriptTests(unittest.TestCase):
             payload = json.loads(proc.stdout)
             self.assertEqual(payload["status"], "dry-run")
             self.assertFalse(project.exists())
+            self.assertTrue(
+                any(path.replace("\\", "/").endswith("docs/superpowers-handoff.json") for path in payload["would_generate"])
+            )
 
     def test_force_creates_backup_and_restore_recovers_generated_file(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -725,9 +747,12 @@ class TemplateAndEvalTests(unittest.TestCase):
             "project-forge.yaml",
             "docs/harness.md",
             "docs/superpowers-handoff.md",
+            "docs/superpowers-handoff.json",
         ):
             self.assertTrue((example / relative).exists(), relative)
         self.assertIn("python scripts/smoke_test.py", smoke)
+        self.assertTrue((ROOT / "docs" / "superpowers-ready.md").is_file())
+        self.assertTrue((ROOT / "docs" / "schemas" / "superpowers-handoff.schema.json").is_file())
 
     def test_smoke_test_script_validates_example_project(self):
         proc = subprocess.run(
@@ -788,6 +813,53 @@ class TemplateAndEvalTests(unittest.TestCase):
             self.assertIn("Superpowers Handoff", text)
             self.assertIn("ADR-0001-stack.md", text)
             self.assertIn("npm run test", text)
+            self.assertIn("Acceptance Criteria", text)
+            packet = load_json(project / "docs/superpowers-handoff.json")
+            self.assertEqual(packet["kind"], "project-forge.superpowers-handoff")
+            self.assertEqual(packet["project"]["slug"], "team-research")
+            self.assertIn("first_task", packet["superpowers"])
+
+    def test_superpowers_ready_reports_ready_and_blocked_states(self):
+        ready = subprocess.run(
+            [
+                PYTHON,
+                "scripts/superpowers_ready.py",
+                "--project",
+                "examples/team-research",
+                "--slug",
+                "team-research",
+                "--json",
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(ready.returncode, 0, ready.stderr)
+        payload = json.loads(ready.stdout)
+        self.assertIn(payload["status"], ("ready", "attention"))
+        self.assertEqual(payload["failures"], 0)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            blocked = subprocess.run(
+                [
+                    PYTHON,
+                    "scripts/superpowers_ready.py",
+                    "--project",
+                    tmp,
+                    "--slug",
+                    "missing",
+                    "--json",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(blocked.returncode, 0)
+            blocked_payload = json.loads(blocked.stdout)
+            self.assertEqual(blocked_payload["status"], "blocked")
+            self.assertGreater(blocked_payload["failures"], 0)
 
 
 class SkillContractTests(unittest.TestCase):
@@ -1104,6 +1176,9 @@ class CLITests(unittest.TestCase):
             )
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertTrue((project / "project-forge.yaml").is_file())
+            ready = self.run_cli("superpowers-ready", "--slug", "new-project", "--json", str(project))
+            self.assertEqual(ready.returncode, 0, ready.stderr)
+            self.assertIn(json.loads(ready.stdout)["status"], ("ready", "attention"))
 
     def test_cli_init_without_stack_uses_decision_engine(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1455,6 +1530,7 @@ class MCPServerTests(unittest.TestCase):
             self.assertIn("apply_template", tool_names)
             self.assertIn("forge_project", tool_names)
             self.assertIn("export_handoff", tool_names)
+            self.assertIn("superpowers_ready", tool_names)
             self.assertIn("validate_evidence", tool_names)
             self.assertIn("list_templates", tool_names)
             self.assertIn("run_evals", tool_names)
@@ -1516,15 +1592,16 @@ class MCPIntegrationTests(unittest.TestCase):
         self.assertIn('serverInfo', result)
         self.assertEqual(result['serverInfo']['name'], 'project-forge')
 
-    def test_mcp_tools_list_returns_nine_tools(self):
+    def test_mcp_tools_list_returns_ten_tools(self):
         responses, stderr, _ = self._send_rpc('tools/list')
         self.assertTrue(len(responses) > 0, 'No MCP response: ' + stderr)
         tools = responses[0].get('result', {}).get('tools', [])
         tool_names = {t['name'] for t in tools}
         expected = {'github_search', 'web_search', 'detect_stack', 'apply_template',
-                    'forge_project', 'export_handoff', 'validate_evidence', 'list_templates', 'run_evals'}
+                    'forge_project', 'export_handoff', 'superpowers_ready',
+                    'validate_evidence', 'list_templates', 'run_evals'}
         self.assertEqual(tool_names, expected)
-        self.assertEqual(len(tools), 9)
+        self.assertEqual(len(tools), 10)
 
     def test_mcp_list_templates_tool(self):
         responses, stderr, _ = self._send_rpc('tools/call', {'name': 'list_templates', 'arguments': {}})
@@ -1548,6 +1625,15 @@ class MCPIntegrationTests(unittest.TestCase):
             responses, stderr, _ = self._send_rpc('tools/call', {
                 'name': 'validate_evidence', 'arguments': {'evidence_file': str(evidence)}}, timeout=15)
             self.assertTrue(len(responses) > 0, 'No MCP response: ' + stderr)
+
+    def test_mcp_superpowers_ready_tool(self):
+        responses, stderr, _ = self._send_rpc('tools/call', {
+            'name': 'superpowers_ready',
+            'arguments': {'project': 'examples/team-research', 'slug': 'team-research'},
+        }, timeout=15)
+        self.assertTrue(len(responses) > 0, 'No MCP response: ' + stderr)
+        text = responses[0].get('result', {}).get('content', [{}])[0].get('text', '')
+        self.assertIn('status', text)
 
 
 
@@ -1632,6 +1718,7 @@ class IntegrationTests(unittest.TestCase):
                 "docs/creative-brief.md",
                 "docs/harness.md",
                 "docs/superpowers-handoff.md",
+                "docs/superpowers-handoff.json",
                 "project-forge.yaml",
                 ".github/workflows/project-forge-ci.yml",
             }
@@ -1649,6 +1736,20 @@ class IntegrationTests(unittest.TestCase):
             handoff_md = (project / "docs/superpowers-handoff.md").read_text(encoding="utf-8")
             self.assertIn("Superpowers Handoff", handoff_md)
             self.assertIn("pnpm", handoff_md)
+            handoff_json = load_json(project / "docs/superpowers-handoff.json")
+            self.assertEqual(handoff_json["project"]["slug"], "integration-test")
+
+            ready = subprocess.run(
+                [
+                    PYTHON, "scripts/superpowers_ready.py",
+                    "--project", str(project),
+                    "--slug", "integration-test",
+                    "--json",
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(ready.returncode, 0, ready.stderr)
+            self.assertEqual(json.loads(ready.stdout)["failures"], 0)
 
     def test_full_pipeline_fastapi(self):
         """Forge a fastapi project and verify Python-specific artifacts."""
@@ -1703,6 +1804,12 @@ class IntegrationTests(unittest.TestCase):
                 self.assertEqual(proc.returncode, 0, f"{project_dir} smoke failed: {proc.stderr}")
                 payload = json.loads(proc.stdout)
                 self.assertEqual(payload["status"], "ok", f"{project_dir}: {payload}")
+                ready = subprocess.run(
+                    [PYTHON, "scripts/superpowers_ready.py", "--project", project_dir, "--slug", slug, "--json"],
+                    cwd=ROOT, text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(ready.returncode, 0, f"{project_dir} ready failed: {ready.stderr}")
+                self.assertEqual(json.loads(ready.stdout)["failures"], 0)
 
     def test_creative_brief_pipeline_integration(self):
         """creative_brief.py output is readable and contains required sections."""

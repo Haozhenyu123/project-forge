@@ -34,6 +34,12 @@ python scripts/cli.py init my-new-project --stack node-ts --goal "A team dashboa
 
 This runs the full pipeline: research -> evidence -> ADR -> harness -> handoff.
 
+Check the handoff before implementation:
+
+```powershell
+python scripts/cli.py superpowers-ready --slug my-new-project my-new-project
+```
+
 ## 5. Forge an existing project
 
 If you already have a project with code but no harness:
@@ -63,6 +69,7 @@ After forging, your project will have:
 | `docs/architecture/ADR-0001-stack.md` | Architecture decision record |
 | `docs/harness.md` | How to verify the project |
 | `docs/superpowers-handoff.md` | Implementation packet for Superpowers |
+| `docs/superpowers-handoff.json` | Machine-readable Superpowers handoff packet |
 | `.github/workflows/project-forge-ci.yml` | CI workflow |
 
 ## 7. Run the MCP server (optional)
@@ -73,4 +80,4 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 
 ## Next
 
-Read `docs/architecture.md` for the internal design and `docs/superpowers-handoff.md` for the handoff protocol.
+Read `docs/architecture.md` for the internal design, `docs/superpowers-handoff.md` for the handoff protocol, and `docs/superpowers-ready.md` for the readiness check.

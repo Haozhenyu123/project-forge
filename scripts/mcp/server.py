@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
 
 SERVER_NAME = "project-forge"
-SERVER_VERSION = "0.2.4"
+SERVER_VERSION = "0.2.5"
 
 TEMPLATES = ["node-ts", "python", "generic", "nextjs", "fastapi", "electron", "cli", "chrome-extension"]
 
@@ -133,6 +133,19 @@ TOOLS = [
         },
     },
     {
+        "name": "superpowers_ready",
+        "description": "Check whether Project Forge artifacts are ready for Superpowers consumption.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "project": {"type": "string", "description": "Project directory"},
+                "slug": {"type": "string", "description": "Project slug"},
+                "strict": {"type": "boolean", "description": "Treat warnings as failures", "default": False},
+            },
+            "required": ["project", "slug"],
+        },
+    },
+    {
         "name": "validate_evidence",
         "description": "Validate an evidence JSONL file for completeness.",
         "inputSchema": {
@@ -220,6 +233,13 @@ def handle_tools_call(request_id, params):
             "--project", a["project"],
             "--slug", a["slug"],
             "--out", a.get("out", f"{a['project']}/docs/superpowers-handoff.md"),
+        ),
+        "superpowers_ready": lambda a: run_script(
+            "superpowers_ready.py",
+            "--project", a["project"],
+            "--slug", a["slug"],
+            "--json",
+            *(["--strict"] if a.get("strict") else []),
         ),
         "validate_evidence": lambda a: run_script(
             "research/validate_evidence.py", a["evidence_file"],
