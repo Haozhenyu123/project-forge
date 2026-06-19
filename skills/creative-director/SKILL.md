@@ -26,10 +26,46 @@ Define the product stance:
 
 1. Name the user promise in a single sentence.
 2. Choose the first useful screen or first interaction.
-3. Describe the information hierarchy.
+3. Describe the information hierarchy and primary workflow.
 4. Define the interaction style: guided, power-user, conversational, dashboard, editor, marketplace, workflow queue, or another clear mode.
 5. Specify tone for labels, empty states, errors, and success messages.
 6. Identify where the product must feel fast, trustworthy, calm, playful, or exact.
+
+## Competitive Context
+
+Before finalizing direction, identify what already exists in this space:
+
+1. Name 2-3 competing products, approaches, or common workflows the user already uses.
+2. Identify the gap: what do existing solutions not do well for the target user?
+3. State whether the project replaces, augments, or sits alongside those alternatives.
+4. If no direct competitor exists, explain why (new problem, underserved audience, or novel technology).
+
+This analysis is not about building a business case; it prevents the team from building something that already exists and gives the architect a concrete user need to design around.
+
+## Differentiation Strategy
+
+Define what makes this product distinct:
+
+1. What is the one thing this product does that alternatives cannot match?
+2. Is the advantage in simplicity, speed, integration, data ownership, price, or domain specificity?
+3. What trade-off does the differentiation force? (e.g., "simpler than X but less customizable")
+4. Can the differentiation be sustained, or is it easy for competitors to copy?
+
+A weak or missing differentiation means the product competes on features alone, which is nearly always a losing strategy for small teams.
+
+## Architecture Signals
+
+Creative decisions directly constrain technical choices. Record explicit signals for the architect:
+
+- **Real-time**: does the product need live updates, collaboration, or streaming?
+- **Offline-first**: must the product work without a network connection?
+- **Data sensitivity**: does the product handle PII, health data, financial records, or credentials?
+- **Multi-device**: must state sync across devices? If so, what is the conflict resolution strategy?
+- **Scale ceiling**: what is the realistic upper bound for users, data volume, or request rate in the first year?
+- **Integration surface**: which external services, APIs, or file formats must be supported?
+- **Accessibility**: any specific regulatory or inclusive-design requirements?
+
+Each signal limits or opens specific architecture choices. If a signal is unknown, label it as an open question for the architect to investigate.
 
 ## Vague Idea Handling
 
@@ -48,24 +84,39 @@ Creative choices can need evidence too. If the product depends on user trust, do
 
 ## Deliverable
 
-Write the direction to `docs/creative-brief.md` using the script:
+Write the direction to `docs/creative-brief.md`.
 
-`python scripts/creative_brief.py --project <target-project> --slug <project-slug> --goal "<goal>" --audience "<target user>" --platform "<web|desktop|mobile|cli|extension>" --style "<interaction style>" --tone "<content tone>" --first-screen "<first interaction>"`
+**Preferred: freeform mode.** Write a rich Markdown brief with all required sections, then use the script to validate and commit it:
 
-The creative brief artifact must include:
+`python scripts/creative_brief.py --project <target-project> --slug <project-slug> --goal "<goal>" --body "<markdown content>"`
 
-- `Experience thesis`: the product promise and feel.
-- `Primary workflow`: steps from arrival to useful output.
-- `Information architecture`: main areas and navigation model.
-- `Screen guidance`: what belongs on the first screen and what can move deeper.
-- `Tone`: examples of direct, user-facing language.
-- `Interaction principles`: rules for controls, feedback, loading, and errors.
-- `Risks`: confusing flows, trust gaps, or overloaded screens.
+**Fallback: structured mode.** Use CLI flags for quick scaffolding:
+
+`python scripts/creative_brief.py --project <target-project> --slug <project-slug> --goal "<goal>" --audience "<target user>" --platform "<web|desktop|mobile|cli|extension>" --style "<interaction style>" --tone "<content tone>" --first-screen "<first interaction>" --competitors "<competitor analysis>" --differentiation "<what makes this different>" --architecture-signals "<signals for the architect>"`
+
+The creative brief artifact must include these sections:
+
+- `Experience Thesis`: the product promise and feel.
+- `Target User`: who uses it and in what context.
+- `Primary Workflow`: steps from arrival to useful output.
+- `Information Architecture`: main areas and navigation model.
+- `First Interaction`: what the user sees first and why.
+- `Interaction Style`: the interaction mode (dashboard, editor, guided, etc.).
+- `Content Tone`: examples of direct, user-facing language.
+- `Platform`: target platform and any constraints it imposes.
+- `Competitive Context`: what already exists and where the gap is.
+- `Differentiation`: what makes this product uniquely valuable.
+- `Architecture Signals`: creative choices that constrain technical decisions.
 - `Assumptions`: product direction decisions made without further input.
+- `Risks`: confusing flows, trust gaps, overloaded screens, competitive threats.
 
 ## Quality Bar
 
-Another worker should be able to design UI, content, and evaluation tasks from the direction note without guessing what kind of product they are making.
+Another worker should be able to design UI, content, and evaluation tasks from the direction note without guessing what kind of product they are making. The architect should be able to read Architecture Signals and immediately narrow the stack search space.
+
+## Escalation (Feedback to Intake)
+
+If the intake brief lacks information needed to make creative decisions (no target user, no platform, no workflow), escalate back to `forge-intake` before proceeding. Do not fabricate a user or platform that would change the product fundamentally without asking.
 
 ## Handoff to AI Architect
 
@@ -73,8 +124,13 @@ When the creative brief is written to `docs/creative-brief.md`, immediately hand
 
 - The project slug and goal
 - The chosen platform and interaction style
+- The Architecture Signals section (critical for stack selection)
 - Any evidence needs identified during creative work
 - The creative-brief.md path so the architect can reference it
 
 The architect needs the creative direction to make informed stack choices (e.g., a dashboard product and a CLI tool need different architectures). Do not wait for the user to ask for architecture; the next logical step is always to ground the product direction in an evidence-backed technical foundation.
+
+
+
+
 

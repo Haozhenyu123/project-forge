@@ -24,6 +24,7 @@ def parse_args():
     parser.add_argument("--slug", required=True)
     parser.add_argument("--goal", required=True)
     parser.add_argument("--stack", required=True)
+    parser.add_argument("--secondary-stack", default="", help="Optional secondary stack for multi-stack projects")
     parser.add_argument("--evidence", required=True)
     parser.add_argument("--force", action="store_true")
     return parser.parse_args()
@@ -183,7 +184,7 @@ def write_jsonl(path, rows):
             handle.write(json.dumps(row, sort_keys=True) + "\n")
 
 
-def adr_text(slug, stack, goal, evidence_rows):
+def adr_text(slug, stack, goal, evidence_rows, confidence_levels=None):
     lines = [
         "# ADR-0001: Project stack",
         "",
@@ -193,38 +194,58 @@ def adr_text(slug, stack, goal, evidence_rows):
         "",
         "## Context",
         "",
-        f"- Project slug: {slug}",
+        f"- Project slug: `{slug}`",
         f"- Goal: {goal}",
-        f"- Selected stack: {stack}",
-        "",
-        "## Evidence",
+        f"- Selected stack: `{stack}`",
         "",
     ]
     if evidence_rows:
+        lines.append("## Evidence")
+        lines.append("")
         for row in evidence_rows:
             evidence_id = str(row.get("evidence_id") or "E?")
+            is_prov = " *(provisional)*" if row.get("provisional") else ""
             summary = str(row.get("summary") or row.get("title") or "Evidence item")
             url = row.get("url")
             if url:
-                lines.append(f"- [{evidence_id}] {summary}: {url}")
+                lines.append(f"- [{evidence_id}]{is_prov} {summary}: {url}")
             else:
-                lines.append(f"- [{evidence_id}] {summary}")
+                lines.append(f"- [{evidence_id}]{is_prov} {summary}")
+        lines.append("")
     else:
-        lines.append("- No evidence rows were provided.")
-    lines.extend(
-        [
-            "",
-            "## Decision",
-            "",
-            f"Use the {stack} harness and architecture baseline for {slug}.",
-            "",
-            "## Consequences",
-            "",
-            "- The repository receives a Project Forge harness contract and CI workflow.",
-            "- Future architecture changes should cite updated research evidence.",
-            "",
-        ]
-    )
+        lines.append("## Evidence\n\n- No evidence rows were provided.\n")
+    lines.extend([
+        "## Decision",
+        "",
+        f"Use `{stack}` as the primary harness for `{slug}`.",
+        "",
+        "## Explicitly Rejected",
+        "",
+        "- No alternatives were formally rejected in this ADR. The architect should document at least one considered-and-rejected option.",
+        "",
+        "## Confidence Assessment",
+        "",
+    ])
+    if confidence_levels:
+        for decision_name, level, reason in confidence_levels:
+            lines.append(f"- **{decision_name}**: {level} confidence -- {reason}")
+    else:
+        lines.append("- No confidence levels recorded. Assign High/Medium/Low to each major decision.")
+    lines.extend([
+        "",
+        "## Consequences",
+        "",
+        "- The repository receives a Project Forge harness contract and CI workflow.",
+        "- Future architecture changes should cite updated research evidence.",
+        "- Low-confidence decisions should be re-evaluated before expanding scope beyond MVP.",
+        "",
+        "## Risks and Revisit Triggers",
+        "",
+        "- If the project needs capabilities not covered by the current stack, revisit this ADR.",
+        "- If a dependency becomes unmaintained or a better alternative emerges, schedule a re-evaluation.",
+        "- If the chosen stack does not support a required Architecture Signal, escalate back to the architect.",
+        "",
+    ])
     return "\n".join(lines)
 
 
@@ -233,16 +254,22 @@ def yaml_scalar(value):
     return json.dumps(text)
 
 
-def write_project_contract(path, slug, stack, goal, commands):
+def write_project_contract(path, slug, stack, goal, commands, secondary_stack=""):
     lines = [
         "project:",
         f"  slug: {yaml_scalar(slug)}",
         f"  goal: {yaml_scalar(goal)}",
         f"  stack: {yaml_scalar(stack)}",
-        "commands:",
     ]
+    if secondary_stack:
+        lines.append(f"  secondary_stack: {yaml_scalar(secondary_stack)}")
+    lines.append("commands:")
     for name in ("install", "test", "lint", "typecheck", "build", "run", "smoke"):
         lines.append(f"  {name}: {commands.get(name, 'echo command not configured')}")
+    if secondary_stack:
+        lines.append("secondary_commands:")
+        for name in ("install", "test", "lint", "typecheck", "build", "run", "smoke"):
+            lines.append(f"  {name}: echo secondary stack command not configured")
     text = "\n".join(lines) + "\n"
     with path.open("w", encoding="utf-8", newline="\n") as handle:
         handle.write(text)
@@ -327,7 +354,7 @@ def main():
         with adr_path.open("w", encoding="utf-8", newline="\n") as handle:
             handle.write(adr_text(slug, args.stack, args.goal, rows))
 
-        write_project_contract(contract_path, slug, args.stack, args.goal, commands)
+        write_project_contract(contract_path, slug, args.stack, args.goal, commands, args.secondary_stack)
         write_ci_contract(ci_path, args.stack, commands)
     except (FileExistsError, FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
         print(str(exc), file=sys.stderr)

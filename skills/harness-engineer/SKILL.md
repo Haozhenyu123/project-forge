@@ -73,6 +73,16 @@ Include:
 
 A new contributor should be able to clone the project, run `install`, run verification, start the app, and understand failures without asking which command matters.
 
+## Escalation (Feedback to Architect)
+
+If the chosen stack cannot be harnessed with available templates, escalate back to `ai-architect` before generating a generic harness. Examples:
+
+- A stack that requires a runtime or toolchain not supported by any template
+- Commands that would require global dependencies or platform-specific setup that fails on clean machines
+- A multi-stack project where the secondary stack has no harness template and the generic fallback would be misleading
+
+When escalating, state the specific stack or command that cannot be harnessed, the closest available template, and what the architect should reconsider.
+
 ## Handoff to Forge Project Coordinator
 
 When the harness contract is applied and verified, immediately hand off to `forge-project`. Pass:
@@ -80,6 +90,7 @@ When the harness contract is applied and verified, immediately hand off to `forg
 - The project slug, goal, and chosen stack
 - All generated artifact paths
 - Any issues encountered during harness application
+- Any low-confidence architecture decisions that need smoke-test verification
 
 The coordinator runs the end-to-end forge flow to produce the final artifact bundle: evidence, ADR, harness contract, CI workflow, and Superpowers handoff. Do not wait for the user to ask for the coordinator; the harness is the last step before the project is ready for implementation.
 

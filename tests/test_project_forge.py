@@ -629,6 +629,218 @@ class TemplateAndEvalTests(unittest.TestCase):
             self.assertIn("npm run test", text)
 
 
+class V22SkillTests(unittest.TestCase):
+    """Tests for V2.2 skill improvements: competitive analysis, patterns, escalation, multi-stack."""
+
+    def test_creative_director_skill_has_competitive_context(self):
+        text = (ROOT / "skills" / "creative-director" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Competitive Context", text)
+        self.assertIn("Differentiation Strategy", text)
+        self.assertIn("Architecture Signals", text)
+        self.assertIn("Escalation (Feedback to Intake)", text)
+
+    def test_ai_architect_skill_has_confidence_and_patterns(self):
+        text = (ROOT / "skills" / "ai-architect" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Decision Confidence", text)
+        self.assertIn("Domain Pattern Matching", text)
+        self.assertIn("Multi-Stack Projects", text)
+        self.assertTrue("explicitly rejected" in text.lower() or "Explicitly Rejected" in text, "Missing Explicitly Rejected section")
+
+    def test_ai_architect_skill_has_escalation(self):
+        text = (ROOT / "skills" / "ai-architect" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Escalation (Feedback to Creative Director)", text)
+
+    def test_harness_engineer_skill_has_escalation(self):
+        text = (ROOT / "skills" / "harness-engineer" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Escalation (Feedback to Architect)", text)
+
+    def test_forge_intake_skill_has_escalation(self):
+        text = (ROOT / "skills" / "forge-intake" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Escalation", text)
+        self.assertIn("## Handoff", text)
+
+    def test_all_skills_have_no_todo_or_placeholder(self):
+        for skill_path in (ROOT / "skills").glob("*/SKILL.md"):
+            text = skill_path.read_text(encoding="utf-8")
+            lowered = text.lower()
+            self.assertNotIn("todo", lowered, str(skill_path))
+            self.assertNotIn("tbd", lowered, str(skill_path))
+            self.assertNotIn("[placeholder", lowered, str(skill_path))
+
+
+class V22CreativeBriefTests(unittest.TestCase):
+    """Tests for V2.2 creative_brief.py: body mode, section validation, new flags."""
+
+    def test_creative_brief_body_mode_writes_freeform(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = """## Experience Thesis
+A test product.
+
+## Target User
+Test users.
+
+## Primary Workflow
+Sign up, test, finish.
+
+## First Interaction
+Home screen.
+
+## Interaction Style
+Dashboard.
+
+## Content Tone
+Professional.
+
+## Platform
+Web.
+
+## Competitive Context
+No direct competitors.
+
+## Differentiation
+Unique feature X.
+
+## Architecture Signals
+No special signals.
+
+## Assumptions
+Test assumption.
+
+## Risks
+Low risk.
+"""
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "test-body", "--goal", "Test body mode",
+                 "--body", body],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            brief = (Path(tmp) / "docs/creative-brief.md").read_text(encoding="utf-8")
+            self.assertIn("Test body mode", brief)  # goal is now in header
+            self.assertIn("## Experience Thesis", brief)
+            self.assertIn("## Competitive Context", brief)
+            self.assertIn("## Differentiation", brief)
+            self.assertIn("## Architecture Signals", brief)
+
+    def test_creative_brief_body_mode_warns_missing_sections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = "## Experience Thesis\nJust a thesis.\n"
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "minimal", "--goal", "Test",
+                 "--body", body],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertIn("warning", proc.stderr.lower())
+
+    def test_creative_brief_structured_has_new_flags(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "structured", "--goal", "Test structured mode",
+                 "--audience", "Devs", "--platform", "web", "--style", "editor",
+                 "--tone", "professional", "--first-screen", "Editor canvas",
+                 "--competitors", "Product A focuses on X but lacks Y",
+                 "--differentiation", "We do Z faster and offline",
+                 "--architecture-signals", "Offline-first, local storage, no real-time"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            brief = (Path(tmp) / "docs/creative-brief.md").read_text(encoding="utf-8")
+            self.assertIn("Product A", brief)
+            self.assertIn("We do Z", brief)
+            self.assertIn("Offline-first", brief)
+
+    def test_creative_brief_all_required_sections_in_body(self):
+        sections = [
+            "Experience Thesis", "Target User", "Primary Workflow",
+            "First Interaction", "Interaction Style", "Content Tone", "Platform",
+            "Competitive Context", "Differentiation", "Architecture Signals",
+            "Assumptions", "Risks",
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            body_parts = [f"## {s}\n\nContent for {s}.\n" for s in sections]
+            body = "\n".join(body_parts)
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "full", "--goal", "Complete test", "--body", body],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertNotIn("warning", proc.stderr.lower())
+
+
+class V22ForgeProjectTests(unittest.TestCase):
+    """Tests for V2.2 forge_project.py: secondary stack, confidence, explicit rejections."""
+
+    def test_forge_project_secondary_stack_produces_dual_commands(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                '{"source":"github","title":"test","url":"https://github.com/t/t","summary":"multi-stack test"}\n',
+                encoding="utf-8",
+            )
+            (project / "package.json").write_text('{"scripts":{"dev":"vite"}}', encoding="utf-8")
+            (project / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding="utf-8")
+
+            proc = subprocess.run(
+                [PYTHON, "scripts/forge_project.py",
+                 "--project", str(project), "--slug", "dual-stack",
+                 "--goal", "Multi-stack project", "--stack", "node-ts",
+                 "--secondary-stack", "fastapi",
+                 "--evidence", str(evidence), "--force"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            contract = (project / "project-forge.yaml").read_text(encoding="utf-8")
+            self.assertIn("secondary_stack:", contract)
+            self.assertIn("secondary_commands:", contract)
+
+    def test_forge_project_adr_has_new_sections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                '{"source":"web","title":"adr test","url":"https://example.com","summary":"test"}\n',
+                encoding="utf-8",
+            )
+            proc = subprocess.run(
+                [PYTHON, "scripts/forge_project.py",
+                 "--project", str(project), "--slug", "adr-test",
+                 "--goal", "ADR structure test", "--stack", "generic",
+                 "--evidence", str(evidence), "--force"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            adr = (project / "docs/architecture/ADR-0001-stack.md").read_text(encoding="utf-8")
+            self.assertIn("## Explicitly Rejected", adr)
+            self.assertIn("## Confidence Assessment", adr)
+            self.assertIn("## Risks and Revisit Triggers", adr)
+
+    def test_forge_project_provisional_evidence_marked_in_adr(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                '{"source":"host-web-tool","kind":"manual-search-required","query":"test","provisional":true}\n',
+                encoding="utf-8",
+            )
+            proc = subprocess.run(
+                [PYTHON, "scripts/forge_project.py",
+                 "--project", str(project), "--slug", "prov-test",
+                 "--goal", "Provisional test", "--stack", "generic",
+                 "--evidence", str(evidence), "--force"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            adr = (project / "docs/architecture/ADR-0001-stack.md").read_text(encoding="utf-8")
+            self.assertIn("provisional", adr)
+
+
+
 if __name__ == "__main__":
     unittest.main()
 
@@ -1082,6 +1294,218 @@ class MCPIntegrationTests(unittest.TestCase):
 
 
 
+class V22SkillTests(unittest.TestCase):
+    """Tests for V2.2 skill improvements: competitive analysis, patterns, escalation, multi-stack."""
+
+    def test_creative_director_skill_has_competitive_context(self):
+        text = (ROOT / "skills" / "creative-director" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Competitive Context", text)
+        self.assertIn("Differentiation Strategy", text)
+        self.assertIn("Architecture Signals", text)
+        self.assertIn("Escalation (Feedback to Intake)", text)
+
+    def test_ai_architect_skill_has_confidence_and_patterns(self):
+        text = (ROOT / "skills" / "ai-architect" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Decision Confidence", text)
+        self.assertIn("Domain Pattern Matching", text)
+        self.assertIn("Multi-Stack Projects", text)
+        self.assertTrue("explicitly rejected" in text.lower() or "Explicitly Rejected" in text, "Missing Explicitly Rejected section")
+
+    def test_ai_architect_skill_has_escalation(self):
+        text = (ROOT / "skills" / "ai-architect" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Escalation (Feedback to Creative Director)", text)
+
+    def test_harness_engineer_skill_has_escalation(self):
+        text = (ROOT / "skills" / "harness-engineer" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Escalation (Feedback to Architect)", text)
+
+    def test_forge_intake_skill_has_escalation(self):
+        text = (ROOT / "skills" / "forge-intake" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Escalation", text)
+        self.assertIn("## Handoff", text)
+
+    def test_all_skills_have_no_todo_or_placeholder(self):
+        for skill_path in (ROOT / "skills").glob("*/SKILL.md"):
+            text = skill_path.read_text(encoding="utf-8")
+            lowered = text.lower()
+            self.assertNotIn("todo", lowered, str(skill_path))
+            self.assertNotIn("tbd", lowered, str(skill_path))
+            self.assertNotIn("[placeholder", lowered, str(skill_path))
+
+
+class V22CreativeBriefTests(unittest.TestCase):
+    """Tests for V2.2 creative_brief.py: body mode, section validation, new flags."""
+
+    def test_creative_brief_body_mode_writes_freeform(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = """## Experience Thesis
+A test product.
+
+## Target User
+Test users.
+
+## Primary Workflow
+Sign up, test, finish.
+
+## First Interaction
+Home screen.
+
+## Interaction Style
+Dashboard.
+
+## Content Tone
+Professional.
+
+## Platform
+Web.
+
+## Competitive Context
+No direct competitors.
+
+## Differentiation
+Unique feature X.
+
+## Architecture Signals
+No special signals.
+
+## Assumptions
+Test assumption.
+
+## Risks
+Low risk.
+"""
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "test-body", "--goal", "Test body mode",
+                 "--body", body],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            brief = (Path(tmp) / "docs/creative-brief.md").read_text(encoding="utf-8")
+            self.assertIn("Test body mode", brief)  # goal is now in header
+            self.assertIn("## Experience Thesis", brief)
+            self.assertIn("## Competitive Context", brief)
+            self.assertIn("## Differentiation", brief)
+            self.assertIn("## Architecture Signals", brief)
+
+    def test_creative_brief_body_mode_warns_missing_sections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = "## Experience Thesis\nJust a thesis.\n"
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "minimal", "--goal", "Test",
+                 "--body", body],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertIn("warning", proc.stderr.lower())
+
+    def test_creative_brief_structured_has_new_flags(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "structured", "--goal", "Test structured mode",
+                 "--audience", "Devs", "--platform", "web", "--style", "editor",
+                 "--tone", "professional", "--first-screen", "Editor canvas",
+                 "--competitors", "Product A focuses on X but lacks Y",
+                 "--differentiation", "We do Z faster and offline",
+                 "--architecture-signals", "Offline-first, local storage, no real-time"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            brief = (Path(tmp) / "docs/creative-brief.md").read_text(encoding="utf-8")
+            self.assertIn("Product A", brief)
+            self.assertIn("We do Z", brief)
+            self.assertIn("Offline-first", brief)
+
+    def test_creative_brief_all_required_sections_in_body(self):
+        sections = [
+            "Experience Thesis", "Target User", "Primary Workflow",
+            "First Interaction", "Interaction Style", "Content Tone", "Platform",
+            "Competitive Context", "Differentiation", "Architecture Signals",
+            "Assumptions", "Risks",
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            body_parts = [f"## {s}\n\nContent for {s}.\n" for s in sections]
+            body = "\n".join(body_parts)
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "full", "--goal", "Complete test", "--body", body],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertNotIn("warning", proc.stderr.lower())
+
+
+class V22ForgeProjectTests(unittest.TestCase):
+    """Tests for V2.2 forge_project.py: secondary stack, confidence, explicit rejections."""
+
+    def test_forge_project_secondary_stack_produces_dual_commands(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                '{"source":"github","title":"test","url":"https://github.com/t/t","summary":"multi-stack test"}\n',
+                encoding="utf-8",
+            )
+            (project / "package.json").write_text('{"scripts":{"dev":"vite"}}', encoding="utf-8")
+            (project / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding="utf-8")
+
+            proc = subprocess.run(
+                [PYTHON, "scripts/forge_project.py",
+                 "--project", str(project), "--slug", "dual-stack",
+                 "--goal", "Multi-stack project", "--stack", "node-ts",
+                 "--secondary-stack", "fastapi",
+                 "--evidence", str(evidence), "--force"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            contract = (project / "project-forge.yaml").read_text(encoding="utf-8")
+            self.assertIn("secondary_stack:", contract)
+            self.assertIn("secondary_commands:", contract)
+
+    def test_forge_project_adr_has_new_sections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                '{"source":"web","title":"adr test","url":"https://example.com","summary":"test"}\n',
+                encoding="utf-8",
+            )
+            proc = subprocess.run(
+                [PYTHON, "scripts/forge_project.py",
+                 "--project", str(project), "--slug", "adr-test",
+                 "--goal", "ADR structure test", "--stack", "generic",
+                 "--evidence", str(evidence), "--force"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            adr = (project / "docs/architecture/ADR-0001-stack.md").read_text(encoding="utf-8")
+            self.assertIn("## Explicitly Rejected", adr)
+            self.assertIn("## Confidence Assessment", adr)
+            self.assertIn("## Risks and Revisit Triggers", adr)
+
+    def test_forge_project_provisional_evidence_marked_in_adr(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                '{"source":"host-web-tool","kind":"manual-search-required","query":"test","provisional":true}\n',
+                encoding="utf-8",
+            )
+            proc = subprocess.run(
+                [PYTHON, "scripts/forge_project.py",
+                 "--project", str(project), "--slug", "prov-test",
+                 "--goal", "Provisional test", "--stack", "generic",
+                 "--evidence", str(evidence), "--force"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            adr = (project / "docs/architecture/ADR-0001-stack.md").read_text(encoding="utf-8")
+            self.assertIn("provisional", adr)
+
+
+
 if __name__ == "__main__":
     unittest.main()
 
@@ -1366,6 +1790,218 @@ class IntegrationTests(unittest.TestCase):
             for row in rows:
                 if row.get("source") != "host-web-tool":
                     self.assertTrue(row.get("url","").startswith("http"), f"Bad URL: {row}")
+
+
+class V22SkillTests(unittest.TestCase):
+    """Tests for V2.2 skill improvements: competitive analysis, patterns, escalation, multi-stack."""
+
+    def test_creative_director_skill_has_competitive_context(self):
+        text = (ROOT / "skills" / "creative-director" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Competitive Context", text)
+        self.assertIn("Differentiation Strategy", text)
+        self.assertIn("Architecture Signals", text)
+        self.assertIn("Escalation (Feedback to Intake)", text)
+
+    def test_ai_architect_skill_has_confidence_and_patterns(self):
+        text = (ROOT / "skills" / "ai-architect" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Decision Confidence", text)
+        self.assertIn("Domain Pattern Matching", text)
+        self.assertIn("Multi-Stack Projects", text)
+        self.assertTrue("explicitly rejected" in text.lower() or "Explicitly Rejected" in text, "Missing Explicitly Rejected section")
+
+    def test_ai_architect_skill_has_escalation(self):
+        text = (ROOT / "skills" / "ai-architect" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Escalation (Feedback to Creative Director)", text)
+
+    def test_harness_engineer_skill_has_escalation(self):
+        text = (ROOT / "skills" / "harness-engineer" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Escalation (Feedback to Architect)", text)
+
+    def test_forge_intake_skill_has_escalation(self):
+        text = (ROOT / "skills" / "forge-intake" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Escalation", text)
+        self.assertIn("## Handoff", text)
+
+    def test_all_skills_have_no_todo_or_placeholder(self):
+        for skill_path in (ROOT / "skills").glob("*/SKILL.md"):
+            text = skill_path.read_text(encoding="utf-8")
+            lowered = text.lower()
+            self.assertNotIn("todo", lowered, str(skill_path))
+            self.assertNotIn("tbd", lowered, str(skill_path))
+            self.assertNotIn("[placeholder", lowered, str(skill_path))
+
+
+class V22CreativeBriefTests(unittest.TestCase):
+    """Tests for V2.2 creative_brief.py: body mode, section validation, new flags."""
+
+    def test_creative_brief_body_mode_writes_freeform(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = """## Experience Thesis
+A test product.
+
+## Target User
+Test users.
+
+## Primary Workflow
+Sign up, test, finish.
+
+## First Interaction
+Home screen.
+
+## Interaction Style
+Dashboard.
+
+## Content Tone
+Professional.
+
+## Platform
+Web.
+
+## Competitive Context
+No direct competitors.
+
+## Differentiation
+Unique feature X.
+
+## Architecture Signals
+No special signals.
+
+## Assumptions
+Test assumption.
+
+## Risks
+Low risk.
+"""
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "test-body", "--goal", "Test body mode",
+                 "--body", body],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            brief = (Path(tmp) / "docs/creative-brief.md").read_text(encoding="utf-8")
+            self.assertIn("Test body mode", brief)  # goal is now in header
+            self.assertIn("## Experience Thesis", brief)
+            self.assertIn("## Competitive Context", brief)
+            self.assertIn("## Differentiation", brief)
+            self.assertIn("## Architecture Signals", brief)
+
+    def test_creative_brief_body_mode_warns_missing_sections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            body = "## Experience Thesis\nJust a thesis.\n"
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "minimal", "--goal", "Test",
+                 "--body", body],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertIn("warning", proc.stderr.lower())
+
+    def test_creative_brief_structured_has_new_flags(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "structured", "--goal", "Test structured mode",
+                 "--audience", "Devs", "--platform", "web", "--style", "editor",
+                 "--tone", "professional", "--first-screen", "Editor canvas",
+                 "--competitors", "Product A focuses on X but lacks Y",
+                 "--differentiation", "We do Z faster and offline",
+                 "--architecture-signals", "Offline-first, local storage, no real-time"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            brief = (Path(tmp) / "docs/creative-brief.md").read_text(encoding="utf-8")
+            self.assertIn("Product A", brief)
+            self.assertIn("We do Z", brief)
+            self.assertIn("Offline-first", brief)
+
+    def test_creative_brief_all_required_sections_in_body(self):
+        sections = [
+            "Experience Thesis", "Target User", "Primary Workflow",
+            "First Interaction", "Interaction Style", "Content Tone", "Platform",
+            "Competitive Context", "Differentiation", "Architecture Signals",
+            "Assumptions", "Risks",
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            body_parts = [f"## {s}\n\nContent for {s}.\n" for s in sections]
+            body = "\n".join(body_parts)
+            proc = subprocess.run(
+                [PYTHON, "scripts/creative_brief.py",
+                 "--project", tmp, "--slug", "full", "--goal", "Complete test", "--body", body],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertNotIn("warning", proc.stderr.lower())
+
+
+class V22ForgeProjectTests(unittest.TestCase):
+    """Tests for V2.2 forge_project.py: secondary stack, confidence, explicit rejections."""
+
+    def test_forge_project_secondary_stack_produces_dual_commands(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                '{"source":"github","title":"test","url":"https://github.com/t/t","summary":"multi-stack test"}\n',
+                encoding="utf-8",
+            )
+            (project / "package.json").write_text('{"scripts":{"dev":"vite"}}', encoding="utf-8")
+            (project / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding="utf-8")
+
+            proc = subprocess.run(
+                [PYTHON, "scripts/forge_project.py",
+                 "--project", str(project), "--slug", "dual-stack",
+                 "--goal", "Multi-stack project", "--stack", "node-ts",
+                 "--secondary-stack", "fastapi",
+                 "--evidence", str(evidence), "--force"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            contract = (project / "project-forge.yaml").read_text(encoding="utf-8")
+            self.assertIn("secondary_stack:", contract)
+            self.assertIn("secondary_commands:", contract)
+
+    def test_forge_project_adr_has_new_sections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                '{"source":"web","title":"adr test","url":"https://example.com","summary":"test"}\n',
+                encoding="utf-8",
+            )
+            proc = subprocess.run(
+                [PYTHON, "scripts/forge_project.py",
+                 "--project", str(project), "--slug", "adr-test",
+                 "--goal", "ADR structure test", "--stack", "generic",
+                 "--evidence", str(evidence), "--force"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            adr = (project / "docs/architecture/ADR-0001-stack.md").read_text(encoding="utf-8")
+            self.assertIn("## Explicitly Rejected", adr)
+            self.assertIn("## Confidence Assessment", adr)
+            self.assertIn("## Risks and Revisit Triggers", adr)
+
+    def test_forge_project_provisional_evidence_marked_in_adr(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                '{"source":"host-web-tool","kind":"manual-search-required","query":"test","provisional":true}\n',
+                encoding="utf-8",
+            )
+            proc = subprocess.run(
+                [PYTHON, "scripts/forge_project.py",
+                 "--project", str(project), "--slug", "prov-test",
+                 "--goal", "Provisional test", "--stack", "generic",
+                 "--evidence", str(evidence), "--force"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            adr = (project / "docs/architecture/ADR-0001-stack.md").read_text(encoding="utf-8")
+            self.assertIn("provisional", adr)
+
 
 
 if __name__ == "__main__":

@@ -57,6 +57,10 @@ Produce a concise Project Forge brief:
 
 The brief is ready when an architect can make evidence-backed choices, a harness engineer can define commands, and an evaluator can write scenarios without needing to rediscover the product goal.
 
+## Escalation
+
+If the user provides an idea that is fundamentally contradictory or impossible to scope (e.g., "a social network like Facebook but also a banking app"), do not proceed with assumptions. Name the conflict explicitly and ask the user to pick a primary direction before intake continues.
+
 ## Handoff to Creative Director
 
 When the intake brief is complete, immediately hand off to `creative-director`. The brief should contain enough context for the creative director to choose a product direction without asking the user to repeat themselves. Pass:
