@@ -3,6 +3,17 @@
   "version": "0.1.0",
   "description": "Project Forge pairs an AI architect with a harness engineering workflow for planning, building, and verifying agent-created projects.",
   "license": "MIT",
+  "author": {
+    "name": "Project Forge Contributors"
+  },
+  "homepage": "https://github.com/Haozhenyu123/project-forge",
+  "repository": "https://github.com/Haozhenyu123/project-forge",
+  "keywords": [
+    "architecture",
+    "harness",
+    "agents",
+    "evaluation"
+  ],
   "skills": "./skills/",
   "displayName": "Project Forge"
 }

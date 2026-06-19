@@ -44,6 +44,55 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(claude["displayName"], "Project Forge")
         self.assertEqual(codex["interface"]["displayName"], "Project Forge")
 
+    def test_codex_manifest_has_required_marketplace_metadata(self):
+        codex = load_json(ROOT / ".codex-plugin" / "plugin.json")
+        interface = codex["interface"]
+
+        self.assertIsInstance(codex["author"], dict)
+        self.assertEqual(codex["author"]["name"], "Project Forge Contributors")
+        self.assertEqual(codex["homepage"], "https://github.com/Haozhenyu123/project-forge")
+        self.assertEqual(codex["repository"], "https://github.com/Haozhenyu123/project-forge")
+        self.assertIn("architecture", codex["keywords"])
+        self.assertIn("harness", codex["keywords"])
+
+        for field in (
+            "shortDescription",
+            "longDescription",
+            "developerName",
+            "category",
+            "capabilities",
+            "defaultPrompt",
+        ):
+            self.assertIn(field, interface)
+
+        self.assertEqual(interface["developerName"], "Project Forge Contributors")
+        self.assertEqual(interface["category"], "Developer Tools")
+        self.assertIn("Interactive", interface["capabilities"])
+        self.assertIn("Read", interface["capabilities"])
+        self.assertIn("Write", interface["capabilities"])
+        self.assertEqual(len(interface["defaultPrompt"]), 3)
+
+    def test_repo_has_ci_and_reproducible_install_docs(self):
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("python -m unittest tests/test_project_forge.py", workflow)
+        self.assertIn("python scripts/evals/validate_scenarios.py evals/scenarios", workflow)
+        self.assertIn("python -m compileall scripts", workflow)
+
+        for section in (
+            "## Codex local install",
+            "## Claude Code local install",
+            "## Verify the plugin",
+            "## Update",
+            "## Uninstall",
+        ):
+            self.assertIn(section, readme)
+
+        self.assertIn("codex-marketplace.personal.json", readme)
+        self.assertIn("/plugin install", readme)
+        self.assertIn("python -m unittest tests/test_project_forge.py", readme)
+
 
 class SkillTests(unittest.TestCase):
     def test_required_skills_have_valid_frontmatter_and_no_placeholders(self):

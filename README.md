@@ -11,11 +11,66 @@ Project Forge is a dual-harness plugin for Codex and Claude Code. It helps agent
 - Templates: provide starter harness contracts, documentation, and CI workflows for common project shapes.
 - Evals: validate Project Forge scenarios and keep the plugin behavior measurable as the system evolves.
 
+## Codex local install
+
+From Windows PowerShell, copy or clone this repository to the local Codex plugin path:
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\plugins" | Out-Null
+Copy-Item -Recurse -Force -Path "C:\path\to\project-forge" -Destination "$env:USERPROFILE\plugins\project-forge"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\plugins" | Out-Null
+Copy-Item -Force -Path "$env:USERPROFILE\plugins\project-forge\install\codex-marketplace.personal.json" -Destination "$env:USERPROFILE\.agents\plugins\marketplace.json"
+```
+
+If you prefer Git, clone directly to `$env:USERPROFILE\plugins\project-forge` instead of using `Copy-Item`. The source marketplace file is `install\codex-marketplace.personal.json`.
+
+## Claude Code local install
+
+Install the local plugin from Claude Code:
+
+```text
+/plugin install <path-to-project-forge>
+/plugin list
+```
+
+Use the official local plugin path format supported by your Claude Code version for `<path-to-project-forge>`; the `/plugin install` command is the primary local install path. Confirm `Project Forge` appears in `/plugin list`.
+
+## Verify the plugin
+
+Run the repository verification checks from the project root:
+
+```powershell
+python -m unittest tests/test_project_forge.py
+python scripts/evals/validate_scenarios.py evals/scenarios
+python -m compileall scripts
+```
+
+## Update
+
+Pull or copy the latest repository contents into `$env:USERPROFILE\plugins\project-forge`. For Codex, refresh the personal marketplace metadata after updates:
+
+```powershell
+Copy-Item -Force -Path "$env:USERPROFILE\plugins\project-forge\install\codex-marketplace.personal.json" -Destination "$env:USERPROFILE\.agents\plugins\marketplace.json"
+```
+
+For Claude Code, reinstall the updated local path if your version does not refresh local plugins automatically:
+
+```text
+/plugin install <path-to-project-forge>
+```
+
+## Uninstall
+
+Remove the local plugin copy and marketplace metadata:
+
+```powershell
+Remove-Item -Recurse -Force -Path "$env:USERPROFILE\plugins\project-forge"
+Remove-Item -Force -Path "$env:USERPROFILE\.agents\plugins\marketplace.json"
+```
+
+In Claude Code, remove or disable `Project Forge` using the plugin management command supported by your installed version.
+
 ## Install And Use
-
-For Codex, install or symlink this repository as a Codex plugin, then confirm `.codex-plugin/plugin.json` is discoverable. The Codex manifest points at `./skills/` and exposes the plugin as `Project Forge`.
-
-For Claude Code, install or symlink this repository as a Claude plugin, then confirm `.claude-plugin/plugin.json` is discoverable. The Claude manifest points at the same `./skills/` directory and exposes the plugin as `Project Forge`.
 
 Typical usage:
 
