@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Detect a project stack and emit a Project Forge harness command contract."""
 
 import argparse
@@ -142,7 +142,7 @@ def detect_package_manager(root):
 def load_package_scripts(root):
     package_json = root / "package.json"
     try:
-        payload = json.loads(package_json.read_text(encoding="utf-8"))
+        payload = json.loads(package_json.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return {}
 
@@ -196,6 +196,8 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
 
 
 
