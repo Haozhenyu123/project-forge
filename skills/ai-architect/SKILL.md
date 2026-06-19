@@ -75,3 +75,16 @@ When the full coordinator is appropriate, hand the chosen stack and evidence pat
 ## Quality Bar
 
 Every major choice should be traceable to the brief, a constraint, or a cited piece of evidence. A future worker should be able to implement without re-litigating the foundation.
+
+## Handoff to Harness Engineer
+
+When the ADR is written and evidence is normalized, immediately hand off to `harness-engineer`. Pass:
+
+- The project slug and chosen stack
+- The ADR path (`docs/architecture/ADR-0001-stack.md`)
+- The evidence path (`docs/research/<slug>/evidence.jsonl`)
+- The creative brief path (`docs/creative-brief.md`) if available
+- Any environment variables or runtime requirements identified during architecture
+
+The harness engineer needs the stack decision to apply the correct template. Do not wait for the user to ask for harness setup; the next logical step is always to make the architecture verifiable.
+

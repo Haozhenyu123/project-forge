@@ -1,4 +1,8 @@
-# Project Forge
+﻿# Project Forge
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.2.0-brightgreen)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-61%20passed-brightgreen)](.)
 
 Project Forge is a dual-harness plugin for Codex and Claude Code. It helps agents turn a rough project idea into a researched architecture, an implementation-ready harness, and repeatable verification steps.
 
@@ -99,15 +103,75 @@ python scripts/forge_project.py --project . --slug $slug --goal $goal --stack no
 
 After generation, review `docs/architecture/ADR-0001-stack.md` for the stack decision and trade-offs, then run the commands recorded in `project-forge.yaml` and `docs/harness.md`. CI should execute the same install, test, lint, typecheck, build, and smoke contract so local verification and pull-request verification stay aligned.
 
-## Quickstart in Chinese
-
-中文快速开始：
+## Quickstart in Chinese (中文快速开始)
 
 1. 在 Codex 或 Claude Code 中安装或链接这个插件仓库。
 2. 确认插件名称显示为 `Project Forge`。
 3. 先使用 intake 流程说明项目目标、约束和成功标准。
 4. 让 AI Architect 基于 GitHub 和 Web 证据选择技术栈，并写下取舍理由。
 5. 让 Harness Engineer 生成 `project-forge.yaml` 和验证命令，再运行 install/test/lint/typecheck/build/run/smoke 检查项目。
+
+## V2: CLI, MCP Server, and Expanded Templates
+
+V2 adds a unified command-line interface, an MCP server for tool-provider integration, expanded harness templates, and automated install verification.
+
+### CLI (`project-forge init`)
+
+A single command runs the full Forge workflow:
+
+```powershell
+python scripts/cli.py init my-project --stack nextjs --goal "Build a team dashboard"
+```
+
+Available subcommands:
+- `init [PROJECT]` -- full workflow: research, ADR, harness, handoff
+- `detect [PROJECT]` -- detect project stack and print command contract
+- `research --query Q` -- gather GitHub and web evidence
+- `handoff --slug S` -- export Superpowers handoff
+- `smoke --slug S` -- validate existing project artifacts
+- `validate-evidence FILE` -- validate an evidence JSONL file
+- `list-templates` -- show all eight available harness templates
+
+Or use the batch wrapper from the repo root:
+
+```powershell
+.\project-forge.bat init my-project --stack fastapi
+```
+
+### MCP Server
+
+The Project Forge MCP server exposes nine tools via the Model Context Protocol for any MCP-compatible host:
+
+```powershell
+python scripts/mcp/server.py
+```
+
+Tools provided: `github_search`, `web_search`, `detect_stack`, `apply_template`, `forge_project`, `export_handoff`, `validate_evidence`, `list_templates`, `run_evals`.
+
+### Expanded Templates (8 total)
+
+V1 had three templates. V2 adds five more:
+
+| Template | Stack | Key Commands |
+|----------|-------|--------------|
+| `node-ts` | Node.js + TypeScript | npm ci, npm test, npm run lint |
+| `python` | Python | pip install, pytest, ruff, mypy |
+| `generic` | Any stack | Placeholder commands to customize |
+| `nextjs` | Next.js App Router | npm run dev, npm run build |
+| `fastapi` | FastAPI Python | uvicorn, pytest, ruff, mypy |
+| `electron` | Electron Desktop | npm start, npm run build |
+| `cli` | Node.js CLI tool | node dist/index.js, npm run build |
+| `chrome-extension` | Chrome Extension MV3 | npm run build, manual load |
+
+Auto-detection recognizes `next`, `electron`, `fastapi` in dependencies, `bin` in package.json for CLI tools, and `manifest.json` for Chrome extensions.
+
+### Installation Verification
+
+```powershell
+python scripts/install_test.py
+```
+
+Validates: Codex manifest, Claude Code manifest, all six skills, all eight templates, all thirteen scripts, Python syntax, marketplace config, and README completeness.
 
 ## Sample Contract
 
@@ -116,3 +180,6 @@ The root `project-forge.yaml` is a compact sample output contract. Project templ
 ## License
 
 MIT
+
+
+

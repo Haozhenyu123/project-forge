@@ -1,0 +1,12 @@
+project:
+  slug: "cli-demo"
+  goal: "A CLI tool that converts markdown files to HTML and PDF with syntax highlighting"
+  stack: "cli"
+commands:
+  install: npm ci
+  test: npm run test
+  lint: npm run lint
+  typecheck: npm run typecheck
+  build: npm run build
+  run: node dist/index.js
+  smoke: npm run smoke

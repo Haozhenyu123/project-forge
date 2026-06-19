@@ -1,0 +1,9 @@
+template: chrome-extension
+commands:
+  install: npm ci
+  test: npm run test
+  lint: npm run lint
+  typecheck: npm run typecheck
+  build: npm run build
+  run: echo "Load the extension from chrome://extensions in developer mode"
+  smoke: npm run smoke

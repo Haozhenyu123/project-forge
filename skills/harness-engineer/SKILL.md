@@ -72,3 +72,14 @@ Include:
 ## Quality Bar
 
 A new contributor should be able to clone the project, run `install`, run verification, start the app, and understand failures without asking which command matters.
+
+## Handoff to Forge Project Coordinator
+
+When the harness contract is applied and verified, immediately hand off to `forge-project`. Pass:
+
+- The project slug, goal, and chosen stack
+- All generated artifact paths
+- Any issues encountered during harness application
+
+The coordinator runs the end-to-end forge flow to produce the final artifact bundle: evidence, ADR, harness contract, CI workflow, and Superpowers handoff. Do not wait for the user to ask for the coordinator; the harness is the last step before the project is ready for implementation.
+

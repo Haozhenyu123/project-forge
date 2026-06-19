@@ -1,0 +1,9 @@
+template: cli
+commands:
+  install: npm ci
+  test: npm run test
+  lint: npm run lint
+  typecheck: npm run typecheck
+  build: npm run build
+  run: node dist/index.js
+  smoke: npm run smoke

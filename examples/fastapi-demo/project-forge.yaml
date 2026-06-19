@@ -1,0 +1,12 @@
+project:
+  slug: "fastapi-demo"
+  goal: "Test"
+  stack: "fastapi"
+commands:
+  install: pip install -r requirements.txt
+  test: python -m pytest
+  lint: python -m ruff check .
+  typecheck: python -m mypy .
+  build: echo FastAPI projects do not require a build step
+  run: uvicorn app.main:app --reload
+  smoke: python -m pytest tests/smoke/

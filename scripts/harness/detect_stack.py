@@ -8,6 +8,15 @@ from pathlib import Path
 
 
 COMMANDS = {
+    "node-ts": {
+        "install": "npm ci",
+        "test": "npm test",
+        "lint": "npm run lint",
+        "typecheck": "npm run typecheck",
+        "build": "npm run build",
+        "run": "npm start",
+        "smoke": "npm run smoke",
+    },
     "python": {
         "install": "python -m pip install -r requirements.txt",
         "test": "python -m pytest",
@@ -16,6 +25,51 @@ COMMANDS = {
         "build": "python -m build",
         "run": "python -m app",
         "smoke": "python -m pytest",
+    },
+    "fastapi": {
+        "install": "pip install -r requirements.txt",
+        "test": "python -m pytest",
+        "lint": "python -m ruff check .",
+        "typecheck": "python -m mypy .",
+        "build": "echo FastAPI projects do not require a build step",
+        "run": "uvicorn app.main:app --reload",
+        "smoke": "python -m pytest tests/smoke/",
+    },
+    "nextjs": {
+        "install": "npm ci",
+        "test": "npm run test",
+        "lint": "npm run lint",
+        "typecheck": "npm run typecheck",
+        "build": "npm run build",
+        "run": "npm run dev",
+        "smoke": "npm run smoke",
+    },
+    "electron": {
+        "install": "npm ci",
+        "test": "npm run test",
+        "lint": "npm run lint",
+        "typecheck": "npm run typecheck",
+        "build": "npm run build",
+        "run": "npm start",
+        "smoke": "npm run smoke",
+    },
+    "cli": {
+        "install": "npm ci",
+        "test": "npm run test",
+        "lint": "npm run lint",
+        "typecheck": "npm run typecheck",
+        "build": "npm run build",
+        "run": "node dist/index.js",
+        "smoke": "npm run smoke",
+    },
+    "chrome-extension": {
+        "install": "npm ci",
+        "test": "npm run test",
+        "lint": "npm run lint",
+        "typecheck": "npm run typecheck",
+        "build": "npm run build",
+        "run": "echo Load from chrome://extensions in developer mode",
+        "smoke": "npm run smoke",
     },
     "generic": {
         "install": "echo no install command configured",
@@ -48,9 +102,28 @@ def parse_args():
 
 def detect_template(project):
     root = Path(project)
-    if (root / "package.json").exists():
+    pkg_json = root / "package.json"
+    if pkg_json.exists():
+        try:
+            pkg = json.loads(pkg_json.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            pkg = {}
+        deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+        if "next" in deps:
+            return "nextjs"
+        if "electron" in deps:
+            return "electron"
+        if "bin" in pkg and isinstance(pkg["bin"], (str, dict)):
+            return "cli"
         return "node-ts"
+    if (root / "manifest.json").exists():
+        return "chrome-extension"
     if (root / "pyproject.toml").exists() or (root / "requirements.txt").exists():
+        return "python"
+    if (root / "main.py").exists():
+        main_text = (root / "main.py").read_text(encoding="utf-8")
+        if "fastapi" in main_text.lower():
+            return "fastapi"
         return "python"
     return "generic"
 
@@ -123,3 +196,6 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+

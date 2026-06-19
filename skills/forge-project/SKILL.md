@@ -60,3 +60,15 @@ When other workers are active, do not overwrite their edits casually. Inspect ex
 ## Quality Bar
 
 The target project should be left with evidence-backed architecture, a runnable command contract, and a Superpowers handoff. A future worker should be able to read the ADR, run the commands in `project-forge.yaml`, understand the verification path from `docs/harness.md`, and consume `docs/superpowers-handoff.md` as the implementation packet.
+
+## Full Pipeline Handoff
+
+When `forge-project` completes, the entire Project Forge pipeline is done. Report to the user:
+
+1. The complete list of generated artifacts and their paths.
+2. A summary of the architecture decision and evidence quality.
+3. Instructions for running the harness commands.
+4. A pointer to `docs/superpowers-handoff.md` for Superpowers consumption.
+
+The project is now ready for implementation. If the user wants adjustments to any layer (direction, architecture, harness), the relevant skill can be re-invoked independently without re-running the full pipeline.
+

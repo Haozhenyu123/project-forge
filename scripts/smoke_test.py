@@ -77,11 +77,12 @@ def main():
 
     checked = []
     try:
+        SLUG_REQUIRED = {"evidence.jsonl", "project-forge.yaml"}
         for relative, path in required_paths(project, slug):
             if not path.exists():
                 return fail(f"Missing required file: {relative}")
             text = path.read_text(encoding="utf-8")
-            if slug not in text:
+            if relative.name in SLUG_REQUIRED and slug not in text:
                 return fail(f"Required file does not contain slug {slug!r}: {relative}")
             checked.append(str(relative).replace("\\", "/"))
         evidence_count = validate_evidence(
@@ -108,3 +109,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+

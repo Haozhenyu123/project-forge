@@ -19,3 +19,4 @@ harness:
   status: "sample"
   verified: false
   notes: "Replace these commands with project-specific commands after stack detection."
+

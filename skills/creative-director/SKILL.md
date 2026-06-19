@@ -48,7 +48,11 @@ Creative choices can need evidence too. If the product depends on user trust, do
 
 ## Deliverable
 
-Write a concise direction note:
+Write the direction to `docs/creative-brief.md` using the script:
+
+`python scripts/creative_brief.py --project <target-project> --slug <project-slug> --goal "<goal>" --audience "<target user>" --platform "<web|desktop|mobile|cli|extension>" --style "<interaction style>" --tone "<content tone>" --first-screen "<first interaction>"`
+
+The creative brief artifact must include:
 
 - `Experience thesis`: the product promise and feel.
 - `Primary workflow`: steps from arrival to useful output.
@@ -62,3 +66,15 @@ Write a concise direction note:
 ## Quality Bar
 
 Another worker should be able to design UI, content, and evaluation tasks from the direction note without guessing what kind of product they are making.
+
+## Handoff to AI Architect
+
+When the creative brief is written to `docs/creative-brief.md`, immediately hand off to `ai-architect`. Pass:
+
+- The project slug and goal
+- The chosen platform and interaction style
+- Any evidence needs identified during creative work
+- The creative-brief.md path so the architect can reference it
+
+The architect needs the creative direction to make informed stack choices (e.g., a dashboard product and a CLI tool need different architectures). Do not wait for the user to ask for architecture; the next logical step is always to ground the product direction in an evidence-backed technical foundation.
+

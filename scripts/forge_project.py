@@ -93,7 +93,7 @@ def records_from_json(path):
 
 def records_from_jsonl(path):
     rows = []
-    with path.open("r", encoding="utf-8") as handle:
+    with path.open("r", encoding="utf-8-sig") as handle:
         for line in handle:
             line = line.strip()
             if line:
@@ -249,15 +249,21 @@ def write_project_contract(path, slug, stack, goal, commands):
 
 
 def commands_for_project(project, stack):
-    commands_by_template, node_commands = import_detect_helpers()
-    if stack == "node-ts":
-        _, commands = node_commands(project)
-        return commands
+    commands_by_template, node_commands_fn = import_detect_helpers()
+    NODE_STACKS = {"node-ts", "nextjs", "electron", "cli", "chrome-extension"}
+    if stack in NODE_STACKS:
+        root = Path(project)
+        if (root / "package.json").exists():
+            _, commands = node_commands_fn(root)
+            return commands
+        return commands_by_template.get(stack, commands_by_template["node-ts"])
     return commands_by_template.get(stack, commands_by_template["generic"])
 
 
 def write_ci_contract(path, stack, commands):
     verify_names = ("install", "test", "lint", "typecheck", "build", "smoke")
+    NODE_STACKS = {"node-ts", "nextjs", "electron", "cli", "chrome-extension"}
+    PYTHON_STACKS = {"python", "fastapi"}
     lines = [
         "name: Project Forge CI",
         "",
@@ -272,7 +278,7 @@ def write_ci_contract(path, stack, commands):
         "    steps:",
         "      - uses: actions/checkout@v4",
     ]
-    if stack == "node-ts":
+    if stack in NODE_STACKS:
         lines.extend(
             [
                 "      - uses: actions/setup-node@v4",
@@ -281,7 +287,7 @@ def write_ci_contract(path, stack, commands):
                 "      - run: corepack enable",
             ]
         )
-    elif stack == "python":
+    elif stack in PYTHON_STACKS:
         lines.extend(
             [
                 "      - uses: actions/setup-python@v5",
@@ -331,3 +337,7 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+
+

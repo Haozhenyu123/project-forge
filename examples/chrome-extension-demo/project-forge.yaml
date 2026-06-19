@@ -1,0 +1,12 @@
+project:
+  slug: "chrome-extension"
+  goal: "A Chrome extension that summarizes selected text on any webpage using a configurable AI backend"
+  stack: "chrome-extension"
+commands:
+  install: npm ci
+  test: npm run test
+  lint: npm run lint
+  typecheck: npm run typecheck
+  build: npm run build
+  run: echo Load from chrome://extensions in developer mode
+  smoke: npm run smoke

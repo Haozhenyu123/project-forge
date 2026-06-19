@@ -5,23 +5,113 @@ on:
   pull_request:
 
 jobs:
-  test:
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+      - run: python -m unittest tests/test_project_forge.py
 
-      - name: Run unit tests
-        run: python -m unittest tests/test_project_forge.py
+  validate-evals:
+    name: Validate Eval Scenarios
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/evals/validate_scenarios.py evals/scenarios
 
-      - name: Validate eval scenarios
-        run: python scripts/evals/validate_scenarios.py evals/scenarios
+  run-evals:
+    name: Run Eval Scenarios
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/evals/run_scenarios.py --scenario-dir evals/scenarios --responses-dir tests/fixtures/eval_responses --out /tmp/eval-results.json
 
-      - name: Compile scripts
-        run: python -m compileall scripts
+  validate-evidence:
+    name: Validate Example Evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/research/validate_evidence.py examples/team-research/docs/research/team-research/evidence.jsonl
+
+  smoke-test:
+    name: Smoke Test Example Project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/smoke_test.py --project examples/team-research --slug team-research
+
+  install-test:
+    name: Installation Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/install_test.py
+
+  template-integrity:
+    name: Template Integrity Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: |
+          python -c "
+          import sys
+          from pathlib import Path
+          templates = ['node-ts','python','generic','nextjs','fastapi','electron','cli','chrome-extension']
+          errors = []
+          for t in templates:
+              base = Path('templates/harness') / t
+              for f in ['project-forge.yaml','docs/harness.md','.github/workflows/project-forge-ci.yml']:
+                  if not (base / f).is_file():
+                      errors.append(f'{t}/{f} missing')
+                  else:
+                      text = (base / f).read_text()
+                      if len(text.strip()) < 20:
+                          errors.append(f'{t}/{f} too short')
+              contract = (base / 'project-forge.yaml').read_text()
+              for cmd in ['install','test','lint','typecheck','build','run','smoke']:
+                  if f'{cmd}:' not in contract:
+                      errors.append(f'{t} missing command {cmd}')
+          if errors:
+              print('\\n'.join(errors))
+              sys.exit(1)
+          print(f'All {len(templates)} templates valid')
+          "
+
+  compileall:
+    name: Compile Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python -m compileall scripts
+
+  skill-placeholders:
+    name: No Placeholders in Skills
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          ! grep -ri 'TODO\|TBD\|\[placeholder' skills/ && echo "Skills are clean" || (echo "Skills contain placeholders" && exit 1)

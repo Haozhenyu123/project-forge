@@ -1,0 +1,9 @@
+template: nextjs
+commands:
+  install: npm ci
+  test: npm run test
+  lint: npm run lint
+  typecheck: npm run typecheck
+  build: npm run build
+  run: npm run dev
+  smoke: npm run smoke

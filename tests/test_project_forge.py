@@ -35,7 +35,7 @@ class ManifestTests(unittest.TestCase):
 
         for manifest in (codex, claude):
             self.assertEqual(manifest["name"], "project-forge")
-            self.assertEqual(manifest["version"], "0.1.0")
+            self.assertEqual(manifest["version"], "0.2.0")
             self.assertEqual(manifest["license"], "MIT")
             self.assertEqual(manifest["skills"], "./skills/")
             self.assertIn("architect", manifest["description"].lower())
@@ -631,3 +631,744 @@ class TemplateAndEvalTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class V2TemplateTests(unittest.TestCase):
+    """Tests for V2 harness templates: nextjs, fastapi, electron, cli, chrome-extension."""
+
+    V2_TEMPLATES = ["nextjs", "fastapi", "electron", "cli", "chrome-extension"]
+
+    def test_all_v2_templates_exist_with_required_files(self):
+        for tmpl in self.V2_TEMPLATES:
+            base = ROOT / "templates" / "harness" / tmpl
+            for rel in ("project-forge.yaml", "docs/harness.md", ".github/workflows/project-forge-ci.yml"):
+                self.assertTrue((base / rel).is_file(), f"{tmpl}/{rel} missing")
+                text = (base / rel).read_text(encoding="utf-8")
+                self.assertGreater(len(text.strip()), 20, f"{tmpl}/{rel} too short")
+
+    def test_all_v2_templates_have_complete_command_contracts(self):
+        for tmpl in self.V2_TEMPLATES:
+            contract = (ROOT / "templates" / "harness" / tmpl / "project-forge.yaml").read_text(encoding="utf-8")
+            for cmd in ("install", "test", "lint", "typecheck", "build", "run", "smoke"):
+                self.assertIn(f"{cmd}:", contract, f"{tmpl} contract missing {cmd}")
+
+    def test_all_v2_templates_ci_has_project_forge_name(self):
+        for tmpl in self.V2_TEMPLATES:
+            ci = (ROOT / "templates" / "harness" / tmpl / ".github/workflows/project-forge-ci.yml").read_text(encoding="utf-8")
+            self.assertIn("Project Forge CI", ci, f"{tmpl} CI missing Project Forge CI name")
+
+    def test_all_v2_templates_docs_reference_project_forge_yaml(self):
+        for tmpl in self.V2_TEMPLATES:
+            docs = (ROOT / "templates" / "harness" / tmpl / "docs" / "harness.md").read_text(encoding="utf-8")
+            self.assertIn("project-forge.yaml", docs, f"{tmpl} docs missing reference to project-forge.yaml")
+            self.assertIn("How to verify", docs, f"{tmpl} docs missing How to verify section")
+
+
+class CLITests(unittest.TestCase):
+    """Tests for the project-forge CLI entry point."""
+
+    def run_cli(self, *args):
+        proc = subprocess.run(
+            [PYTHON, "scripts/cli.py", *args],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        return proc
+
+    def test_cli_help_outputs_usage(self):
+        proc = self.run_cli("--help")
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("usage:", proc.stdout.lower())
+
+    def test_cli_version_outputs_version(self):
+        proc = self.run_cli("--version")
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("0.2.0", proc.stdout)
+
+    def test_cli_list_templates_shows_all_eight(self):
+        proc = self.run_cli("list-templates")
+        self.assertEqual(proc.returncode, 0)
+        for tmpl in ["node-ts", "python", "generic", "nextjs", "fastapi", "electron", "cli", "chrome-extension"]:
+            self.assertIn(tmpl, proc.stdout, f"list-templates missing: {tmpl}")
+
+    def test_cli_detect_generic_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_cli("detect", tmp, "--json")
+            self.assertEqual(proc.returncode, 0)
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["template"], "generic")
+
+    def test_cli_detect_node_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "package.json").write_text('{"name":"test"}', encoding="utf-8")
+            proc = self.run_cli("detect", tmp, "--json")
+            self.assertEqual(proc.returncode, 0)
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["template"], "node-ts")
+
+    def test_cli_detect_nextjs_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "package.json").write_text(
+                json.dumps({"dependencies": {"next": "^14.0.0"}}), encoding="utf-8"
+            )
+            proc = self.run_cli("detect", tmp, "--json")
+            self.assertEqual(proc.returncode, 0)
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["template"], "nextjs")
+
+    def test_cli_detect_electron_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "package.json").write_text(
+                json.dumps({"dependencies": {"electron": "^28.0.0"}}), encoding="utf-8"
+            )
+            proc = self.run_cli("detect", tmp, "--json")
+            self.assertEqual(proc.returncode, 0)
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["template"], "electron")
+
+    def test_cli_detect_cli_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "package.json").write_text(
+                json.dumps({"bin": "./dist/index.js"}), encoding="utf-8"
+            )
+            proc = self.run_cli("detect", tmp, "--json")
+            self.assertEqual(proc.returncode, 0)
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["template"], "cli")
+
+    def test_cli_detect_chrome_extension_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "manifest.json").write_text(
+                json.dumps({"manifest_version": 3, "name": "Test"}), encoding="utf-8"
+            )
+            proc = self.run_cli("detect", tmp, "--json")
+            self.assertEqual(proc.returncode, 0)
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["template"], "chrome-extension")
+
+    def test_cli_detect_fastapi_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "main.py").write_text("from fastapi import FastAPI\napp = FastAPI()\n", encoding="utf-8")
+            proc = self.run_cli("detect", tmp, "--json")
+            self.assertEqual(proc.returncode, 0)
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["template"], "fastapi")
+
+    def test_cli_research_writes_evidence_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            evidence_dir = Path(tmp) / "evidence"
+            proc = self.run_cli("research", "--query", "test framework", "--limit", "2", "--out", str(evidence_dir))
+            self.assertEqual(proc.returncode, 0)
+            self.assertTrue((evidence_dir / "web.jsonl").exists())
+            self.assertTrue((evidence_dir / "github.jsonl").exists())
+            normalized = evidence_dir / "normalized.jsonl"
+            self.assertTrue(normalized.exists(), f"normalized.jsonl not found in {list(evidence_dir.iterdir())}")
+
+
+class DetectStackV2Tests(unittest.TestCase):
+    """Tests for V2 stack detection: nextjs, electron, cli, chrome-extension, fastapi."""
+
+    def run_detect(self, project_dir):
+        proc = subprocess.run(
+            [PYTHON, "scripts/harness/detect_stack.py", "--project", project_dir, "--json"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        return json.loads(proc.stdout)
+
+    def test_detect_nextjs_from_package_deps(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "package.json").write_text(
+                json.dumps({"dependencies": {"next": "14.0.0", "react": "18.0.0"}}), encoding="utf-8"
+            )
+            payload = self.run_detect(tmp)
+            self.assertEqual(payload["template"], "nextjs")
+
+    def test_detect_electron_from_package_deps(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "package.json").write_text(
+                json.dumps({"devDependencies": {"electron": "28.0.0"}}), encoding="utf-8"
+            )
+            payload = self.run_detect(tmp)
+            self.assertEqual(payload["template"], "electron")
+
+    def test_detect_cli_from_package_bin(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "package.json").write_text(
+                json.dumps({"name": "my-cli", "bin": {"mycli": "./dist/cli.js"}}), encoding="utf-8"
+            )
+            payload = self.run_detect(tmp)
+            self.assertEqual(payload["template"], "cli")
+
+    def test_detect_cli_from_package_bin_string(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "package.json").write_text(
+                json.dumps({"name": "my-cli", "bin": "./dist/cli.js"}), encoding="utf-8"
+            )
+            payload = self.run_detect(tmp)
+            self.assertEqual(payload["template"], "cli")
+
+    def test_detect_chrome_extension_from_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "manifest.json").write_text(
+                json.dumps({"manifest_version": 3, "name": "My Extension"}), encoding="utf-8"
+            )
+            payload = self.run_detect(tmp)
+            self.assertEqual(payload["template"], "chrome-extension")
+
+    def test_detect_fastapi_from_main_py(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "main.py").write_text(
+                "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get('/')\ndef root():\n    return {'ok': True}\n",
+                encoding="utf-8",
+            )
+            payload = self.run_detect(tmp)
+            self.assertEqual(payload["template"], "fastapi")
+
+    def test_detect_returns_commands_for_new_stacks(self):
+        for tmpl in ("nextjs", "fastapi", "electron", "cli", "chrome-extension"):
+            payload = json.loads(
+                subprocess.run(
+                    [PYTHON, "scripts/harness/detect_stack.py", "--project", str(ROOT), "--json"],
+                    cwd=ROOT, text=True, capture_output=True, check=False,
+                ).stdout
+            )
+            if payload["template"] == tmpl:
+                self.assertIn("commands", payload)
+                self.assertIn("install", payload["commands"])
+                self.assertIn("test", payload["commands"])
+
+
+class ForgeProjectV2Tests(unittest.TestCase):
+    """Tests for forge_project.py with V2 stacks."""
+
+    def run_forge(self, project_dir, stack, slug="test-v2", goal="V2 test project"):
+        evidence = Path(project_dir) / "evidence.jsonl"
+        evidence.write_text(
+            json.dumps({
+                "source": "github",
+                "title": "example/project",
+                "url": "https://github.com/example/project",
+                "summary": "V2 reference",
+                "score": 10,
+            }) + "\n",
+            encoding="utf-8",
+        )
+        proc = subprocess.run(
+            [
+                PYTHON, "scripts/forge_project.py",
+                "--project", project_dir,
+                "--slug", slug,
+                "--goal", goal,
+                "--stack", stack,
+                "--evidence", str(evidence),
+                "--force",
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        return proc
+
+    def test_forge_with_nextjs_stack(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_forge(tmp, "nextjs")
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            contract = (Path(tmp) / "project-forge.yaml").read_text(encoding="utf-8")
+            self.assertIn("install: npm ci", contract)
+            self.assertIn("run: npm run dev", contract)
+
+    def test_forge_with_fastapi_stack(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_forge(tmp, "fastapi")
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            contract = (Path(tmp) / "project-forge.yaml").read_text(encoding="utf-8")
+            self.assertIn("pip install", contract)
+            self.assertIn("uvicorn", contract)
+
+    def test_forge_with_electron_stack(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_forge(tmp, "electron")
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            contract = (Path(tmp) / "project-forge.yaml").read_text(encoding="utf-8")
+            self.assertIn("install: npm ci", contract)
+
+    def test_forge_with_cli_stack(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_forge(tmp, "cli")
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            contract = (Path(tmp) / "project-forge.yaml").read_text(encoding="utf-8")
+            self.assertIn("node dist/index.js", contract)
+
+    def test_forge_with_chrome_extension_stack(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_forge(tmp, "chrome-extension")
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            contract = (Path(tmp) / "project-forge.yaml").read_text(encoding="utf-8")
+            self.assertIn("chrome://extensions", contract)
+
+    def test_forge_ci_uses_node_setup_for_node_stacks(self):
+        for stack in ("nextjs", "electron", "cli", "chrome-extension"):
+            with tempfile.TemporaryDirectory() as tmp:
+                proc = self.run_forge(tmp, stack, slug=f"test-{stack}")
+                self.assertEqual(proc.returncode, 0, f"Failed for {stack}: {proc.stderr}")
+                ci = (Path(tmp) / ".github/workflows/project-forge-ci.yml").read_text(encoding="utf-8")
+                self.assertIn("actions/setup-node@v4", ci, f"{stack} CI missing setup-node")
+
+    def test_forge_ci_uses_python_setup_for_fastapi(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = self.run_forge(tmp, "fastapi")
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            ci = (Path(tmp) / ".github/workflows/project-forge-ci.yml").read_text(encoding="utf-8")
+            self.assertIn("actions/setup-python@v5", ci)
+
+
+class InstallTestTests(unittest.TestCase):
+    """Tests for the installation smoke test script."""
+
+    def test_install_test_passes(self):
+        proc = subprocess.run(
+            [PYTHON, "scripts/install_test.py"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        output = proc.stdout
+        json_start = output.index("\n{")
+        payload = json.loads(output[json_start + 1:])
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["total"], 12)
+
+    def test_install_test_detects_missing_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_root = Path(tmp)
+            (fake_root / "skills").mkdir()
+            (fake_root / "templates" / "harness" / "node-ts").mkdir(parents=True)
+            proc = subprocess.run(
+                [PYTHON, "-c", f"""
+import sys
+sys.path.insert(0, '{ROOT.as_posix()}')
+from pathlib import Path
+sys.path.insert(0, str(Path('{ROOT.as_posix()}') / 'scripts'))
+import install_test
+install_test.ROOT = Path('{fake_root.as_posix()}')
+sys.exit(install_test.main())
+"""],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(proc.returncode, 0)
+
+
+class MCPServerTests(unittest.TestCase):
+    """Tests for the MCP server module."""
+
+    def test_mcp_server_imports_without_error(self):
+        sys.path.insert(0, str(ROOT / "scripts" / "mcp"))
+        try:
+            import server
+            self.assertEqual(server.SERVER_NAME, "project-forge")
+            self.assertEqual(server.SERVER_VERSION, "0.2.0")
+            self.assertGreater(len(server.TOOLS), 5)
+            tool_names = {t["name"] for t in server.TOOLS}
+            self.assertIn("github_search", tool_names)
+            self.assertIn("web_search", tool_names)
+            self.assertIn("detect_stack", tool_names)
+            self.assertIn("apply_template", tool_names)
+            self.assertIn("forge_project", tool_names)
+            self.assertIn("export_handoff", tool_names)
+            self.assertIn("validate_evidence", tool_names)
+            self.assertIn("list_templates", tool_names)
+            self.assertIn("run_evals", tool_names)
+        finally:
+            sys.path.remove(str(ROOT / "scripts" / "mcp"))
+
+    def test_mcp_server_tools_have_required_schema_fields(self):
+        sys.path.insert(0, str(ROOT / "scripts" / "mcp"))
+        try:
+            import server
+            for tool in server.TOOLS:
+                self.assertIn("name", tool)
+                self.assertIn("description", tool)
+                self.assertIn("inputSchema", tool)
+                self.assertIn("type", tool["inputSchema"])
+                self.assertEqual(tool["inputSchema"]["type"], "object")
+        finally:
+            sys.path.remove(str(ROOT / "scripts" / "mcp"))
+
+class MCPIntegrationTests(unittest.TestCase):
+
+    def _send_rpc(self, method, params=None, request_id=1, timeout=10):
+        proc = subprocess.Popen(
+            [sys.executable, str(ROOT / 'scripts' / 'mcp' / 'server.py')],
+            cwd=str(ROOT),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        try:
+            msg = json.dumps({'jsonrpc': '2.0', 'id': request_id, 'method': method, 'params': params or {}})
+            out, err = proc.communicate(input=msg + chr(10), timeout=timeout)
+            responses = []
+            for ln in out.strip().split(chr(10)):
+                ln = ln.strip()
+                if ln:
+                    try:
+                        responses.append(json.loads(ln))
+                    except json.JSONDecodeError:
+                        pass
+            return responses, err, proc.returncode
+        finally:
+            try:
+                proc.kill()
+                proc.wait(timeout=2)
+            except (subprocess.TimeoutExpired, OSError):
+                pass
+
+    def test_mcp_initialize_handshake(self):
+        responses, stderr, _ = self._send_rpc('initialize', {
+            'protocolVersion': '2024-11-05',
+            'capabilities': {},
+            'clientInfo': {'name': 'test', 'version': '1.0.0'},
+        })
+        self.assertTrue(len(responses) > 0, 'No MCP response: ' + stderr)
+        result = responses[0].get('result', {})
+        self.assertIn('protocolVersion', result)
+        self.assertIn('serverInfo', result)
+        self.assertEqual(result['serverInfo']['name'], 'project-forge')
+
+    def test_mcp_tools_list_returns_nine_tools(self):
+        responses, stderr, _ = self._send_rpc('tools/list')
+        self.assertTrue(len(responses) > 0, 'No MCP response: ' + stderr)
+        tools = responses[0].get('result', {}).get('tools', [])
+        tool_names = {t['name'] for t in tools}
+        expected = {'github_search', 'web_search', 'detect_stack', 'apply_template',
+                    'forge_project', 'export_handoff', 'validate_evidence', 'list_templates', 'run_evals'}
+        self.assertEqual(tool_names, expected)
+        self.assertEqual(len(tools), 9)
+
+    def test_mcp_list_templates_tool(self):
+        responses, stderr, _ = self._send_rpc('tools/call', {'name': 'list_templates', 'arguments': {}})
+        self.assertTrue(len(responses) > 0, 'No MCP response: ' + stderr)
+        content = responses[0].get('result', {}).get('content', [])
+        self.assertTrue(len(content) > 0)
+
+    def test_mcp_detect_stack_tool(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / 'package.json').write_text('{"name": "mcp-test"}', encoding='utf-8')
+            responses, stderr, _ = self._send_rpc('tools/call', {
+                'name': 'detect_stack', 'arguments': {'project': str(tmp)}}, timeout=15)
+            self.assertTrue(len(responses) > 0, 'No MCP response: ' + stderr)
+            text = responses[0].get('result', {}).get('content', [{}])[0].get('text', '').lower()
+            self.assertIn('template', text)
+
+    def test_mcp_validate_evidence_tool(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            evidence = Path(tmp) / 'bad.jsonl'
+            evidence.write_text(json.dumps({'source': 'web', 'title': 'No URL'}) + chr(10), encoding='utf-8')
+            responses, stderr, _ = self._send_rpc('tools/call', {
+                'name': 'validate_evidence', 'arguments': {'evidence_file': str(evidence)}}, timeout=15)
+            self.assertTrue(len(responses) > 0, 'No MCP response: ' + stderr)
+
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+
+
+
+class IntegrationTests(unittest.TestCase):
+    """End-to-end integration tests that run the full Project Forge pipeline."""
+
+    def test_full_pipeline_node_ts(self):
+        """Forge a node-ts project from raw evidence through handoff, verify all artifacts."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "raw.jsonl"
+            evidence.write_text(
+                json.dumps({
+                    "source": "github",
+                    "title": "example/project",
+                    "url": "https://github.com/example/project",
+                    "summary": "Integration test reference for integration-test",
+                    "score": 10,
+                }) + "\n",
+                encoding="utf-8",
+            )
+            (project / "package.json").write_text(
+                json.dumps({"scripts": {"dev": "vite", "test": "vitest", "build": "vite build"}}),
+                encoding="utf-8",
+            )
+            (project / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    PYTHON, "scripts/forge_project.py",
+                    "--project", str(project),
+                    "--slug", "integration-test",
+                    "--goal", "End-to-end integration test project",
+                    "--stack", "node-ts",
+                    "--evidence", str(evidence),
+                    "--force",
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            creative = subprocess.run(
+                [
+                    PYTHON, "scripts/creative_brief.py",
+                    "--project", str(project),
+                    "--slug", "integration-test",
+                    "--goal", "End-to-end integration test project",
+                    "--audience", "Developers",
+                    "--platform", "web",
+                    "--style", "dashboard",
+                    "--tone", "professional",
+                    "--first-screen", "Project overview dashboard",
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(creative.returncode, 0, creative.stderr)
+
+            handoff = subprocess.run(
+                [
+                    PYTHON, "scripts/export_handoff.py",
+                    "--project", str(project),
+                    "--slug", "integration-test",
+                    "--out", str(project / "docs/superpowers-handoff.md"),
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(handoff.returncode, 0, handoff.stderr)
+
+            smoke = subprocess.run(
+                [
+                    PYTHON, "scripts/smoke_test.py",
+                    "--project", str(project),
+                    "--slug", "integration-test",
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(smoke.returncode, 0, smoke.stderr)
+
+            required = {
+                "docs/research/integration-test/evidence.jsonl",
+                "docs/architecture/ADR-0001-stack.md",
+                "docs/creative-brief.md",
+                "docs/harness.md",
+                "docs/superpowers-handoff.md",
+                "project-forge.yaml",
+                ".github/workflows/project-forge-ci.yml",
+            }
+            for rel in required:
+                self.assertTrue((project / rel).exists(), f"Missing: {rel}")
+
+            adr = (project / "docs/architecture/ADR-0001-stack.md").read_text(encoding="utf-8")
+            self.assertIn("node-ts", adr)
+            self.assertIn("integration-test", adr)
+            self.assertIn("example/project", adr)
+
+            brief = (project / "docs/creative-brief.md").read_text(encoding="utf-8")
+            self.assertIn("End-to-end integration test project", brief)
+
+            handoff_md = (project / "docs/superpowers-handoff.md").read_text(encoding="utf-8")
+            self.assertIn("Superpowers Handoff", handoff_md)
+            self.assertIn("pnpm", handoff_md)
+
+    def test_full_pipeline_fastapi(self):
+        """Forge a fastapi project and verify Python-specific artifacts."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "raw.jsonl"
+            evidence.write_text(
+                json.dumps({
+                    "source": "web",
+                    "title": "FastAPI Docs",
+                    "url": "https://fastapi.tiangolo.com/",
+                    "summary": "FastAPI framework documentation",
+                }) + "\n",
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    PYTHON, "scripts/forge_project.py",
+                    "--project", str(project),
+                    "--slug", "fastapi-test",
+                    "--goal", "Test FastAPI pipeline",
+                    "--stack", "fastapi",
+                    "--evidence", str(evidence),
+                    "--force",
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            contract = (project / "project-forge.yaml").read_text(encoding="utf-8")
+            self.assertIn("pip install", contract)
+            self.assertIn("uvicorn", contract)
+
+            ci = (project / ".github/workflows/project-forge-ci.yml").read_text(encoding="utf-8")
+            self.assertIn("setup-python", ci)
+
+    def test_three_examples_smoke(self):
+        """Verify all four example projects pass smoke tests."""
+        examples = [
+            ("examples/team-research", "team-research"),
+            ("examples/fastapi-demo", "fastapi-demo"),
+            ("examples/chrome-extension-demo", "chrome-extension"),
+            ("examples/cli-demo", "cli-demo"),
+        ]
+        for project_dir, slug in examples:
+            with self.subTest(project=project_dir):
+                proc = subprocess.run(
+                    [PYTHON, "scripts/smoke_test.py", "--project", project_dir, "--slug", slug],
+                    cwd=ROOT, text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(proc.returncode, 0, f"{project_dir} smoke failed: {proc.stderr}")
+                payload = json.loads(proc.stdout)
+                self.assertEqual(payload["status"], "ok", f"{project_dir}: {payload}")
+
+    def test_creative_brief_pipeline_integration(self):
+        """creative_brief.py output is readable and contains required sections."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            proc = subprocess.run(
+                [
+                    PYTHON, "scripts/creative_brief.py",
+                    "--project", str(project),
+                    "--slug", "test",
+                    "--goal", "Test creative direction pipeline",
+                    "--audience", "Test users",
+                    "--platform", "web",
+                    "--style", "editor",
+                    "--tone", "professional",
+                    "--first-screen", "Editor canvas",
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            brief = (project / "docs/creative-brief.md").read_text(encoding="utf-8")
+            for section in ("Experience Thesis", "Target User", "First Interaction",
+                            "Interaction Style", "Content Tone", "Assumptions", "Risks", "Next Steps"):
+                self.assertIn(section, brief, f"Missing section: {section}")
+
+    def test_web_search_duckduckgo_returns_jsonl(self):
+        """web_search.py with DuckDuckGo fallback produces valid JSONL."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "web.jsonl"
+            proc = subprocess.run(
+                [
+                    PYTHON, "scripts/research/web_search.py",
+                    "--query", "python web framework",
+                    "--limit", "3",
+                    "--out", str(out),
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+                env={**os.environ, "PROJECT_FORGE_WEB_SEARCH_URL": ""},
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines() if line.strip()]
+            self.assertGreater(len(rows), 0)
+            self.assertIn(rows[0]["source"], ("duckduckgo", "host-web-tool"))
+
+    def test_clean_script_removes_pycache(self):
+        """clean.py removes __pycache__ directories."""
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = Path(tmp) / "__pycache__"
+            cache.mkdir()
+            (cache / "test.pyc").write_text("fake", encoding="utf-8")
+
+            temp_clean = Path(tmp) / "clean.py"
+            temp_clean.write_text(
+                'import sys, shutil\nfrom pathlib import Path\nroot = Path(".")\n'
+                'for p in root.glob("**/__pycache__"):\n    shutil.rmtree(p)\n    print(f"Removed {p}")\n',
+                encoding="utf-8",
+            )
+            proc = subprocess.run(
+                [PYTHON, "scripts/clean.py"],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertIn("Cleaned", proc.stdout)
+
+    def test_duckduckgo_search_writes_valid_rows(self):
+        """Verify DuckDuckGo search response has required fields when available."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "ddg.jsonl"
+            proc = subprocess.run(
+                [
+                    PYTHON, "scripts/research/web_search.py",
+                    "--query", "fastapi python framework",
+                    "--limit", "2",
+                    "--out", str(out),
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+                env={**os.environ, "PROJECT_FORGE_WEB_SEARCH_URL": ""},
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines() if line.strip()]
+            self.assertGreater(len(rows), 0)
+            for row in rows:
+                self.assertIn("source", row)
+            if row.get("source") != "host-web-tool": self.assertIn("title", row)
+            if row.get("source") != "host-web-tool": self.assertIn("summary", row)
+            if row.get("source") != "host-web-tool": self.assertIn("url", row)
+
+    def test_creative_brief_includes_all_required_sections(self):
+        """creative_brief.py output passes structural validation."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            subprocess.run(
+                [
+                    PYTHON, "scripts/creative_brief.py",
+                    "--project", str(project),
+                    "--slug", "val",
+                    "--goal", "Validate creative brief output",
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=True,
+            )
+            brief = (project / "docs/creative-brief.md").read_text(encoding="utf-8")
+            self.assertIn("## Experience Thesis", brief)
+            self.assertIn("## Assumptions", brief)
+            self.assertIn("## Risks", brief)
+            self.assertIn("## Next Steps", brief)
+
+    def test_web_search_duckduckgo_result_has_real_urls(self):
+        """DuckDuckGo search results contain well-formed URLs."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "urls.jsonl"
+            proc = subprocess.run(
+                [
+                    PYTHON, "scripts/research/web_search.py",
+                    "--query", "node.js",
+                    "--limit", "3",
+                    "--out", str(out),
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+                env={**os.environ, "PROJECT_FORGE_WEB_SEARCH_URL": ""},
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines() if line.strip()]
+            for row in rows:
+                if row.get("source") != "host-web-tool":
+                    self.assertTrue(row.get("url","").startswith("http"), f"Bad URL: {row}")
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+

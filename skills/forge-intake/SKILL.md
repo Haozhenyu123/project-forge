@@ -56,3 +56,15 @@ Produce a concise Project Forge brief:
 ## Quality Bar
 
 The brief is ready when an architect can make evidence-backed choices, a harness engineer can define commands, and an evaluator can write scenarios without needing to rediscover the product goal.
+
+## Handoff to Creative Director
+
+When the intake brief is complete, immediately hand off to `creative-director`. The brief should contain enough context for the creative director to choose a product direction without asking the user to repeat themselves. Pass:
+
+- The project slug and goal
+- The target user and their primary job
+- The smallest useful version
+- Platform and deployment constraints
+- Any assumptions marked during intake
+
+Do not wait for the user to ask for creative direction; the next logical step is always to shape the product experience before choosing technical architecture.
