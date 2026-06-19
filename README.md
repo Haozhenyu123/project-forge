@@ -79,6 +79,26 @@ Typical usage:
 3. Use the harness engineer skill to write `project-forge.yaml`, harness docs, and verification commands.
 4. Run the research scripts, templates, and evals as needed to check that the project remains grounded and testable.
 
+## V1.2 executable workflow
+
+V1.2 turns a rough idea into a reproducible project package. Start by collecting GitHub and web evidence for the idea, normalize that evidence into `docs/research/<slug>/evidence.jsonl`, then run the forge script to write the stack ADR, harness contract, harness guide, and CI workflow. The expected generated outputs are `docs/research/<slug>/evidence.jsonl`, `docs/architecture/ADR-0001-stack.md`, `project-forge.yaml`, `docs/harness.md`, and `.github/workflows/project-forge-ci.yml`.
+
+Example end-to-end commands:
+
+```powershell
+$slug = "team-research"
+$goal = "Help small teams turn research into architecture decisions"
+
+python scripts/research/github_search.py --query "team research architecture decision tool" --limit 10 --out "docs/research/$slug/github.jsonl"
+python scripts/research/web_search.py --query "team research architecture decision tool" --limit 10 --out "docs/research/$slug/web.jsonl"
+python scripts/research/normalize_evidence.py --input "docs/research/$slug" --out "docs/research/$slug/evidence.jsonl"
+
+python scripts/harness/apply_template.py --template node-ts --project . --force
+python scripts/forge_project.py --project . --slug $slug --goal $goal --stack node-ts --evidence "docs/research/$slug/evidence.jsonl" --force
+```
+
+After generation, review `docs/architecture/ADR-0001-stack.md` for the stack decision and trade-offs, then run the commands recorded in `project-forge.yaml` and `docs/harness.md`. CI should execute the same install, test, lint, typecheck, build, and smoke contract so local verification and pull-request verification stay aligned.
+
 ## Quickstart in Chinese
 
 中文快速开始：

@@ -98,6 +98,7 @@ class SkillTests(unittest.TestCase):
     def test_required_skills_have_valid_frontmatter_and_no_placeholders(self):
         expected = {
             "forge-intake",
+            "forge-project",
             "creative-director",
             "ai-architect",
             "harness-engineer",
@@ -121,11 +122,16 @@ class SkillTests(unittest.TestCase):
     def test_architect_and_harness_skills_name_their_output_contracts(self):
         architect = (ROOT / "skills" / "ai-architect" / "SKILL.md").read_text(encoding="utf-8")
         harness = (ROOT / "skills" / "harness-engineer" / "SKILL.md").read_text(encoding="utf-8")
+        forge_project = (ROOT / "skills" / "forge-project" / "SKILL.md").read_text(encoding="utf-8")
 
         self.assertIn("docs/research/<project-slug>/evidence.jsonl", architect)
         self.assertIn("docs/architecture/ADR-0001-stack.md", architect)
         self.assertIn("project-forge.yaml", harness)
         self.assertIn("docs/harness.md", harness)
+        self.assertIn("scripts/forge_project.py", forge_project)
+        self.assertIn("--evidence", forge_project)
+        self.assertIn("scripts/harness/apply_template.py", forge_project)
+        self.assertIn("docs/architecture/ADR-0001-stack.md", forge_project)
 
 
 class ScriptTests(unittest.TestCase):
@@ -240,6 +246,204 @@ class ScriptTests(unittest.TestCase):
                 payload = json.loads(proc.stdout)
                 self.assertEqual(payload["template"], expected)
                 self.assertIn("commands", payload)
+
+    def test_detect_stack_respects_package_manager_and_available_scripts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            (project / "package.json").write_text(
+                json.dumps(
+                    {
+                        "scripts": {
+                            "dev": "vite --host 0.0.0.0",
+                            "test": "vitest run",
+                            "lint": "eslint .",
+                            "typecheck": "tsc --noEmit",
+                            "build": "vite build",
+                            "smoke": "playwright test tests/smoke.spec.ts",
+                        },
+                        "devDependencies": {"typescript": "^5.0.0"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (project / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding="utf-8")
+            proc = self.run_script("scripts/harness/detect_stack.py", "--project", str(project), "--json")
+            payload = json.loads(proc.stdout)
+
+            self.assertEqual(payload["template"], "node-ts")
+            self.assertEqual(payload["package_manager"], "pnpm")
+            self.assertEqual(payload["commands"]["install"], "pnpm install")
+            self.assertEqual(payload["commands"]["test"], "pnpm run test")
+            self.assertEqual(payload["commands"]["run"], "pnpm run dev")
+
+    def test_apply_template_creates_harness_artifacts_without_overwriting_by_default(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            self.run_script(
+                "scripts/harness/apply_template.py",
+                "--template",
+                "node-ts",
+                "--project",
+                str(project),
+            )
+            expected_files = [
+                "project-forge.yaml",
+                "docs/harness.md",
+                ".github/workflows/project-forge-ci.yml",
+            ]
+            for relative in expected_files:
+                self.assertTrue((project / relative).exists(), relative)
+
+            proc = subprocess.run(
+                [
+                    PYTHON,
+                    "scripts/harness/apply_template.py",
+                    "--template",
+                    "node-ts",
+                    "--project",
+                    str(project),
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(proc.returncode, 0)
+            self.assertIn("--force", proc.stderr)
+
+    def test_forge_project_writes_research_adr_and_harness_contract(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            evidence = project / "raw-evidence.jsonl"
+            evidence.write_text(
+                json.dumps(
+                    {
+                        "source": "github",
+                        "title": "example/project",
+                        "url": "https://github.com/example/project",
+                        "summary": "Reference architecture example",
+                        "score": 10,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            self.run_script(
+                "scripts/forge_project.py",
+                "--project",
+                str(project),
+                "--slug",
+                "team-research",
+                "--goal",
+                "Help small teams turn research into architecture decisions",
+                "--stack",
+                "node-ts",
+                "--evidence",
+                str(evidence),
+                "--force",
+            )
+
+            research = project / "docs/research/team-research/evidence.jsonl"
+            adr = project / "docs/architecture/ADR-0001-stack.md"
+            contract = project / "project-forge.yaml"
+            harness = project / "docs/harness.md"
+            ci = project / ".github/workflows/project-forge-ci.yml"
+
+            for path in (research, adr, contract, harness, ci):
+                self.assertTrue(path.exists(), str(path))
+
+            self.assertIn("https://github.com/example/project", research.read_text(encoding="utf-8"))
+            adr_text = adr.read_text(encoding="utf-8")
+            self.assertIn("team-research", adr_text)
+            self.assertIn("node-ts", adr_text)
+            self.assertIn("Reference architecture example", adr_text)
+            self.assertIn("Help small teams", contract.read_text(encoding="utf-8"))
+
+    def test_forge_project_rejects_slug_path_traversal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            project.mkdir()
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                json.dumps({"source": "web", "title": "Example", "url": "https://example.com"})
+                + "\n",
+                encoding="utf-8",
+            )
+            proc = subprocess.run(
+                [
+                    PYTHON,
+                    "scripts/forge_project.py",
+                    "--project",
+                    str(project),
+                    "--slug",
+                    "../escape",
+                    "--goal",
+                    "Keep generated files inside the project",
+                    "--stack",
+                    "generic",
+                    "--evidence",
+                    str(evidence),
+                    "--force",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(proc.returncode, 0)
+            self.assertIn("slug", proc.stderr.lower())
+            self.assertFalse((project.parent / "escape").exists())
+
+    def test_forge_project_uses_detected_node_commands_in_contract_and_ci(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            (project / "package.json").write_text(
+                json.dumps(
+                    {
+                        "scripts": {
+                            "dev": "vite --host 0.0.0.0",
+                            "test": "vitest run",
+                            "lint": "eslint .",
+                            "typecheck": "tsc --noEmit",
+                            "build": "vite build",
+                            "smoke": "playwright test tests/smoke.spec.ts",
+                        },
+                        "devDependencies": {"typescript": "^5.0.0"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (project / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding="utf-8")
+            evidence = project / "evidence.jsonl"
+            evidence.write_text(
+                json.dumps({"source": "github", "title": "Example", "url": "https://github.com/example/repo"})
+                + "\n",
+                encoding="utf-8",
+            )
+
+            self.run_script(
+                "scripts/forge_project.py",
+                "--project",
+                str(project),
+                "--slug",
+                "pnpm-project",
+                "--goal",
+                "Use detected package manager commands",
+                "--stack",
+                "node-ts",
+                "--evidence",
+                str(evidence),
+                "--force",
+            )
+
+            contract = (project / "project-forge.yaml").read_text(encoding="utf-8")
+            ci = (project / ".github/workflows/project-forge-ci.yml").read_text(encoding="utf-8")
+            self.assertIn("install: pnpm install", contract)
+            self.assertIn("test: pnpm run test", contract)
+            self.assertIn("run: pnpm run dev", contract)
+            self.assertIn("pnpm install", ci)
+            self.assertIn("pnpm run smoke", ci)
 
 
 class TemplateAndEvalTests(unittest.TestCase):

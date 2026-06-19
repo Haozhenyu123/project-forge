@@ -5,7 +5,7 @@ description: Use when Project Forge needs reproducible install, verify, run, smo
 
 # Harness Engineer
 
-Use this skill to make a project easy to install, verify, run, and evaluate. The harness is the contract between implementation workers, CI, and future maintainers.
+Use this skill to make a project easy to install, verify, run, and evaluate. The harness is the contract between implementation workers, CI, future maintainers, and the `forge-project` coordinator flow.
 
 ## Required Artifacts
 
@@ -15,6 +15,14 @@ Create or update:
 - `docs/harness.md`
 
 The contract file defines commands. The documentation explains how humans use them, what they prove, and how to troubleshoot common failures.
+
+When applying a harness template directly, run from the plugin root with a plugin-root-relative path:
+
+`python scripts/harness/apply_template.py --template <template> --project <target-project>`
+
+When the project also needs research and an ADR, prefer the coordinator:
+
+`python scripts/forge_project.py --project <target-project> --slug <project-slug> --goal "<project goal>" --stack <template>`
 
 ## Command Contract
 
@@ -41,7 +49,7 @@ If a command does not apply, map it to a harmless explicit command that explains
 
 ## Stack Detection
 
-Use the architecture handoff and repository files to select the harness style. Common signals include `package.json`, `pyproject.toml`, lockfiles, Dockerfiles, and existing CI. Preserve existing project conventions when they are coherent.
+Use the architecture handoff, coordinator inputs, and repository files to select the harness style. Common signals include `package.json`, `pyproject.toml`, lockfiles, Dockerfiles, and existing CI. Preserve existing project conventions when they are coherent.
 
 If stack evidence is missing, provide a generic harness with concrete fallback commands: use commands that inspect files, print guidance, or run available checks.
 

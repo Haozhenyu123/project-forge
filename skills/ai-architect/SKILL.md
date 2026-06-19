@@ -5,7 +5,7 @@ description: Use when Project Forge needs evidence-backed technical architecture
 
 # AI Architect
 
-Use this skill to choose a practical architecture for a Project Forge project. The architect must connect decisions to evidence, user needs, and harness reality.
+Use this skill to choose a practical architecture for a Project Forge project. The architect must connect decisions to evidence, user needs, harness reality, and the `forge-project` coordinator flow.
 
 ## Inputs
 
@@ -23,7 +23,7 @@ If the brief is incomplete, make the smallest safe assumption and record it. Ask
 
 ## Evidence First
 
-Before making stack decisions, gather evidence for unstable or consequential choices. Use local research scripts when present. If scripts are unavailable, fall back to GitHub search and web research using the host tools. Prefer primary sources: official documentation, release notes, reputable benchmarks, package repositories, and active issue trackers.
+Before making stack decisions, gather evidence for unstable or consequential choices. Run local research scripts from the plugin root with plugin-root-relative paths, such as `scripts/research/github_search.py`, `scripts/research/web_search.py`, and `scripts/research/normalize_evidence.py`. If scripts are unavailable, fall back to GitHub search and web research using the host tools. Prefer primary sources: official documentation, release notes, reputable benchmarks, package repositories, and active issue trackers.
 
 Write normalized research to:
 
@@ -69,6 +69,8 @@ Provide a compact architecture handoff:
 - commands expected from the harness
 - risks and mitigations
 - open questions
+
+When the full coordinator is appropriate, hand the chosen stack and evidence path to `scripts/forge_project.py` from the plugin root so it can create the ADR and harness artifacts together.
 
 ## Quality Bar
 
