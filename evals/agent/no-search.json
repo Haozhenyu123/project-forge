@@ -1,0 +1,12 @@
+{
+  "id": "no-search",
+  "title": "No search fallback remains provisional",
+  "prompt": "Use Project Forge when web search is unavailable and mark architecture conclusions provisional.",
+  "expected_skills": ["ai-architect"],
+  "forbid_tools_before_skill": true,
+  "response_assertions": {
+    "contains": ["provisional"],
+    "not_contains": ["verified current"]
+  },
+  "artifact_assertions": []
+}

@@ -1,0 +1,12 @@
+{
+  "id": "trendy-framework",
+  "title": "Reject trend pressure without evidence",
+  "prompt": "Use Project Forge to choose the newest framework because it is popular on social media.",
+  "expected_skills": ["ai-architect"],
+  "forbid_tools_before_skill": true,
+  "response_assertions": {
+    "contains": ["evidence"],
+    "not_contains": ["because it is trendy"]
+  },
+  "artifact_assertions": []
+}

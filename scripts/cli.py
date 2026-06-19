@@ -14,15 +14,17 @@ Usage:
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 
 SCRIPTS_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPTS_ROOT.parent
 
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 
 TEMPLATES = [
     "node-ts",
@@ -46,40 +48,77 @@ def run_script(script, *args, cwd=None):
         [sys.executable, str(SCRIPTS_ROOT / script), *args],
         cwd=cwd or REPO_ROOT,
         text=True,
+        capture_output=True,
     )
     if proc.returncode != 0:
+        if proc.stdout:
+            print(proc.stdout, end="", file=sys.stderr)
+        if proc.stderr:
+            print(proc.stderr, end="", file=sys.stderr)
         sys.exit(proc.returncode)
     return proc.stdout
+
+
+def write_decision_input(path, goal, evidence_path):
+    evidence = []
+    evidence_file = Path(evidence_path)
+    if evidence_file.is_file():
+        for line in evidence_file.read_text(encoding="utf-8-sig").splitlines():
+            if line.strip():
+                evidence.append(json.loads(line))
+    payload = {
+        "goal": goal,
+        "constraints": [],
+        "creative_brief": {},
+        "evidence": evidence,
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def cmd_init(args):
     project = Path(args.project or ".")
     project = project.resolve()
 
-    if not project.exists():
-        project.mkdir(parents=True)
-
     if not args.slug:
         args.slug = project.name.lower().replace(" ", "-").replace("_", "-")
 
     stack = args.stack
-    if not stack:
-        stdout = run_script("harness/detect_stack.py", "--project", str(project), "--json")
-        detected = json.loads(stdout)
-        if detected["template"] == "generic" and not args.stack:
-            print(f"Detected generic project. Available templates: {', '.join(TEMPLATES)}")
-            stack = "generic"
-        else:
-            stack = detected["template"]
-
-    if stack not in TEMPLATES:
-        fail(f"Unknown template: {stack}. Available: {', '.join(TEMPLATES)}")
 
     goal = args.goal or "Project created with Project Forge"
-    if args.goal is None:
-        print(f"Goal not specified; using default: {goal}")
 
-    evidence_dir = args.evidence
+    if args.dry_run:
+        print(
+            json.dumps(
+                {
+                    "status": "dry-run",
+                    "project": str(project),
+                    "slug": args.slug,
+                    "goal": goal,
+                    "stack": stack or "auto",
+                    "would_research": args.evidence is None,
+                    "evidence": str(args.evidence) if args.evidence else None,
+                    "would_generate": [
+                        f"docs/research/{args.slug}/evidence.jsonl",
+                        "docs/creative-brief.md",
+                        "docs/architecture/ADR-0001-stack.md",
+                        "project-forge.yaml",
+                        "docs/harness.md",
+                        "docs/superpowers-handoff.md",
+                        ".github/workflows/project-forge-ci.yml",
+                    ],
+                    "force": args.force,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+
+    if not project.exists():
+        project.mkdir(parents=True)
+
+    evidence_dir = Path(args.evidence) if args.evidence else None
     if not evidence_dir:
         evidence_dir = project / "evidence"
         evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -93,7 +132,7 @@ def cmd_init(args):
         )
         run_script(
             "research/github_search.py",
-            "--query", stack,
+            "--query", stack or goal,
             "--limit", "5",
             "--out", str(github_out),
         )
@@ -106,35 +145,72 @@ def cmd_init(args):
             "--out", str(normalized),
         )
 
-    run_script(
+    generated_decision = None
+    if not stack and not args.decision_file:
+        decision_dir = project / ".project-forge" / "decisions"
+        decision_input = decision_dir / f"{args.slug}.input.json"
+        generated_decision = decision_dir / f"{args.slug}.decision.json"
+        write_decision_input(decision_input, goal, normalized)
+        run_script(
+            "decision/engine.py",
+            "--input",
+            str(decision_input),
+            "--out",
+            str(generated_decision),
+            "--as-of",
+            date.today().isoformat(),
+        )
+        decision_payload = json.loads(generated_decision.read_text(encoding="utf-8"))
+        stack = decision_payload.get("selected_stack") or "generic"
+        args.decision_file = str(generated_decision)
+
+    if not stack:
+        if project.exists():
+            stdout = run_script("harness/detect_stack.py", "--project", str(project), "--json")
+            detected = json.loads(stdout)
+            stack = detected["template"]
+        else:
+            stack = "generic"
+
+    if stack not in TEMPLATES:
+        fail(f"Unknown template: {stack}. Available: {', '.join(TEMPLATES)}")
+
+    forge_args = [
         "forge_project.py",
         "--project", str(project),
         "--slug", args.slug,
         "--goal", goal,
         "--stack", stack,
         "--evidence", str(normalized),
-        "--force",
-    )
+    ]
+    if args.decision_file:
+        forge_args.extend(["--decision-file", str(Path(args.decision_file).resolve())])
+    if args.force:
+        forge_args.append("--force")
+    forge_output = run_script(*forge_args)
 
     handoff = project / "docs" / "superpowers-handoff.md"
-    run_script(
-        "export_handoff.py",
-        "--project", str(project),
-        "--slug", args.slug,
-        "--out", str(handoff),
-    )
-
-    print(f"Project Forge V2 initialized: {project}")
+    print(f"Project Forge initialized: {project}")
     print(f"  Stack: {stack}")
     print(f"  Slug: {args.slug}")
     print(f"  ADR: {project / 'docs' / 'architecture' / 'ADR-0001-stack.md'}")
     print(f"  Contract: {project / 'project-forge.yaml'}")
     print(f"  Handoff: {handoff}")
+    if generated_decision:
+        print(f"  Decision: {generated_decision}")
+    if forge_output.strip():
+        print(f"  Run: {forge_output.strip()}")
 
 
 def cmd_detect(args):
     project = args.project or "."
-    run_script("harness/detect_stack.py", "--project", project, *(["--json"] if args.json else []))
+    output = run_script(
+        "harness/detect_stack.py",
+        "--project",
+        project,
+        *(["--json"] if args.json else []),
+    )
+    print(output, end="")
 
 
 def cmd_research(args):
@@ -177,17 +253,65 @@ def cmd_handoff(args):
 def cmd_smoke(args):
     project = Path(args.project or ".")
     slug = args.slug
-    run_script(
+    output = run_script(
         "smoke_test.py",
         "--project", str(project),
         "--slug", slug,
     )
+    if output:
+        print(output, end="")
     print("Smoke test passed.")
 
 
 def cmd_validate_evidence(args):
-    run_script("research/validate_evidence.py", args.evidence_file)
+    output = run_script("research/validate_evidence.py", args.evidence_file)
+    if output:
+        print(output, end="")
     print("Evidence validation passed.")
+
+
+def cmd_backups(args):
+    output = run_script("state_manager.py", "list", "--project", args.project)
+    print(output, end="")
+
+
+def cmd_restore(args):
+    restore_args = [
+        "state_manager.py",
+        "restore",
+        args.backup_id,
+        "--project",
+        args.project,
+    ]
+    if args.force:
+        restore_args.append("--force")
+    output = run_script(*restore_args)
+    print(output, end="")
+
+
+def cmd_doctor(args):
+    checks = {
+        "python": sys.version.split()[0],
+        "repo_root": str(REPO_ROOT),
+        "codex_manifest": (REPO_ROOT / ".codex-plugin" / "plugin.json").is_file(),
+        "claude_manifest": (REPO_ROOT / ".claude-plugin" / "plugin.json").is_file(),
+        "skills": len(list((REPO_ROOT / "skills").glob("*/SKILL.md"))),
+        "templates": len(list((REPO_ROOT / "templates" / "harness").glob("*/project-forge.yaml"))),
+        "codex_cli": shutil.which("codex"),
+        "claude_cli": shutil.which("claude"),
+        "git": shutil.which("git"),
+    }
+    checks["status"] = (
+        "ok"
+        if checks["codex_manifest"]
+        and checks["claude_manifest"]
+        and checks["skills"] >= 6
+        and checks["templates"] >= 8
+        else "error"
+    )
+    print(json.dumps(checks, indent=2, sort_keys=True))
+    if checks["status"] != "ok":
+        raise SystemExit(1)
 
 
 def cmd_list_templates(args):
@@ -218,6 +342,9 @@ def main():
     init_parser.add_argument("--slug", help="Project slug (auto-derived from directory name)")
     init_parser.add_argument("--goal", help="Project goal description")
     init_parser.add_argument("--evidence", help="Path to pre-existing evidence file or directory")
+    init_parser.add_argument("--decision-file", help="Structured architecture decision JSON")
+    init_parser.add_argument("--force", action="store_true", help="Back up and replace generated files")
+    init_parser.add_argument("--dry-run", action="store_true", help="Show planned changes without writing")
 
     detect_parser = subparsers.add_parser("detect", help="Detect project stack")
     detect_parser.add_argument("project", nargs="?", default=".", help="Project directory")
@@ -242,6 +369,16 @@ def main():
 
     list_parser = subparsers.add_parser("list-templates", help="List available harness templates")
 
+    backups_parser = subparsers.add_parser("backups", help="List Project Forge backups")
+    backups_parser.add_argument("project", nargs="?", default=".", help="Project directory")
+
+    restore_parser = subparsers.add_parser("restore", help="Restore generated files from a backup")
+    restore_parser.add_argument("backup_id", help="Backup identifier")
+    restore_parser.add_argument("project", nargs="?", default=".", help="Project directory")
+    restore_parser.add_argument("--force", action="store_true", help="Replace current generated files")
+
+    subparsers.add_parser("doctor", help="Check Project Forge runtime and plugin installation")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -256,6 +393,9 @@ def main():
         "smoke": cmd_smoke,
         "validate-evidence": cmd_validate_evidence,
         "list-templates": cmd_list_templates,
+        "backups": cmd_backups,
+        "restore": cmd_restore,
+        "doctor": cmd_doctor,
     }
     commands[args.command](args)
 

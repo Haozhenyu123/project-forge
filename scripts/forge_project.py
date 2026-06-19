@@ -14,6 +14,7 @@ GENERATED_FILES = (
     Path("docs") / "architecture" / "ADR-0001-stack.md",
     Path("project-forge.yaml"),
     Path("docs") / "harness.md",
+    Path("docs") / "superpowers-handoff.md",
     Path(".github") / "workflows" / "project-forge-ci.yml",
 )
 
@@ -26,7 +27,9 @@ def parse_args():
     parser.add_argument("--stack", required=True)
     parser.add_argument("--secondary-stack", default="", help="Optional secondary stack for multi-stack projects")
     parser.add_argument("--evidence", required=True)
+    parser.add_argument("--decision-file", help="Optional structured decision JSON")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
 
@@ -60,6 +63,19 @@ def import_detect_helpers():
     return COMMANDS, node_commands
 
 
+def import_state_helpers():
+    scripts_dir = repo_root() / "scripts"
+    sys.path.insert(0, str(scripts_dir))
+    try:
+        from state_manager import backup_files, record_run
+    finally:
+        try:
+            sys.path.remove(str(scripts_dir))
+        except ValueError:
+            pass
+    return backup_files, record_run
+
+
 def validate_slug(slug):
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,62}", slug):
         raise ValueError("Project slug must use lowercase letters, digits, and hyphens only.")
@@ -73,11 +89,16 @@ def generated_targets(project, slug):
         yield project / Path(str(relative).format(slug=slug))
 
 
+def existing_generated_files(project, slug):
+    return [path for path in generated_targets(project, slug) if path.exists()]
+
+
 def refuse_existing(project, slug, force):
-    existing = [path for path in generated_targets(project, slug) if path.exists()]
+    existing = existing_generated_files(project, slug)
     if existing and not force:
         targets = ", ".join(str(path) for path in existing)
         raise FileExistsError(f"Refusing to overwrite existing generated file(s): {targets}. Re-run with --force.")
+    return existing
 
 
 def records_from_json(path):
@@ -169,8 +190,8 @@ def normalize_evidence(rows, slug=""):
             item["title"] = str(title)
         if summary:
             item["summary"] = str(summary)
-        if slug and slug not in item.get("summary", ""):
-            item['summary'] = f"{item.get('summary', '')} {slug}".strip()
+        if slug:
+            item["project_slug"] = slug
         item["observed_at"] = str(item.get("observed_at") or observed_at)
         item["score"] = evidence_score(item)
         item["relevance"] = evidence_relevance(item)
@@ -186,7 +207,26 @@ def write_jsonl(path, rows):
             handle.write(json.dumps(row, sort_keys=True) + "\n")
 
 
-def adr_text(slug, stack, goal, evidence_rows, confidence_levels=None):
+def evidence_confidence(evidence_rows):
+    verified = [row for row in evidence_rows if not row.get("provisional")]
+    sources = {row.get("source") for row in verified if row.get("source")}
+    if len(verified) >= 2 and len(sources) >= 2:
+        return "High", "multiple current, independent sources support the decision"
+    if verified:
+        return "Medium", "current evidence exists, but source diversity is limited"
+    return "Low", "only provisional or no current evidence is available"
+
+
+def decision_candidates(decision):
+    candidates = decision.get("candidates", []) if isinstance(decision, dict) else []
+    return [candidate for candidate in candidates if isinstance(candidate, dict)]
+
+
+def adr_text(slug, stack, goal, evidence_rows, decision=None):
+    decision = decision or {}
+    rationale = decision.get("rationale") or (
+        "This stack matches the current project goal and has an available harness contract."
+    )
     lines = [
         "# ADR-0001: Project stack",
         "",
@@ -216,23 +256,60 @@ def adr_text(slug, stack, goal, evidence_rows, confidence_levels=None):
         lines.append("")
     else:
         lines.append("## Evidence\n\n- No evidence rows were provided.\n")
+    candidates = decision_candidates(decision)
+    lines.extend(
+        [
+            "## Considered Options",
+            "",
+        ]
+    )
+    if candidates:
+        for candidate in candidates:
+            name = candidate.get("stack") or candidate.get("name") or "unknown"
+            score = candidate.get("score")
+            reason = candidate.get("reason") or candidate.get("rationale") or "No rationale supplied."
+            score_text = f" (score: {score})" if score is not None else ""
+            lines.append(f"- `{name}`{score_text}: {reason}")
+    else:
+        lines.append(f"- `{stack}`: selected from the requested harness and available evidence.")
+        lines.append("- Additional alternatives were not scored; this decision remains provisional.")
     lines.extend([
+        "",
         "## Decision",
         "",
         f"Use `{stack}` as the primary harness for `{slug}`.",
+        f"- Rationale: {rationale}",
         "",
         "## Explicitly Rejected",
         "",
-        '- run: `scripts/research/github_search.py --query "alternative keywords" --limit 5 --out docs/research/{slug}/alternatives.jsonl` to collect rejection evidence automatically.',
-        "",
-        "## Confidence Assessment",
-        "",
     ])
-    if confidence_levels:
-        for decision_name, level, reason in confidence_levels:
-            lines.append(f"- **{decision_name}**: {level} confidence -- {reason}")
+    rejected = decision.get("rejected_options", [])
+    if rejected:
+        for option in rejected:
+            if isinstance(option, dict):
+                name = option.get("stack") or option.get("name") or "unknown"
+                reason = option.get("reason") or "lower fit than the selected option"
+                lines.append(f"- `{name}`: {reason}")
+            else:
+                lines.append(f"- {option}")
     else:
-        lines.append('- run: `python scripts/research/validate_evidence.py docs/research/{slug}/evidence.jsonl` to assess source quality, then assign High/Medium/Low per decision below.\n- **Stack choice**: Medium confidence (default) -- reassign after reviewing evidence.')
+        lines.append("- No alternative has enough evidence for a responsible rejection.")
+        lines.append("- Re-run architecture research before treating this choice as final.")
+
+    confidence = decision.get("confidence")
+    if isinstance(confidence, dict):
+        level = confidence.get("level", "Low")
+        confidence_reason = confidence.get("reason", "No confidence rationale supplied.")
+    else:
+        level, confidence_reason = evidence_confidence(evidence_rows)
+    lines.extend(
+        [
+            "",
+            "## Confidence Assessment",
+            "",
+            f"- **Stack choice**: {level} confidence -- {confidence_reason}.",
+        ]
+    )
     lines.extend([
         "",
         "## Consequences",
@@ -243,11 +320,15 @@ def adr_text(slug, stack, goal, evidence_rows, confidence_levels=None):
         "",
         "## Risks and Revisit Triggers",
         "",
-        "- If the project needs capabilities not covered by the current stack, revisit this ADR.",
-        "- If a dependency becomes unmaintained or a better alternative emerges, schedule a re-evaluation.",
-        "- If the chosen stack does not support a required Architecture Signal, escalate back to the architect.",
-        "",
     ])
+    revisit_triggers = decision.get("revisit_triggers") or [
+        "The project needs capabilities not covered by the current stack.",
+        "A critical dependency becomes unmaintained or changes licensing.",
+        "A required Architecture Signal cannot be verified by the harness.",
+    ]
+    for trigger in revisit_triggers:
+        lines.append(f"- {trigger}")
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -256,12 +337,14 @@ def yaml_scalar(value):
     return json.dumps(text)
 
 
-def write_project_contract(path, slug, stack, goal, commands, secondary_stack=""):
+def write_project_contract(path, slug, stack, goal, commands, secondary_stack="", decision=None):
     lines = [
         "project:",
         f"  slug: {yaml_scalar(slug)}",
         f"  goal: {yaml_scalar(goal)}",
         f"  stack: {yaml_scalar(stack)}",
+        "  decision_status: accepted",
+        "  harness_status: configured",
     ]
     if secondary_stack:
         lines.append(f"  secondary_stack: {yaml_scalar(secondary_stack)}")
@@ -392,10 +475,48 @@ def main():
     try:
         if not evidence.exists():
             raise FileNotFoundError(f"Evidence input does not exist: {evidence}")
+        decision = {}
+        if args.decision_file:
+            decision_path = Path(args.decision_file)
+            if not decision_path.is_file():
+                raise FileNotFoundError(f"Decision file does not exist: {decision_path}")
+            decision = json.loads(decision_path.read_text(encoding="utf-8"))
+            selected_stack = decision.get("selected_stack")
+            if selected_stack and selected_stack != args.stack:
+                raise ValueError(
+                    f"Decision file selects {selected_stack!r}, but --stack is {args.stack!r}."
+                )
+
+        existing = existing_generated_files(project, slug)
+        if args.dry_run:
+            print(
+                json.dumps(
+                    {
+                        "status": "dry-run",
+                        "project": str(project),
+                        "slug": slug,
+                        "stack": args.stack,
+                        "would_overwrite": [str(path) for path in existing],
+                        "would_generate": [
+                            str(path) for path in generated_targets(project, slug)
+                        ],
+                        "requires_force": bool(existing),
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
+
         refuse_existing(project, slug, args.force)
         rows = normalize_evidence(iter_evidence_rows(evidence), slug)
 
         project.mkdir(parents=True, exist_ok=True)
+        backup_path = None
+        if existing and args.force:
+            backup_files, _ = import_state_helpers()
+            backup_path = backup_files(project, existing, label=slug)
+
         copy_template = import_copy_template()
         copy_template(args.stack, project, args.force)
         commands = commands_for_project(project, args.stack)
@@ -403,15 +524,54 @@ def main():
         write_jsonl(research_path, rows)
         adr_path.parent.mkdir(parents=True, exist_ok=True)
         with adr_path.open("w", encoding="utf-8", newline="\n") as handle:
-            handle.write(adr_text(slug, args.stack, args.goal, rows))
+            handle.write(adr_text(slug, args.stack, args.goal, rows, decision))
 
-        write_project_contract(contract_path, slug, args.stack, args.goal, commands, args.secondary_stack)
+        write_project_contract(
+            contract_path,
+            slug,
+            args.stack,
+            args.goal,
+            commands,
+            args.secondary_stack,
+            decision,
+        )
         write_ci_contract(ci_path, args.stack, commands)
         handoff_path = project / "docs" / "superpowers-handoff.md"
         handoff_path.parent.mkdir(parents=True, exist_ok=True)
         with handoff_path.open("w", encoding="utf-8", newline="\n") as hf:
             hf.write(write_handoff_text(slug, args.stack, args.goal, rows, commands))
-    except (FileExistsError, FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+
+        _, record_run = import_state_helpers()
+        history_path = record_run(
+            project,
+            {
+                "slug": slug,
+                "stack": args.stack,
+                "secondary_stack": args.secondary_stack or None,
+                "goal": args.goal,
+                "evidence_count": len(rows),
+                "decision_file": args.decision_file,
+                "backup": str(backup_path) if backup_path else None,
+                "generated": [
+                    str(path.relative_to(project)).replace("\\", "/")
+                    for path in generated_targets(project, slug)
+                ],
+            },
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "ok",
+                    "project": str(project),
+                    "slug": slug,
+                    "stack": args.stack,
+                    "backup": str(backup_path) if backup_path else None,
+                    "history": str(history_path),
+                },
+                sort_keys=True,
+            )
+        )
+    except (FileExistsError, FileNotFoundError, OSError, ValueError, json.JSONDecodeError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
     return 0

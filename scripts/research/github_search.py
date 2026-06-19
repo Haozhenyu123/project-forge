@@ -5,8 +5,10 @@ import argparse
 import json
 import os
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -16,6 +18,7 @@ def parse_args():
     parser.add_argument("--limit", type=int, required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--fixture")
+    parser.add_argument("--strict", action="store_true", help="Fail instead of writing provisional fallback evidence")
     return parser.parse_args()
 
 
@@ -58,6 +61,9 @@ def normalize_repo(repo, query):
         "language": repo.get("language"),
         "topics": repo.get("topics") or [],
         "updated_at": repo.get("updated_at"),
+        "observed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "provisional": False,
+        "source_quality": "repository-metadata",
         "query": query,
     }
 
@@ -72,7 +78,27 @@ def write_jsonl(rows, out_path):
 
 def main():
     args = parse_args()
-    payload = load_payload(args)
+    try:
+        payload = load_payload(args)
+    except (urllib.error.HTTPError, urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
+        if args.strict:
+            print(f"GitHub search failed: {exc}", file=sys.stderr)
+            return 1
+        write_jsonl(
+            [
+                {
+                    "source": "host-web-tool",
+                    "kind": "manual-search-required",
+                    "query": args.query,
+                    "summary": f"GitHub API search unavailable: {type(exc).__name__}",
+                    "observed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+                    "provisional": True,
+                    "source_quality": "unverified",
+                }
+            ],
+            args.out,
+        )
+        return 0
     items = payload.get("items", []) if isinstance(payload, dict) else payload
     rows = [normalize_repo(repo, args.query) for repo in items[: args.limit]]
     write_jsonl(rows, args.out)

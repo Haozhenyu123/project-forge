@@ -1,0 +1,9 @@
+{
+  "project-forge": {
+    "command": "python",
+    "args": [
+      "${PLUGIN_ROOT}/scripts/mcp/server.py"
+    ],
+    "cwd": "${PLUGIN_ROOT}"
+  }
+}

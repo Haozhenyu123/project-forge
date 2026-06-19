@@ -7,13 +7,21 @@ on:
 jobs:
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - run: python -m unittest tests/test_project_forge.py
+      - run: python -m unittest discover -s tests/runtime -p "test*.py"
+      - run: python -m unittest discover -s tests/decision -p "test*.py"
+      - run: python -m unittest discover -s tests/agent -p "test*.py"
+      - run: python scripts/install_test.py
 
   validate-evals:
     name: Validate Eval Scenarios
@@ -64,6 +72,26 @@ jobs:
         with:
           python-version: '3.x'
       - run: python scripts/install_test.py
+
+  install-tools:
+    name: Install Tool Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/install/test_install_tools.py
+
+  release-tools:
+    name: Release Tool Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/release/test_release_tools.py
 
   template-integrity:
     name: Template Integrity Check

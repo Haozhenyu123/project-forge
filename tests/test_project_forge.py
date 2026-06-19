@@ -15,6 +15,9 @@ def load_json(path):
         return json.load(handle)
 
 
+PROJECT_VERSION = load_json(ROOT / "package.json")["version"]
+
+
 def read_frontmatter(path):
     text = path.read_text(encoding="utf-8")
     assert text.startswith("---\n"), f"{path} is missing YAML frontmatter"
@@ -35,7 +38,7 @@ class ManifestTests(unittest.TestCase):
 
         for manifest in (codex, claude):
             self.assertEqual(manifest["name"], "project-forge")
-            self.assertEqual(manifest["version"], "0.2.3")
+            self.assertEqual(manifest["version"], PROJECT_VERSION)
             self.assertEqual(manifest["license"], "MIT")
             self.assertEqual(manifest["skills"], "./skills/")
             self.assertIn("architect", manifest["description"].lower())
@@ -94,6 +97,14 @@ class ManifestTests(unittest.TestCase):
         self.assertIn("codex-marketplace.personal.json", readme)
         self.assertIn("/plugin install", readme)
         self.assertIn("python -m unittest tests/test_project_forge.py", readme)
+
+    def test_readme_is_clean_utf8_without_mojibake(self):
+        raw = (ROOT / "README.md").read_bytes()
+        text = raw.decode("utf-8")
+        self.assertIn("## 中文快速入门", text)
+        self.assertIn("```powershell\n", text)
+        for broken in ("鈥?", "浠€", "鏄", "锛?", "??????"):
+            self.assertNotIn(broken, text)
 
 
 class SkillTests(unittest.TestCase):
@@ -411,6 +422,154 @@ class ScriptTests(unittest.TestCase):
             self.assertIn("Reference architecture example", adr_text)
             self.assertIn("[E1]", adr_text)
             self.assertIn("Help small teams", contract.read_text(encoding="utf-8"))
+
+    def test_forge_project_dry_run_does_not_write_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            evidence = Path(tmp) / "evidence.jsonl"
+            evidence.write_text(
+                json.dumps(
+                    {
+                        "source": "web",
+                        "title": "Architecture source",
+                        "url": "https://example.com/source",
+                        "summary": "Current architecture evidence",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            proc = self.run_script(
+                "scripts/forge_project.py",
+                "--project",
+                str(project),
+                "--slug",
+                "dry-run-project",
+                "--goal",
+                "Preview the decision workflow",
+                "--stack",
+                "node-ts",
+                "--evidence",
+                str(evidence),
+                "--dry-run",
+            )
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["status"], "dry-run")
+            self.assertFalse(project.exists())
+
+    def test_force_creates_backup_and_restore_recovers_generated_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            project.mkdir()
+            evidence = Path(tmp) / "evidence.jsonl"
+            evidence.write_text(
+                json.dumps(
+                    {
+                        "source": "web",
+                        "title": "Architecture source",
+                        "url": "https://example.com/source",
+                        "summary": "Current architecture evidence",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            common = [
+                "scripts/forge_project.py",
+                "--project",
+                str(project),
+                "--slug",
+                "backup-project",
+                "--goal",
+                "Protect generated decisions",
+                "--stack",
+                "node-ts",
+                "--evidence",
+                str(evidence),
+            ]
+            self.run_script(*common)
+            adr = project / "docs" / "architecture" / "ADR-0001-stack.md"
+            original = adr.read_text(encoding="utf-8")
+            adr.write_text("user modified ADR\n", encoding="utf-8")
+
+            forced = self.run_script(*common, "--force")
+            payload = json.loads(forced.stdout)
+            self.assertTrue(payload["backup"])
+            backup_id = Path(payload["backup"]).name
+
+            adr.write_text("newer local change\n", encoding="utf-8")
+            self.run_script(
+                "scripts/state_manager.py",
+                "restore",
+                backup_id,
+                "--project",
+                str(project),
+                "--force",
+            )
+            self.assertEqual(adr.read_text(encoding="utf-8"), "user modified ADR\n")
+            self.assertNotEqual(original, "user modified ADR\n")
+
+    def test_structured_decision_populates_candidates_rejections_and_confidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            evidence = Path(tmp) / "evidence.jsonl"
+            decision = Path(tmp) / "decision.json"
+            evidence.write_text(
+                json.dumps(
+                    {
+                        "source": "github",
+                        "title": "Reference",
+                        "url": "https://github.com/example/reference",
+                        "summary": "Maintained reference",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            decision.write_text(
+                json.dumps(
+                    {
+                        "selected_stack": "node-ts",
+                        "rationale": "Best fit for the delivery constraints.",
+                        "candidates": [
+                            {"stack": "node-ts", "score": 88, "reason": "Strong harness fit"},
+                            {"stack": "python", "score": 61, "reason": "Weaker frontend fit"},
+                        ],
+                        "rejected_options": [
+                            {"stack": "python", "reason": "Adds a second runtime without benefit"}
+                        ],
+                        "confidence": {
+                            "level": "High",
+                            "reason": "multiple independent sources agree",
+                        },
+                        "revisit_triggers": ["The product becomes offline-first."],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.run_script(
+                "scripts/forge_project.py",
+                "--project",
+                str(project),
+                "--slug",
+                "decision-project",
+                "--goal",
+                "Choose a maintainable product stack",
+                "--stack",
+                "node-ts",
+                "--evidence",
+                str(evidence),
+                "--decision-file",
+                str(decision),
+            )
+            adr = (project / "docs" / "architecture" / "ADR-0001-stack.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("## Considered Options", adr)
+            self.assertIn("score: 88", adr)
+            self.assertIn("Adds a second runtime without benefit", adr)
+            self.assertIn("High confidence", adr)
+            self.assertIn("The product becomes offline-first.", adr)
 
     def test_forge_project_rejects_slug_path_traversal(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -898,7 +1057,103 @@ class CLITests(unittest.TestCase):
     def test_cli_version_outputs_version(self):
         proc = self.run_cli("--version")
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("0.2.3", proc.stdout)
+        self.assertIn(PROJECT_VERSION, proc.stdout)
+
+    def test_cli_init_dry_run_is_valid_json_and_does_not_create_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "new-project"
+            proc = self.run_cli(
+                "init",
+                str(project),
+                "--stack",
+                "node-ts",
+                "--goal",
+                "Preview a safe Forge run",
+                "--dry-run",
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["status"], "dry-run")
+            self.assertFalse(project.exists())
+
+    def test_cli_init_accepts_evidence_file_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "new-project"
+            evidence = Path(tmp) / "evidence.jsonl"
+            evidence.write_text(
+                json.dumps(
+                    {
+                        "source": "web",
+                        "title": "Current source",
+                        "url": "https://example.com/current",
+                        "summary": "Evidence for the selected stack",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            proc = self.run_cli(
+                "init",
+                str(project),
+                "--stack",
+                "node-ts",
+                "--goal",
+                "Create a safe evidence-backed decision",
+                "--evidence",
+                str(evidence),
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertTrue((project / "project-forge.yaml").is_file())
+
+    def test_cli_init_without_stack_uses_decision_engine(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "auto-project"
+            evidence = Path(tmp) / "evidence.jsonl"
+            evidence.write_text(
+                json.dumps(
+                    {
+                        "source": "official-docs",
+                        "title": "Next.js documentation",
+                        "url": "https://nextjs.org/docs",
+                        "summary": "Next.js TypeScript dashboard framework",
+                        "observed_at": "2026-06-01",
+                    }
+                )
+                + "\n"
+                + json.dumps(
+                    {
+                        "source": "github",
+                        "title": "vercel/next.js repository",
+                        "url": "https://github.com/vercel/next.js",
+                        "summary": "Maintained Next.js repository",
+                        "observed_at": "2026-06-01",
+                    }
+                )
+                + "\n",
+                encoding="utf-8-sig",
+            )
+            proc = self.run_cli(
+                "init",
+                str(project),
+                "--goal",
+                "Build a TypeScript web dashboard",
+                "--evidence",
+                str(evidence),
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertIn("Decision:", proc.stdout)
+            adr = (project / "docs" / "architecture" / "ADR-0001-stack.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("## Considered Options", adr)
+
+    def test_cli_doctor_reports_runtime_state(self):
+        proc = self.run_cli("doctor")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        payload = json.loads(proc.stdout)
+        self.assertEqual(payload["status"], "ok")
+        self.assertGreaterEqual(payload["skills"], 6)
+        self.assertGreaterEqual(payload["templates"], 8)
 
     def test_cli_list_templates_shows_all_eight(self):
         proc = self.run_cli("list-templates")
@@ -1191,7 +1446,7 @@ class MCPServerTests(unittest.TestCase):
         try:
             import server
             self.assertEqual(server.SERVER_NAME, "project-forge")
-            self.assertEqual(server.SERVER_VERSION, "0.2.3")
+            self.assertEqual(server.SERVER_VERSION, PROJECT_VERSION)
             self.assertGreater(len(server.TOOLS), 5)
             tool_names = {t["name"] for t in server.TOOLS}
             self.assertIn("github_search", tool_names)

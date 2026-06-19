@@ -3,12 +3,20 @@
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
-KNOWN_TEMPLATES = {"node-ts", "python", "generic", "nextjs", "fastapi", "electron", "cli", "chrome-extension"}
 
-KNOWN_TEMPLATES = {"node-ts", "python", "generic", "nextjs", "fastapi", "electron", "cli", "chrome-extension"}
-
+KNOWN_TEMPLATES = {
+    "node-ts",
+    "python",
+    "generic",
+    "nextjs",
+    "fastapi",
+    "electron",
+    "cli",
+    "chrome-extension",
+}
 
 
 COMMANDS = {
@@ -132,19 +140,8 @@ def detect_template(project):
     # Fallback: read stack from existing project-forge.yaml (Forge workspace)
     forge_yaml = root / "project-forge.yaml"
     if forge_yaml.exists():
-        import re
         yaml_text = forge_yaml.read_text(encoding="utf-8")
-        match = re.search(r'stack:\s*"?(\S+)"?', yaml_text)
-        if match:
-            known = match.group(1).strip('"')
-            if known in KNOWN_TEMPLATES:
-                return known
-    # Fallback: read stack from existing project-forge.yaml
-    forge_yaml = root / "project-forge.yaml"
-    if forge_yaml.exists():
-        import re
-        yaml_text = forge_yaml.read_text(encoding="utf-8")
-        match = re.search(r"stack:\\s*\"?([\\S]+)\"?", yaml_text)
+        match = re.search(r'^\s*stack:\s*"?([^"\s]+)"?\s*$', yaml_text, re.MULTILINE)
         if match:
             known = match.group(1).strip('"')
             if known in KNOWN_TEMPLATES:

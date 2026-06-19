@@ -1,0 +1,28 @@
+{
+  "source": {
+    "path": "package.json",
+    "field": "version"
+  },
+  "targets": [
+    {
+      "path": ".codex-plugin/plugin.json",
+      "type": "json",
+      "field": "version"
+    },
+    {
+      "path": ".claude-plugin/plugin.json",
+      "type": "json",
+      "field": "version"
+    },
+    {
+      "path": "scripts/cli.py",
+      "type": "regex",
+      "pattern": "^VERSION = \"(?P<version>[^\"]+)\"$"
+    },
+    {
+      "path": "scripts/mcp/server.py",
+      "type": "regex",
+      "pattern": "^SERVER_VERSION = \"(?P<version>[^\"]+)\"$"
+    }
+  ]
+}

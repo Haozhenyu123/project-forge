@@ -1,0 +1,12 @@
+{
+  "id": "vague-idea",
+  "title": "Vague idea routes through Project Forge intake",
+  "prompt": "Use Project Forge for this vague idea: something that helps teams make better decisions.",
+  "expected_skills": ["forge-intake"],
+  "forbid_tools_before_skill": true,
+  "response_assertions": {
+    "contains": ["Project Forge"],
+    "not_contains": ["implemented the application"]
+  },
+  "artifact_assertions": []
+}

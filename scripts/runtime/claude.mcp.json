@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "project-forge": {
+      "command": "python",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/mcp/server.py"
+      ],
+      "cwd": "${CLAUDE_PLUGIN_ROOT}"
+    }
+  }
+}

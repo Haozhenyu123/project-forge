@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.2.4] - 2026-06-19
+
+### Added
+- Deterministic decision engine for creative directions, stack ranking, rejected options, confidence, and revisit triggers.
+- Runtime activation assets for Codex and Claude Code: SessionStart hooks plus MCP registration in both plugin manifests.
+- Safer forge runs with dry-run support, overwrite refusal by default, backups, restore, and run history.
+- Superpowers handoff document generation that preserves Project Forge's boundary: decision, evidence, architecture, harness, and handoff.
+- Live-agent evaluation runner with CLI isolation, skip behavior when agent CLIs are unavailable, and scenario assertions.
+- Install helpers for Codex and Claude Code plugin locations.
+- Release packaging, version audit, version bump tooling, release workflow, distribution docs, security policy, and code of conduct.
+
+### Changed
+- `forge_project.py` now writes richer ADRs with considered options, rejected options, confidence, and revisit triggers.
+- `cli.py` now captures subprocess output correctly, supports `doctor`, `backups`, `restore`, `--dry-run`, `--force`, and decision files.
+- Research scripts now produce higher quality fallback evidence, source quality markers, observed timestamps, and safer missing-token behavior.
+- CI now covers cross-platform unit checks plus focused runtime, decision, agent, install, and release test jobs.
+- README was rewritten in clean UTF-8 with a clearer Project Forge vs Superpowers boundary.
+
+### Fixed
+- Removed stale stack-detection fallback duplication.
+- Hardened BOM handling for evidence inputs.
+- Removed mojibake from project documentation.
+
 ## [0.2.0] - 2026-06-19
 
 ### Added
@@ -10,12 +33,12 @@
 - **`creative-brief.md` artifact** produced by `scripts/creative_brief.py`
 - **Real web search backend** via DuckDuckGo API (no key required), with custom provider fallback
 - **Three new example projects**: `fastapi-demo`, `chrome-extension-demo`, `cli-demo` (total: 4)
-- `docs/architecture.md` — internal architecture documentation
-- `docs/quickstart.md` — 5-minute setup guide
-- `Makefile` — `make test`, `make verify`, `make clean`, `make smoke`, `make evals`
-- `.editorconfig` — consistent code style
-- `scripts/clean.py` — remove `__pycache__` and build artifacts
-- `scripts/install_test.py` — 12-point installation verification
+- `docs/architecture.md` - internal architecture documentation
+- `docs/quickstart.md` - 5-minute setup guide
+- `Makefile` - `make test`, `make verify`, `make clean`, `make smoke`, `make evals`
+- `.editorconfig` - consistent code style
+- `scripts/clean.py` - remove `__pycache__` and build artifacts
+- `scripts/install_test.py` - 12-point installation verification
 - Integration test class (5 tests) covering full pipeline, creative brief, DuckDuckGo search
 - Smart stack detection for Next.js, Electron, CLI tools, Chrome Extensions, FastAPI
 

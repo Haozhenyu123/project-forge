@@ -4,139 +4,158 @@
 [![Version](https://img.shields.io/badge/version-0.2.3-brightgreen)](CHANGELOG.md)
 [![Tests](https://img.shields.io/badge/tests-84%20passed-brightgreen)](.)
 
-**Decide what to build and why — before you write a single line of code.**
+**Decide what to build, why it should exist, and which architecture fits before implementation begins.**
 
-Project Forge is a dual-harness plugin for Codex and Claude Code. It adds an AI Creative Design Director and an AI Architect to your workflow, so every project starts with a clear product direction, competitive analysis, evidence-backed architecture, and a verifiable harness — then hands off to Superpowers for implementation.
+Project Forge is a decision and architecture plugin for Codex and Claude Code. It turns an early idea into:
 
+- a recommended product direction;
+- current research evidence;
+- compared architecture candidates;
+- an accepted architecture decision record;
+- a reproducible harness contract;
+- a clean handoff to Superpowers.
 
-## ?????? (Chinese Quickstart)
+Project Forge does not replace Superpowers. Project Forge owns product direction, evidence, architecture, and verification contracts. Superpowers owns implementation disciplines such as planning, TDD, debugging, code review, and branch completion.
 
-### 什么是 Project Forge？
-
-Project Forge 是一个双平台插件（Codex + Claude Code），在 Superpowers 风格的工作流之上增加了两个 AI 角色：
-
-- **AI 创意设计总监**：将模糊想法转化为产品方向、推荐切入点和用户体验策略。
-- **AI 架构师**：搜索 GitHub 和网络，使用证据选择技术栈和框架，并撰写架构决策记录 (ADR)。
-- **Harness 工程师**：为项目生成可验证的安装、测试、构建、运行和 CI 命令契约。
-
-### 快速安装
-
-```powershell
-git clone https://github.com/Haozhenyu123/project-forge.git $env:USERPROFILE\plugins\project-forge
-Copy-Item -Force "$env:USERPROFILE\plugins\project-forge\install\codex-marketplace.personal.json" "$env:USERPROFILE\.codex\marketplace\personal.json"
-```
-
-### 使用方式
-
-```
-/plugin install $env:USERPROFILE\plugins\project-forge
-```
-
-### 核心流程
-
-1. 提出模糊想法 → `forge-intake` 接收并澄清
-2. `creative-director` 给出 3 个推荐方向，选择默认并解释原因
-3. `ai-architect` 搜索证据、比较方案、撰写 ADR
-4. `harness-engineer` 生成命令契约和 CI
-5. `forge-project` 整合所有产物 → 交接给 Superpowers
-
-### 验证安装
-
-```powershell
-python scripts/install_test.py
-python -m unittest tests/test_project_forge.py
-```
-## How It Works
+## Workflow
 
 ```mermaid
 flowchart LR
-    A[Vague Idea] --> B[forge-intake]
-    B --> C[creative-director]
-    C --> D[ai-architect]
-    D --> E[harness-engineer]
-    E --> F[forge-project]
-    F --> G[Superpowers Handoff]
+    A[Vague idea] --> B[Creative options]
+    B --> C[Recommended direction]
+    C --> D[Evidence research]
+    D --> E[Architecture candidates]
+    E --> F[Selected stack and ADR]
+    F --> G[Harness and CI]
+    G --> H[Superpowers handoff]
 ```
 
 ## What You Get
 
-| Worker | What It Decides | Artifact |
-|--------|----------------|----------|
-| **Creative Design Director** | Product direction, UX stance, competitive gap, differentiation, architecture signals | `docs/creative-brief.md` |
-| **AI Architect** | Stack selection, confidence levels, domain pattern matching, explicit rejections | `docs/architecture/ADR-0001-stack.md` |
-| **Harness Engineer** | Install / test / lint / typecheck / build / run / smoke commands | `project-forge.yaml` |
-| **Forge Project** | Full coordinator: research → ADR → harness → CI → handoff | All of the above + CI workflow |
+| Worker | Responsibility | Primary artifact |
+|---|---|---|
+| Creative Design Director | Product angles, target user, competitive gap, differentiation | `docs/creative-brief.md` |
+| AI Architect | Candidate comparison, stack selection, rejected options, confidence | `docs/architecture/ADR-0001-stack.md` |
+| Harness Engineer | Install, test, lint, typecheck, build, run, smoke, and CI contracts | `project-forge.yaml` |
+| Forge Coordinator | Research, decision history, backups, and Superpowers handoff | `.project-forge/` and `docs/superpowers-handoff.md` |
 
-Every decision is traceable to evidence: GitHub search, DuckDuckGo web search (no API key needed), or your own JSONL research files.
+## Install
 
-## Quick Install
+### Codex
 
 ```powershell
-# Codex
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\plugins" | Out-Null
 git clone https://github.com/Haozhenyu123/project-forge.git "$env:USERPROFILE\plugins\project-forge"
 Copy-Item -Force "$env:USERPROFILE\plugins\project-forge\install\codex-marketplace.personal.json" "$env:USERPROFILE\.agents\plugins\marketplace.json"
+```
 
-# Claude Code — from inside Claude Code:
+### Claude Code
+
+Run from Claude Code:
+
+```text
 /plugin install $env:USERPROFILE\plugins\project-forge
 ```
 
 ## Quick Start
 
+Preview a run without writing files:
+
 ```powershell
-# Forge a new project from scratch
-python scripts/cli.py init my-app --stack nextjs --goal "A team sprint dashboard"
-
-# Or use the batch wrapper
-.\project-forge.bat init my-api --stack fastapi
-
-# Detect an existing project's stack
-python scripts/cli.py detect . --json
-
-# See all available templates
-python scripts/cli.py list-templates
+python scripts/cli.py init my-app --stack nextjs --goal "A focused sprint dashboard" --dry-run
 ```
+
+Create the decision and harness artifacts:
+
+```powershell
+python scripts/cli.py init my-app --stack nextjs --goal "A focused sprint dashboard"
+```
+
+Inspect the installation and available runtime integrations:
+
+```powershell
+python scripts/cli.py doctor
+```
+
+Detect an existing project's stack:
+
+```powershell
+python scripts/cli.py detect . --json
+```
+
+Research a current architecture question:
+
+```powershell
+python scripts/cli.py research --query "offline-first collaborative web application"
+```
+
+List and restore backups:
+
+```powershell
+python scripts/cli.py backups my-app
+python scripts/cli.py restore <backup-id> my-app --force
+```
+
+## Safety
+
+- Existing generated files are not overwritten by default.
+- `--force` creates a backup under `.project-forge/backups/`.
+- Every successful Forge run records decision history under `.project-forge/history/`.
+- `--dry-run` reports planned files and conflicts without modifying the project.
+- Missing search credentials produce provisional evidence instead of fabricated claims.
 
 ## Available Templates
 
-| Template | Stack | Detection Signal |
-|----------|-------|-----------------|
-| `node-ts` | Node.js + TypeScript | `package.json` |
-| `nextjs` | Next.js App Router | `next` in dependencies |
-| `electron` | Electron Desktop | `electron` in dependencies |
-| `cli` | Node.js CLI tool | `bin` in `package.json` |
+| Template | Stack | Detection signal |
+|---|---|---|
+| `node-ts` | Node.js and TypeScript | `package.json` |
+| `nextjs` | Next.js App Router | `next` dependency |
+| `electron` | Electron desktop | `electron` dependency |
+| `cli` | Node.js CLI | `bin` in `package.json` |
 | `chrome-extension` | Chrome Extension MV3 | `manifest.json` |
-| `python` | Python | `pyproject.toml` / `requirements.txt` |
-| `fastapi` | FastAPI Python | `fastapi` import in `main.py` |
-| `generic` | Any stack | Fallback — customize commands |
+| `python` | Python | `pyproject.toml` or `requirements.txt` |
+| `fastapi` | FastAPI | FastAPI project signal |
+| `generic` | Any stack | Explicit fallback |
 
 ## Verify
 
 ```powershell
-python -m unittest tests/test_project_forge.py    # 84 tests
-python scripts/install_test.py                     # 12-point install check
-python scripts/evals/validate_scenarios.py evals/scenarios  # 6 eval scenarios
+python -m unittest tests/test_project_forge.py
+python scripts/install_test.py
+python scripts/evals/validate_scenarios.py evals/scenarios
 ```
 
 ## Update
 
-`powershell
-# Pull latest from GitHub
+```powershell
 git pull origin main
-
-# Re-run install check
 python scripts/install_test.py
-`
+python scripts/cli.py doctor
+```
+
+## 中文快速入门
+
+Project Forge 负责在编码之前回答三个问题：
+
+1. 做什么产品，面向谁，从哪个切入点开始。
+2. 为什么选择这个方向，证据是什么。
+3. 使用什么架构、框架和 Harness，为什么这样选择。
+
+它会生成创意简报、研究证据、候选架构比较、ADR、命令契约、CI 和 Superpowers 交接文件。它不会重新实现 Superpowers 的 TDD、调试、代码审查或 Git 工作流。
+
+```powershell
+python scripts/cli.py init my-app --stack nextjs --goal "一个帮助小团队聚焦冲刺目标的仪表盘" --dry-run
+python scripts/cli.py init my-app --stack nextjs --goal "一个帮助小团队聚焦冲刺目标的仪表盘"
+```
 
 ## Documentation
 
-- [Architecture Overview](docs/architecture.md) — internal design and data flow
-- [Quickstart Guide](docs/quickstart.md) — 5-minute setup
-- [Superpowers Handoff Protocol](docs/superpowers-handoff.md) — how Superpowers consumes Forge output
-- [Contributing](CONTRIBUTING.md) — how to add templates, skills, or tests
-- [Changelog](CHANGELOG.md) — version history
+- [Architecture overview](docs/architecture.md)
+- [Quickstart guide](docs/quickstart.md)
+- [Superpowers handoff protocol](docs/superpowers-handoff.md)
+- [Contributing](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 
 MIT
-

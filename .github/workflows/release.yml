@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to package"
+        required: true
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  package:
+    name: Package Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: python scripts/release/version.py audit
+      - run: python -m unittest tests/test_project_forge.py
+      - run: python scripts/install_test.py
+      - run: python -c "from scripts.release.package_release import build_archives; build_archives('.', 'dist')"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: project-forge-release
+          path: dist/*

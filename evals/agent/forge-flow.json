@@ -1,0 +1,12 @@
+{
+  "id": "forge-flow",
+  "title": "Full Project Forge decision and handoff flow",
+  "prompt": "Use Project Forge to produce product direction, evidence, architecture, harness, and Superpowers handoff for a small dashboard.",
+  "expected_skills": ["forge-intake"],
+  "forbid_tools_before_skill": true,
+  "response_assertions": {
+    "contains": ["handoff"],
+    "not_contains": ["TDD workflow"]
+  },
+  "artifact_assertions": []
+}

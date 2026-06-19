@@ -1,20 +1,21 @@
 {
-    "name":  "project-forge",
-    "version":  "0.2.3",
-    "description":  "Decide what to build and why before coding. AI Creative Director + AI Architect + Harness Engineer for evidence-backed project architecture.",
-    "license":  "MIT",
-    "author":  {
-                   "name":  "Project Forge Contributors"
-               },
-    "homepage":  "https://github.com/Haozhenyu123/project-forge",
-    "repository":  "https://github.com/Haozhenyu123/project-forge",
-    "keywords":  [
-                     "architecture",
-                     "harness",
-                     "agents",
-                     "evaluation"
-                 ],
-    "skills":  "./skills/",
-    "displayName":  "Project Forge"
+  "author": {
+    "name": "Project Forge Contributors"
+  },
+  "description": "Decide what to build and why before coding. AI Creative Director + AI Architect + Harness Engineer for evidence-backed project architecture.",
+  "displayName": "Project Forge",
+  "homepage": "https://github.com/Haozhenyu123/project-forge",
+  "hooks": "./hooks/hooks.json",
+  "keywords": [
+    "architecture",
+    "harness",
+    "agents",
+    "evaluation"
+  ],
+  "license": "MIT",
+  "mcpServers": "./scripts/runtime/claude.mcp.json",
+  "name": "project-forge",
+  "repository": "https://github.com/Haozhenyu123/project-forge",
+  "skills": "./skills/",
+  "version": "0.2.4"
 }
-
