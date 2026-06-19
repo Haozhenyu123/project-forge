@@ -1,37 +1,36 @@
-{
-  "name": "project-forge",
-  "version": "0.2.0",
-  "description": "Project Forge pairs an AI architect with a harness engineering workflow for planning, building, and verifying agent-created projects.",
-  "license": "MIT",
-  "author": {
-    "name": "Project Forge Contributors"
-  },
-  "homepage": "https://github.com/Haozhenyu123/project-forge",
-  "repository": "https://github.com/Haozhenyu123/project-forge",
-  "keywords": [
-    "architecture",
-    "harness",
-    "agents",
-    "evaluation"
-  ],
-  "skills": "./skills/",
-  "interface": {
-    "displayName": "Project Forge",
-    "shortDescription": "Agent architecture and harness workflow for building verifiable projects.",
-    "longDescription": "Project Forge coordinates intake, creative direction, AI architecture, harness engineering, and agent evaluation so teams can plan, build, and verify agent-created projects with repeatable evidence.",
-    "developerName": "Project Forge Contributors",
-    "category": "Developer Tools",
-    "capabilities": [
-      "Interactive",
-      "Read",
-      "Write"
-    ],
-    "defaultPrompt": [
-      "Use Project Forge to turn this idea into an implementation-ready architecture and harness plan.",
-      "Review this project with Project Forge and identify the evidence, verification, and CI gaps.",
-      "Help me define a Project Forge evaluation scenario for this agent workflow."
-    ]
-  }
+﻿{
+    "name":  "project-forge",
+    "version":  "0.2.2",
+    "description":  "Decide what to build and why before coding. AI Creative Director + AI Architect + Harness Engineer for evidence-backed project architecture.",
+    "license":  "MIT",
+    "author":  {
+                   "name":  "Project Forge Contributors"
+               },
+    "homepage":  "https://github.com/Haozhenyu123/project-forge",
+    "repository":  "https://github.com/Haozhenyu123/project-forge",
+    "keywords":  [
+                     "architecture",
+                     "harness",
+                     "agents",
+                     "evaluation"
+                 ],
+    "skills":  "./skills/",
+    "interface":  {
+                      "displayName":  "Project Forge",
+                      "shortDescription":  "AI project architect: research-backed stack selection, creative direction, and auto-generated harness contracts.",
+                      "longDescription":  "Project Forge adds two AI identities to your workflow: a Creative Design Director who turns vague ideas into product direction with competitive analysis and architecture signals, and an AI Architect who picks the right stack backed by GitHub/web evidence. It generates a complete harness contract (install/test/lint/build/run/smoke commands), CI workflows, and a Superpowers implementation handoff.",
+                      "developerName":  "Project Forge Contributors",
+                      "category":  "Developer Tools",
+                      "capabilities":  [
+                                           "Interactive",
+                                           "Read",
+                                           "Write"
+                                       ],
+                      "defaultPrompt":  [
+                                            "Use Project Forge to turn this idea into an implementation-ready architecture and harness plan.",
+                                            "Review this project with Project Forge and identify the evidence, verification, and CI gaps.",
+                                            "Help me define a Project Forge evaluation scenario for this agent workflow."
+                                        ]
+                  }
 }
-
 

@@ -1,21 +1,20 @@
-{
-  "name": "project-forge",
-  "version": "0.2.0",
-  "description": "Project Forge pairs an AI architect with a harness engineering workflow for planning, building, and verifying agent-created projects.",
-  "license": "MIT",
-  "author": {
-    "name": "Project Forge Contributors"
-  },
-  "homepage": "https://github.com/Haozhenyu123/project-forge",
-  "repository": "https://github.com/Haozhenyu123/project-forge",
-  "keywords": [
-    "architecture",
-    "harness",
-    "agents",
-    "evaluation"
-  ],
-  "skills": "./skills/",
-  "displayName": "Project Forge"
+﻿{
+    "name":  "project-forge",
+    "version":  "0.2.2",
+    "description":  "Decide what to build and why before coding. AI Creative Director + AI Architect + Harness Engineer for evidence-backed project architecture.",
+    "license":  "MIT",
+    "author":  {
+                   "name":  "Project Forge Contributors"
+               },
+    "homepage":  "https://github.com/Haozhenyu123/project-forge",
+    "repository":  "https://github.com/Haozhenyu123/project-forge",
+    "keywords":  [
+                     "architecture",
+                     "harness",
+                     "agents",
+                     "evaluation"
+                 ],
+    "skills":  "./skills/",
+    "displayName":  "Project Forge"
 }
-
 
