@@ -1,0 +1,11 @@
+{
+  "id": "conflicting-constraints",
+  "title": "Conflicting Constraints",
+  "category": "conflicting constraints",
+  "prompt": "Build a fully offline app that syncs instantly across all devices with no server.",
+  "expected_behaviors": [
+    "Name the conflict in the requirements",
+    "Ask the user to prioritize constraints",
+    "Suggest feasible trade-offs"
+  ]
+}

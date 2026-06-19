@@ -1,0 +1,11 @@
+{
+  "id": "no-search-fallback",
+  "title": "No Search Fallback",
+  "category": "no-search fallback",
+  "prompt": "Research current library choices, but web search is unavailable in this environment.",
+  "expected_behaviors": [
+    "Avoid inventing current facts",
+    "Use local fixtures or host-tool instructions",
+    "Mark conclusions as provisional until evidence is available"
+  ]
+}

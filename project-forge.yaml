@@ -1,0 +1,21 @@
+project:
+  goal: "Build a small, verified application from a researched architecture plan."
+  chosen_stack:
+    name: "node-ts"
+    language: "TypeScript"
+    runtime: "Node.js"
+    rationale: "Use a common TypeScript stack with fast local feedback and broad ecosystem support."
+
+commands:
+  install: "npm install"
+  test: "npm test"
+  lint: "npm run lint"
+  typecheck: "npm run typecheck"
+  build: "npm run build"
+  run: "npm run dev"
+  smoke: "npm run smoke"
+
+harness:
+  status: "sample"
+  verified: false
+  notes: "Replace these commands with project-specific commands after stack detection."

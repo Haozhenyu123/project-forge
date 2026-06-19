@@ -1,0 +1,9 @@
+template: generic
+commands:
+  install: echo "No install command configured"
+  test: echo "No test command configured"
+  lint: echo "No lint command configured"
+  typecheck: echo "No typecheck command configured"
+  build: echo "No build command configured"
+  run: echo "No run command configured"
+  smoke: echo "No smoke command configured"

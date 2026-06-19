@@ -1,0 +1,11 @@
+{
+  "id": "stale-information-risk",
+  "title": "Stale Information Risk",
+  "category": "stale-information risk",
+  "prompt": "Pick the best hosted vector database based on the latest pricing and limits.",
+  "expected_behaviors": [
+    "Identify that current information is required",
+    "Recommend checking authoritative sources",
+    "Record source dates for pricing and limits"
+  ]
+}

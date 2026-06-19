@@ -1,0 +1,11 @@
+{
+  "id": "vague-idea",
+  "title": "Vague Idea Intake",
+  "category": "vague idea",
+  "prompt": "I want to build something for teams that makes planning easier. What should it be?",
+  "expected_behaviors": [
+    "Ask clarifying questions before selecting a stack",
+    "Separate product goals from implementation assumptions",
+    "Produce a concise next-step plan"
+  ]
+}

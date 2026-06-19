@@ -1,0 +1,26 @@
+{
+  "total_count": 2,
+  "incomplete_results": false,
+  "items": [
+    {
+      "full_name": "pallets/flask",
+      "html_url": "https://github.com/pallets/flask",
+      "description": "The Python micro framework for building web applications.",
+      "stargazers_count": 69000,
+      "forks_count": 16000,
+      "language": "Python",
+      "updated_at": "2026-04-10T12:00:00Z",
+      "topics": ["python", "web", "framework"]
+    },
+    {
+      "full_name": "fastapi/fastapi",
+      "html_url": "https://github.com/fastapi/fastapi",
+      "description": "FastAPI framework, high performance, easy to learn.",
+      "stargazers_count": 83000,
+      "forks_count": 7300,
+      "language": "Python",
+      "updated_at": "2026-05-02T08:30:00Z",
+      "topics": ["python", "api", "framework"]
+    }
+  ]
+}

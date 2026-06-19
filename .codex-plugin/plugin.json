@@ -1,0 +1,10 @@
+{
+  "name": "project-forge",
+  "version": "0.1.0",
+  "description": "Project Forge pairs an AI architect with a harness engineering workflow for planning, building, and verifying agent-created projects.",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Project Forge"
+  }
+}

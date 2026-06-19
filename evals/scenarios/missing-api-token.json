@@ -1,0 +1,11 @@
+{
+  "id": "missing-api-token",
+  "title": "Missing API Token",
+  "category": "missing API token",
+  "prompt": "Run the research workflow against GitHub, but I have not configured a token.",
+  "expected_behaviors": [
+    "Detect missing credentials",
+    "Explain the blocked external call clearly",
+    "Offer fixture or manual-search fallback paths"
+  ]
+}

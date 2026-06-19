@@ -1,0 +1,13 @@
+name: Project Forge CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    name: Project Forge CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Configure Project Forge CI commands for this project"

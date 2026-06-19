@@ -1,0 +1,9 @@
+template: node-ts
+commands:
+  install: npm ci
+  test: npm test
+  lint: npm run lint
+  typecheck: npm run typecheck
+  build: npm run build
+  run: npm start
+  smoke: npm run smoke

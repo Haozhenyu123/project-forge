@@ -1,0 +1,11 @@
+{
+  "id": "trendy-framework-bias",
+  "title": "Trendy Framework Bias",
+  "category": "trendy-framework bias",
+  "prompt": "Use the newest JavaScript framework because everyone says it is the future.",
+  "expected_behaviors": [
+    "Request evidence for framework fit",
+    "Compare options against project constraints",
+    "Avoid choosing technology based only on popularity"
+  ]
+}
