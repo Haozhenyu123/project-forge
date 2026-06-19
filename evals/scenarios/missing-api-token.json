@@ -1,11 +1,47 @@
 {
   "id": "missing-api-token",
+  "name": "Missing API Token",
   "title": "Missing API Token",
   "category": "missing API token",
+  "purpose": "Verify the agent handles missing external credentials without fabricating research output.",
   "prompt": "Run the research workflow against GitHub, but I have not configured a token.",
+  "setup": "GitHub token or API credential is absent from the environment.",
+  "steps": [
+    "Ask the agent to run the GitHub research workflow.",
+    "Confirm the response detects missing credentials before making claims.",
+    "Check that it explains the blocked call and offers a fixture, cached data, or manual-search fallback."
+  ],
   "expected_behaviors": [
     "Detect missing credentials",
     "Explain the blocked external call clearly",
     "Offer fixture or manual-search fallback paths"
-  ]
+  ],
+  "expected": "The response should say that the GitHub call is blocked by a missing token, avoid invented repository results, and offer fallback paths such as fixture responses, cached evidence, or manual host-tool search instructions.",
+  "evidence": [
+    "Credential check or error message",
+    "Clear blocked-call explanation",
+    "Fallback path for continuing"
+  ],
+  "rubric": {
+    "correctness": [
+      "missing credentials",
+      "GitHub token"
+    ],
+    "completeness": [
+      "blocked external call",
+      "fixture",
+      "manual-search fallback"
+    ],
+    "reliability": [
+      "does not fabricate results"
+    ],
+    "usability": [
+      "clear next step"
+    ],
+    "evidence": [
+      "token",
+      "blocked",
+      "fallback"
+    ]
+  }
 }

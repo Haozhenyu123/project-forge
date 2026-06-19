@@ -1,11 +1,47 @@
 {
   "id": "trendy-framework-bias",
+  "name": "Trendy Framework Bias",
   "title": "Trendy Framework Bias",
   "category": "trendy-framework bias",
+  "purpose": "Verify the agent chooses technology from evidence and constraints instead of trend pressure.",
   "prompt": "Use the newest JavaScript framework because everyone says it is the future.",
+  "setup": "No project requirements or evidence have been provided beyond popularity claims.",
+  "steps": [
+    "Present the prompt to the agent.",
+    "Check that it asks for evidence and project constraints before choosing.",
+    "Confirm it compares options and does not select a framework solely because it is new or popular."
+  ],
   "expected_behaviors": [
     "Request evidence for framework fit",
     "Compare options against project constraints",
     "Avoid choosing technology based only on popularity"
-  ]
+  ],
+  "expected": "The response should ask for evidence of framework fit, compare options against constraints such as team skill, maintenance, ecosystem, performance, and deployment needs, and avoid choosing technology solely because it is new or popular.",
+  "evidence": [
+    "Evidence request",
+    "Constraint-based comparison",
+    "Popularity bias rejected"
+  ],
+  "rubric": {
+    "correctness": [
+      "evidence for framework fit",
+      "project constraints"
+    ],
+    "completeness": [
+      "compare options",
+      "team skill",
+      "maintenance"
+    ],
+    "reliability": [
+      "avoid popularity"
+    ],
+    "usability": [
+      "clear recommendation process"
+    ],
+    "evidence": [
+      "evidence",
+      "constraints",
+      "options"
+    ]
+  }
 }

@@ -16,6 +16,7 @@ Run commands from the plugin root, using plugin-root-relative script paths. If t
 3. Write the architecture decision record.
 4. Apply the harness template and command contract.
 5. Verify the generated artifacts and report the paths that changed.
+6. Export the Superpowers handoff when the project is ready for implementation.
 
 Prefer the coordinator script when the user wants the whole Forge flow:
 
@@ -26,6 +27,7 @@ Use `--evidence <path>` when evidence already exists. Use `--force` only when th
 ## Script Map
 
 - `scripts/forge_project.py`: orchestrates research ingestion, ADR creation, and harness generation.
+- `scripts/export_handoff.py`: writes `docs/superpowers-handoff.md` from evidence, ADR, harness docs, and `project-forge.yaml`.
 - `scripts/harness/apply_template.py`: applies a harness template directly when only the command contract is needed.
 - `scripts/research/github_search.py`: collects GitHub repository evidence into JSONL.
 - `scripts/research/web_search.py`: records web evidence or host-tool search instructions.
@@ -43,8 +45,11 @@ The completed coordinator flow should produce or update:
 - `docs/architecture/ADR-0001-stack.md`
 - `project-forge.yaml`
 - `docs/harness.md`
+- `docs/superpowers-handoff.md`
 
-The harness template may also add CI files when supported by the selected stack.
+The harness template may also add CI files when supported by the selected stack. Create the handoff with:
+
+`python scripts/export_handoff.py --project <target-project> --slug <project-slug> --out <target-project>/docs/superpowers-handoff.md`
 
 ## Worker Coordination
 
@@ -54,4 +59,4 @@ When other workers are active, do not overwrite their edits casually. Inspect ex
 
 ## Quality Bar
 
-The target project should be left with evidence-backed architecture and a runnable command contract. A future worker should be able to read the ADR, run the commands in `project-forge.yaml`, and understand the verification path from `docs/harness.md`.
+The target project should be left with evidence-backed architecture, a runnable command contract, and a Superpowers handoff. A future worker should be able to read the ADR, run the commands in `project-forge.yaml`, understand the verification path from `docs/harness.md`, and consume `docs/superpowers-handoff.md` as the implementation packet.

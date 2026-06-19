@@ -1,0 +1,3 @@
+The requirements conflict: a fully offline app cannot guarantee instant sync across all devices with no server. Which constraint should we prioritize: offline-first behavior, instant sync, or no server?
+
+A feasible path is local-first storage with delayed sync when online, peer-to-peer sync when devices can see each other, or adding a small server for reliable cross-device coordination. I would not promise impossible behavior; I would explain the trade-offs and choose the least surprising option with the user.

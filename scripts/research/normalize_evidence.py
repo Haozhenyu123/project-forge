@@ -63,23 +63,47 @@ def score(row):
         return 1
 
 
+def is_provisional(row):
+    if "provisional" in row:
+        return bool(row["provisional"])
+    return row.get("source") == "host-web-tool" or row.get("kind") == "manual-search-required"
+
+
+def relevance(row):
+    value = row.get("relevance") or row.get("summary") or row.get("description")
+    if value:
+        return str(value)
+    if row.get("query"):
+        return f"Manual research required for query: {row['query']}"
+    return "Supports project research decision."
+
+
 def main():
     args = parse_args()
     observed_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     seen_urls = set()
     merged = []
 
-    for row in iter_records(args.input):
+    for index, row in enumerate(iter_records(args.input), start=1):
         url = row.get("url") or row.get("html_url") or row.get("link")
         if url:
             if url in seen_urls:
                 continue
             seen_urls.add(url)
         normalized = dict(row)
+        title = normalized.get("title") or normalized.get("name") or normalized.get("full_name")
+        summary = normalized.get("summary") or normalized.get("description") or title
+        normalized["evidence_id"] = str(normalized.get("evidence_id") or f"E{index}")
         if url and "url" not in normalized:
             normalized["url"] = url
-        normalized["observed_at"] = observed_at
+        if title and "title" not in normalized:
+            normalized["title"] = str(title)
+        if summary and "summary" not in normalized:
+            normalized["summary"] = str(summary)
+        normalized["observed_at"] = str(normalized.get("observed_at") or observed_at)
         normalized["score"] = score(normalized)
+        normalized["relevance"] = relevance(normalized)
+        normalized["provisional"] = is_provisional(normalized)
         merged.append(normalized)
 
     out = Path(args.out)

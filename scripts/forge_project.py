@@ -5,6 +5,7 @@ import argparse
 import json
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -127,16 +128,50 @@ def iter_evidence_rows(evidence):
                 yield row
 
 
+def evidence_score(row):
+    stars = row.get("stars")
+    if stars is None:
+        stars = row.get("stargazers_count")
+    try:
+        return int(stars)
+    except (TypeError, ValueError):
+        return 1
+
+
+def is_provisional_evidence(row):
+    if "provisional" in row:
+        return bool(row["provisional"])
+    return row.get("source") == "host-web-tool" or row.get("kind") == "manual-search-required"
+
+
+def evidence_relevance(row):
+    value = row.get("relevance") or row.get("summary") or row.get("description")
+    if value:
+        return str(value)
+    if row.get("query"):
+        return f"Manual research required for query: {row['query']}"
+    return "Supports project research decision."
+
+
 def normalize_evidence(rows):
     normalized = []
-    for row in rows:
+    observed_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    for index, row in enumerate(rows, start=1):
         url = row.get("url") or row.get("html_url") or row.get("link")
+        title = row.get("title") or row.get("name") or row.get("full_name")
         summary = row.get("summary") or row.get("description") or row.get("title") or ""
         item = dict(row)
+        item["evidence_id"] = str(item.get("evidence_id") or f"E{index}")
         if url:
             item["url"] = url
+        if title and "title" not in item:
+            item["title"] = str(title)
         if summary:
             item["summary"] = str(summary)
+        item["observed_at"] = str(item.get("observed_at") or observed_at)
+        item["score"] = evidence_score(item)
+        item["relevance"] = evidence_relevance(item)
+        item["provisional"] = is_provisional_evidence(item)
         normalized.append(item)
     return normalized
 
@@ -167,12 +202,13 @@ def adr_text(slug, stack, goal, evidence_rows):
     ]
     if evidence_rows:
         for row in evidence_rows:
+            evidence_id = str(row.get("evidence_id") or "E?")
             summary = str(row.get("summary") or row.get("title") or "Evidence item")
             url = row.get("url")
             if url:
-                lines.append(f"- {summary}: {url}")
+                lines.append(f"- [{evidence_id}] {summary}: {url}")
             else:
-                lines.append(f"- {summary}")
+                lines.append(f"- [{evidence_id}] {summary}")
     else:
         lines.append("- No evidence rows were provided.")
     lines.extend(

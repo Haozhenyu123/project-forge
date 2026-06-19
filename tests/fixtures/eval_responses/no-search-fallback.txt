@@ -1,0 +1,3 @@
+Web search is unavailable, so I will avoid inventing current facts about library choices. Any source-sensitive assumptions should be marked provisional until evidence is available.
+
+The fallback is to use local fixtures if they exist, otherwise write host-tool instructions for a manual search. Conclusions stay provisional and should be replaced with dated evidence from real search results.

@@ -1,0 +1,3 @@
+Before selecting a stack, I would ask clarifying questions: who are the teams, what planning pain is most expensive, what workflow exists today, what success criteria matter, and what constraints are fixed?
+
+The product goals are better planning, clearer coordination, and easier decisions. Implementation assumptions, such as realtime collaboration or integrations, should stay separate until validated. Next-step plan: interview users, define one MVP workflow, choose acceptance checks, then select the simplest stack.

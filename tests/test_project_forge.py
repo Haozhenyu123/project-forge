@@ -228,6 +228,55 @@ class ScriptTests(unittest.TestCase):
             self.assertEqual([row["source"] for row in rows], ["github", "web"])
             self.assertTrue(all("observed_at" in row for row in rows))
             self.assertTrue(all("score" in row for row in rows))
+            self.assertTrue(all("evidence_id" in row for row in rows))
+            self.assertTrue(all("relevance" in row for row in rows))
+            self.assertTrue(all("provisional" in row for row in rows))
+
+    def test_validate_evidence_rejects_incomplete_non_provisional_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            evidence = Path(tmp) / "evidence.jsonl"
+            evidence.write_text(
+                json.dumps({"source": "web", "title": "Missing URL", "summary": "No URL"})
+                + "\n",
+                encoding="utf-8",
+            )
+            proc = subprocess.run(
+                [PYTHON, "scripts/research/validate_evidence.py", str(evidence)],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(proc.returncode, 0)
+            self.assertIn("url", proc.stderr.lower())
+
+    def test_validate_evidence_accepts_normalized_provisional_fallback(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = Path(tmp) / "raw"
+            raw.mkdir()
+            (raw / "web.jsonl").write_text(
+                json.dumps(
+                    {
+                        "source": "host-web-tool",
+                        "kind": "manual-search-required",
+                        "query": "current framework evidence",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            normalized = Path(tmp) / "evidence.jsonl"
+            self.run_script(
+                "scripts/research/normalize_evidence.py",
+                "--input",
+                str(raw),
+                "--out",
+                str(normalized),
+            )
+            proc = self.run_script("scripts/research/validate_evidence.py", str(normalized))
+            payload = json.loads(proc.stdout)
+            self.assertEqual(payload["status"], "ok")
+            self.assertEqual(payload["provisional_count"], 1)
 
     def test_detect_stack_identifies_node_python_and_generic_projects(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -358,6 +407,7 @@ class ScriptTests(unittest.TestCase):
             self.assertIn("team-research", adr_text)
             self.assertIn("node-ts", adr_text)
             self.assertIn("Reference architecture example", adr_text)
+            self.assertIn("[E1]", adr_text)
             self.assertIn("Help small teams", contract.read_text(encoding="utf-8"))
 
     def test_forge_project_rejects_slug_path_traversal(self):
@@ -470,6 +520,113 @@ class TemplateAndEvalTests(unittest.TestCase):
         payload = json.loads(proc.stdout)
         self.assertEqual(payload["scenario_count"], 6)
         self.assertEqual(payload["status"], "ok")
+
+    def test_evaluation_scenarios_use_full_rubric_schema(self):
+        for path in sorted((ROOT / "evals" / "scenarios").glob("*.json")):
+            data = load_json(path)
+            for field in ("name", "purpose", "setup", "steps", "expected", "evidence", "rubric"):
+                self.assertIn(field, data, path.name)
+            self.assertIsInstance(data["steps"], list)
+            self.assertIsInstance(data["rubric"], dict)
+            self.assertIn("evidence", data["rubric"])
+
+    def test_run_scenarios_scores_response_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "results.json"
+            proc = subprocess.run(
+                [
+                    PYTHON,
+                    "scripts/evals/run_scenarios.py",
+                    "--scenario-dir",
+                    "evals/scenarios",
+                    "--responses-dir",
+                    "tests/fixtures/eval_responses",
+                    "--out",
+                    str(out),
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            payload = load_json(out)
+            self.assertEqual(payload["scenario_count"], 6)
+            self.assertEqual(payload["status"], "ok")
+            self.assertTrue(all("score" in result for result in payload["results"]))
+
+    def test_smoke_docs_and_example_project_exist(self):
+        smoke = (ROOT / "docs" / "smoke-test.md").read_text(encoding="utf-8")
+        example = ROOT / "examples" / "team-research"
+        for relative in (
+            "docs/research/team-research/evidence.jsonl",
+            "docs/architecture/ADR-0001-stack.md",
+            "project-forge.yaml",
+            "docs/harness.md",
+            "docs/superpowers-handoff.md",
+        ):
+            self.assertTrue((example / relative).exists(), relative)
+        self.assertIn("python scripts/smoke_test.py", smoke)
+
+    def test_smoke_test_script_validates_example_project(self):
+        proc = subprocess.run(
+            [PYTHON, "scripts/smoke_test.py", "--project", "examples/team-research", "--slug", "team-research"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        payload = json.loads(proc.stdout)
+        self.assertEqual(payload["status"], "ok")
+
+    def test_export_handoff_writes_superpowers_handoff(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            (project / "docs/research/team-research").mkdir(parents=True)
+            (project / "docs/architecture").mkdir(parents=True)
+            (project / "docs").mkdir(exist_ok=True)
+            (project / "docs/research/team-research/evidence.jsonl").write_text(
+                json.dumps(
+                    {
+                        "evidence_id": "E1",
+                        "source": "github",
+                        "title": "Example",
+                        "url": "https://github.com/example/repo",
+                        "summary": "Reference implementation",
+                        "observed_at": "2026-06-19T00:00:00Z",
+                        "relevance": "Shows project structure",
+                        "provisional": False,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (project / "docs/architecture/ADR-0001-stack.md").write_text("# ADR\nUse node-ts.\n", encoding="utf-8")
+            (project / "project-forge.yaml").write_text("project:\n  slug: team-research\ncommands:\n  test: npm run test\n", encoding="utf-8")
+            (project / "docs/harness.md").write_text("# Harness\nRun npm run test.\n", encoding="utf-8")
+            out = project / "docs/superpowers-handoff.md"
+            proc = subprocess.run(
+                [
+                    PYTHON,
+                    "scripts/export_handoff.py",
+                    "--project",
+                    str(project),
+                    "--slug",
+                    "team-research",
+                    "--out",
+                    str(out),
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            text = out.read_text(encoding="utf-8")
+            self.assertIn("Superpowers Handoff", text)
+            self.assertIn("ADR-0001-stack.md", text)
+            self.assertIn("npm run test", text)
 
 
 if __name__ == "__main__":

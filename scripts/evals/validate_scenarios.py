@@ -8,10 +8,17 @@ from pathlib import Path
 
 REQUIRED_FIELDS = {
     "id": str,
+    "name": str,
     "title": str,
     "category": str,
+    "purpose": str,
     "prompt": str,
+    "setup": str,
+    "steps": list,
     "expected_behaviors": list,
+    "expected": str,
+    "evidence": list,
+    "rubric": dict,
 }
 
 
@@ -39,6 +46,23 @@ def validate_scenario(path):
         raise ValueError(f"{path}: expected_behaviors must not be empty")
     if not all(isinstance(item, str) and item.strip() for item in data["expected_behaviors"]):
         raise ValueError(f"{path}: expected_behaviors entries must be non-empty strings")
+    if not data["steps"]:
+        raise ValueError(f"{path}: steps must not be empty")
+    if not all(isinstance(item, str) and item.strip() for item in data["steps"]):
+        raise ValueError(f"{path}: steps entries must be non-empty strings")
+    if not data["evidence"]:
+        raise ValueError(f"{path}: evidence must not be empty")
+    if not all(isinstance(item, str) and item.strip() for item in data["evidence"]):
+        raise ValueError(f"{path}: evidence entries must be non-empty strings")
+    if "evidence" not in data["rubric"]:
+        raise ValueError(f"{path}: rubric must include evidence")
+    for key, value in data["rubric"].items():
+        if not isinstance(key, str) or not key.strip():
+            raise ValueError(f"{path}: rubric keys must be non-empty strings")
+        if not isinstance(value, list) or not value:
+            raise ValueError(f"{path}: rubric.{key} must be a non-empty list")
+        if not all(isinstance(item, str) and item.strip() for item in value):
+            raise ValueError(f"{path}: rubric.{key} entries must be non-empty strings")
 
     return data
 

@@ -1,0 +1,3 @@
+Latest pricing and limits are current information, so a hosted vector database choice needs fresh authoritative sources. I would check vendor docs and official pricing pages before making a recommendation.
+
+For each option, record dated sources for pricing, limits, quotas, and plan names. Until those source dates are captured, avoid a stale recommendation and document the decision process.

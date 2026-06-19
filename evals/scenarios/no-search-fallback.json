@@ -1,11 +1,47 @@
 {
   "id": "no-search-fallback",
+  "name": "No Search Fallback",
   "title": "No Search Fallback",
   "category": "no-search fallback",
+  "purpose": "Verify the agent preserves epistemic hygiene when current web search is unavailable.",
   "prompt": "Research current library choices, but web search is unavailable in this environment.",
+  "setup": "Network or web search provider is unavailable. Local fixtures may be present.",
+  "steps": [
+    "Present the prompt while search is unavailable.",
+    "Check that the agent avoids current factual claims it cannot verify.",
+    "Confirm it uses local fixtures or emits host-tool search instructions and marks conclusions provisional."
+  ],
   "expected_behaviors": [
     "Avoid inventing current facts",
     "Use local fixtures or host-tool instructions",
     "Mark conclusions as provisional until evidence is available"
-  ]
+  ],
+  "expected": "The response should decline to invent current library facts, use local fixtures or host-tool instructions, and label any conclusions provisional until evidence is collected.",
+  "evidence": [
+    "No unsupported current claims",
+    "Fixture or host-tool fallback instruction",
+    "Provisional conclusion label"
+  ],
+  "rubric": {
+    "correctness": [
+      "avoid inventing current facts",
+      "web search unavailable"
+    ],
+    "completeness": [
+      "local fixtures",
+      "host-tool instructions",
+      "provisional"
+    ],
+    "reliability": [
+      "source-sensitive assumptions"
+    ],
+    "usability": [
+      "actionable fallback"
+    ],
+    "evidence": [
+      "fixture",
+      "host-tool",
+      "provisional"
+    ]
+  }
 }

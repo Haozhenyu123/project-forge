@@ -1,0 +1,3 @@
+The GitHub research workflow is blocked because the GitHub token or credentials are missing. I should not fabricate repository results or pretend the external call succeeded.
+
+We can continue by using a fixture response, cached evidence, or manual-search fallback instructions for the host web tool. Once the token is configured, rerun the call and attach the real API evidence.

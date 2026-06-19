@@ -1,11 +1,47 @@
 {
   "id": "conflicting-constraints",
+  "name": "Conflicting Constraints",
   "title": "Conflicting Constraints",
   "category": "conflicting constraints",
+  "purpose": "Verify the agent notices impossible requirements before promising an implementation.",
   "prompt": "Build a fully offline app that syncs instantly across all devices with no server.",
+  "setup": "No project files are required. The evaluator gives the prompt to the agent as a product intake request.",
+  "steps": [
+    "Present the prompt to the agent.",
+    "Review whether the answer identifies the offline versus instant cross-device sync conflict.",
+    "Check that the answer asks the user to prioritize constraints and proposes feasible trade-offs."
+  ],
   "expected_behaviors": [
     "Name the conflict in the requirements",
     "Ask the user to prioritize constraints",
     "Suggest feasible trade-offs"
-  ]
+  ],
+  "expected": "The response should clearly state that fully offline operation conflicts with instant sync across devices without a server, then ask which constraint matters most and offer practical alternatives such as delayed sync, local-first sync when online, peer-to-peer sync, or adding a server.",
+  "evidence": [
+    "Response text naming the conflict",
+    "Clarifying priority question",
+    "At least one feasible trade-off"
+  ],
+  "rubric": {
+    "correctness": [
+      "offline conflict",
+      "instant sync",
+      "no server"
+    ],
+    "completeness": [
+      "prioritize constraints",
+      "trade-offs"
+    ],
+    "reliability": [
+      "does not promise impossible behavior"
+    ],
+    "usability": [
+      "clear explanation"
+    ],
+    "evidence": [
+      "conflict",
+      "question",
+      "feasible"
+    ]
+  }
 }

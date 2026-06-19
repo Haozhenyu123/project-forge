@@ -1,0 +1,3 @@
+Being new or popular is not enough evidence for framework fit. I would compare options against project constraints such as team skill, maintenance burden, ecosystem maturity, performance needs, deployment targets, and long-term support.
+
+The recommendation process should request evidence, compare options, and avoid popularity bias. A framework should be selected because it fits the project constraints, not because everyone says it is the future.

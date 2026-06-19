@@ -1,11 +1,47 @@
 {
   "id": "vague-idea",
+  "name": "Vague Idea Intake",
   "title": "Vague Idea Intake",
   "category": "vague idea",
+  "purpose": "Verify the agent turns a vague product idea into a grounded intake path before implementation.",
   "prompt": "I want to build something for teams that makes planning easier. What should it be?",
+  "setup": "Only a broad product idea is available. No target users, workflow, or constraints have been specified.",
+  "steps": [
+    "Present the prompt to the agent.",
+    "Check that it asks clarifying questions before selecting a stack or feature set.",
+    "Confirm it separates product goals from implementation assumptions and gives concise next steps."
+  ],
   "expected_behaviors": [
     "Ask clarifying questions before selecting a stack",
     "Separate product goals from implementation assumptions",
     "Produce a concise next-step plan"
-  ]
+  ],
+  "expected": "The response should ask clarifying questions about users, planning pain, workflow, success criteria, and constraints before selecting a stack, then separate product goals from implementation assumptions and provide a concise next-step plan.",
+  "evidence": [
+    "Clarifying questions",
+    "Product goals separated from assumptions",
+    "Concise next-step plan"
+  ],
+  "rubric": {
+    "correctness": [
+      "clarifying questions",
+      "before selecting a stack"
+    ],
+    "completeness": [
+      "product goals",
+      "implementation assumptions",
+      "next-step plan"
+    ],
+    "reliability": [
+      "does not overcommit"
+    ],
+    "usability": [
+      "concise"
+    ],
+    "evidence": [
+      "questions",
+      "goals",
+      "plan"
+    ]
+  }
 }
