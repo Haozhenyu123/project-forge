@@ -5,7 +5,7 @@
     "creative_decision": "docs/product/creative-decision.json",
     "evidence": "docs/research/nextjs-fastapi-demo/evidence.jsonl",
     "harness": "docs/harness.md",
-    "inventory": null,
+    "inventory": "docs/architecture/inventory.json",
     "verification_report": null
   },
   "boundary": {
@@ -14,7 +14,9 @@
       "evidence",
       "architecture",
       "harness",
-      "handoff"
+      "handoff",
+      "inventory",
+      "readiness"
     ],
     "superpowers_owns": [
       "implementation planning",
@@ -27,7 +29,7 @@
   "compatibility": {
     "handoff_schema": 2,
     "project_forge_contract": 2,
-    "superpowers": "see compatibility/superpowers.json"
+    "superpowers": "see compatibility/superpowers-matrix.json"
   },
   "creative_decision": {
     "assumptions": [
@@ -130,6 +132,17 @@
     },
     "selected_direction_id": "evidence-dashboard"
   },
+  "effort_estimate": {
+    "complexity_drivers": [
+      "Base: nextjs (6-month scope)",
+      "Signal 'multi-view-comparison': x1.4",
+      "Secondary stacks: ['fastapi'] (x1.4)"
+    ],
+    "confidence": "medium",
+    "development_days": 28,
+    "infrastructure_cost_tier": "medium",
+    "team_size_recommendation": "1-2 developers"
+  },
   "evidence": [
     {
       "evidence_id": "E1",
@@ -225,10 +238,8 @@
           "timeout_seconds": 300
         }
       },
-      "environment": [],
       "id": "nextjs",
       "root": ".",
-      "services": [],
       "template": "nextjs"
     },
     "required_commands": [
@@ -324,15 +335,49 @@
             "timeout_seconds": 300
           }
         },
-        "environment": [],
         "id": "fastapi",
         "root": "api",
-        "services": [],
         "template": "fastapi"
       }
     ]
   },
-  "inventory": null,
+  "inventory": {
+    "ci_files": [
+      ".github/workflows/project-forge-ci.yml"
+    ],
+    "compose_files": [],
+    "databases": [],
+    "deploy_files": [],
+    "docker_files": [],
+    "environment_variables": [],
+    "integrations": [],
+    "monorepo": false,
+    "project_name": "nextjs-fastapi-demo",
+    "project_root": ".",
+    "queues": [],
+    "relationships": [],
+    "schema_version": 1,
+    "services": [
+      {
+        "databases": [],
+        "entrypoints": [],
+        "environment_variables": [],
+        "frameworks": [],
+        "id": "service_root",
+        "integrations": [],
+        "kind": "application",
+        "languages": [],
+        "name": "nextjs-fastapi-demo",
+        "path": ".",
+        "ports": [],
+        "queues": []
+      }
+    ],
+    "warnings": [
+      "No application entrypoint was detected statically."
+    ],
+    "workspaces": []
+  },
   "kind": "project-forge.superpowers-handoff",
   "project": {
     "goal": "Decision dashboard with a TypeScript frontend and Python REST API backend",
@@ -346,6 +391,53 @@
     "status": "structurally_ready",
     "verification_report": null
   },
+  "risks": [
+    {
+      "category": "deployment",
+      "description": "Deep coupling with Vercel platform may increase migration cost if self-hosting becomes required.",
+      "id": "RISK-NEXT-VERCEL",
+      "impact": "medium",
+      "likelihood": "low",
+      "mitigation": "Use standard Next.js build output; avoid Vercel-specific APIs (ISR with file system, Edge Config) unless explicitly accepted.",
+      "signal_trigger": "Self-hosting or on-premise deployment requirement emerges."
+    },
+    {
+      "category": "complexity",
+      "description": "Hybrid SSR/SSG/ISR rendering model can cause confusing caching and hydration behavior.",
+      "id": "RISK-NEXT-SSR",
+      "impact": "medium",
+      "likelihood": "medium",
+      "mitigation": "Default to SSG for content pages, SSR for authenticated dashboards only. Document the rendering strategy per route.",
+      "signal_trigger": "Performance regressions or hydration mismatch errors in production logs."
+    },
+    {
+      "category": "performance",
+      "description": "Mixing sync and async handlers can block the event loop under load.",
+      "id": "RISK-FAST-ASYNC",
+      "impact": "high",
+      "likelihood": "medium",
+      "mitigation": "Audit all route handlers; mark sync-only routes explicitly; run load tests before launch.",
+      "signal_trigger": "P99 latency spikes under concurrent request load."
+    },
+    {
+      "category": "security",
+      "description": "FastAPI does not enforce CSRF or rate-limiting by default; these must be configured manually.",
+      "id": "RISK-FAST-SEC",
+      "impact": "high",
+      "likelihood": "low",
+      "mitigation": "Add slowapi for rate-limiting and a CSRF middleware before the first production deployment.",
+      "signal_trigger": "Security audit identifies missing rate limiting."
+    },
+    {
+      "category": "complexity",
+      "description": "Project scope may expand beyond the original creative direction, invalidating current architecture assumptions.",
+      "id": "RISK-REVISIT-SCOPE",
+      "impact": "medium",
+      "likelihood": "medium",
+      "mitigation": "Run project-forge revise whenever a significant new feature or constraint is introduced.",
+      "signal_trigger": "A new feature, stakeholder, or constraint is introduced that was not in the original ADR context."
+    }
+  ],
   "schema_version": 2,
   "superpowers": {
     "acceptance_criteria": [

@@ -8,6 +8,10 @@
 - Secondary stacks: fastapi
 - First task: Implement the smallest user-visible workflow from the accepted creative direction and prove it with the harness contract.
 
+## Project Structure (Inventory)
+
+- **nextjs-fastapi-demo** (`.`): 
+
 ## Evidence
 
 - [E1] Next.js documentation: Next.js supports TypeScript web applications and dashboard-style product surfaces. (https://nextjs.org/docs)

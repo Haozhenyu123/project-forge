@@ -19,6 +19,8 @@ from project_forge.harness.ci import write_ci
 from project_forge.harness.composer import command_specs_from_strings, parse_stack_spec
 from project_forge.harness.templates import commands_for
 from project_forge.models import ProjectContract, ProjectMeta, StackContract
+from project_forge.risks import generate_risks, render_risk_section
+from project_forge.estimation import estimate_effort
 
 
 GENERATED_FILES = (

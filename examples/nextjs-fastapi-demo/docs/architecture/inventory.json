@@ -1,0 +1,37 @@
+{
+  "ci_files": [
+    ".github/workflows/project-forge-ci.yml"
+  ],
+  "compose_files": [],
+  "databases": [],
+  "deploy_files": [],
+  "docker_files": [],
+  "environment_variables": [],
+  "integrations": [],
+  "monorepo": false,
+  "project_name": "nextjs-fastapi-demo",
+  "project_root": ".",
+  "queues": [],
+  "relationships": [],
+  "schema_version": 1,
+  "services": [
+    {
+      "databases": [],
+      "entrypoints": [],
+      "environment_variables": [],
+      "frameworks": [],
+      "id": "service_root",
+      "integrations": [],
+      "kind": "application",
+      "languages": [],
+      "name": "nextjs-fastapi-demo",
+      "path": ".",
+      "ports": [],
+      "queues": []
+    }
+  ],
+  "warnings": [
+    "No application entrypoint was detected statically."
+  ],
+  "workspaces": []
+}

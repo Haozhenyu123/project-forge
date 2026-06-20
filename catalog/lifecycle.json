@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-06-20",
+  "templates": [
+    {
+      "template_id": "node-ts",
+      "status": "active",
+      "since": "2026-01-01",
+      "migration_target": "",
+      "migration_guide": "",
+      "reason": "",
+      "sunset_date": ""
+    },
+    {
+      "template_id": "nextjs",
+      "status": "active",
+      "since": "2026-01-01",
+      "migration_target": "",
+      "migration_guide": "",
+      "reason": "",
+      "sunset_date": ""
+    },
+    {
+      "template_id": "electron",
+      "status": "active",
+      "since": "2026-01-01",
+      "migration_target": "",
+      "migration_guide": "",
+      "reason": "",
+      "sunset_date": ""
+    },
+    {
+      "template_id": "cli",
+      "status": "active",
+      "since": "2026-01-01",
+      "migration_target": "",
+      "migration_guide": "",
+      "reason": "",
+      "sunset_date": ""
+    },
+    {
+      "template_id": "python",
+      "status": "active",
+      "since": "2026-01-01",
+      "migration_target": "",
+      "migration_guide": "",
+      "reason": "",
+      "sunset_date": ""
+    },
+    {
+      "template_id": "fastapi",
+      "status": "active",
+      "since": "2026-01-01",
+      "migration_target": "",
+      "migration_guide": "",
+      "reason": "",
+      "sunset_date": ""
+    },
+    {
+      "template_id": "chrome-extension",
+      "status": "active",
+      "since": "2026-01-01",
+      "migration_target": "",
+      "migration_guide": "",
+      "reason": "",
+      "sunset_date": ""
+    },
+    {
+      "template_id": "generic",
+      "status": "active",
+      "since": "2026-01-01",
+      "migration_target": "",
+      "migration_guide": "",
+      "reason": "",
+      "sunset_date": ""
+    }
+  ]
+}

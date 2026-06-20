@@ -460,9 +460,10 @@ def cmd_audit(args):
     print(output, end="")
 
 def cmd_feature(args):
-    feature_args = ["feature_handoff.py", args.feature_command, "--slug", args.slug]
-    if hasattr(args, "feature_id"): feature_args.extend(["--feature", args.feature_id])
-    if hasattr(args, "goal"): feature_args.extend(["--goal", args.goal])
+    feature_args = ["feature_handoff.py", args.feature_command]
+    if getattr(args, "slug", None): feature_args.extend(["--slug", args.slug])
+    if getattr(args, "feature_id", None): feature_args.extend(["--feature", args.feature_id])
+    if getattr(args, "goal", None): feature_args.extend(["--goal", args.goal])
     feature_args.append(getattr(args, "project", "."))
     output = run_script(*feature_args)
     print(output, end="")
@@ -486,6 +487,49 @@ def cmd_cross_host(args):
     if getattr(args, "json", False): cross_args.append("--json")
     output = run_script(*cross_args)
     print(output, end="")
+
+def cmd_verify_impl(args):
+    output = run_script("verify_implementation.py", args.project, *(["--json"] if getattr(args, "json", False) else []))
+    print(output, end="")
+
+def cmd_summary(args):
+    s_args = ["executive_summary.py", args.project]
+    if getattr(args, "out", None):
+        s_args.extend(["--out", args.out])
+    output = run_script(*s_args)
+    print(output, end="")
+
+def cmd_patterns(args):
+    import subprocess as _sp
+    result = _sp.run(
+        [sys.executable, "-c", "from project_forge.decision.patterns import extract_patterns_from_history, save_patterns; p=extract_patterns_from_history(); save_patterns(p); print(len(p), 'patterns saved')"],
+        cwd=REPO_ROOT, text=True, capture_output=True, timeout=30,
+    )
+    print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+
+def cmd_lifecycle(args):
+    from project_forge.harness.lifecycle import load_lifecycle_registry, check_deprecated
+    registry = load_lifecycle_registry()
+    tmpl = getattr(args, "template", None)
+    if tmpl:
+        rec = check_deprecated(tmpl, registry)
+        if rec:
+            print(f"Template {tmpl}: {rec.status} (since {rec.since})")
+        else:
+            print(f"Template {tmpl}: active")
+    else:
+        for tid, rec in sorted(registry.items()):
+            print(f"{tid}: {rec.status}")
+
+def cmd_e2e(args):
+    import subprocess as _sp
+    result = _sp.run(
+        [sys.executable, str(REPO_ROOT / "scripts" / "evals" / "e2e_real_test.py")],
+        cwd=REPO_ROOT, timeout=120,
+    )
+    sys.exit(result.returncode)
 
 def cmd_doctor(args):
     checks = {
@@ -665,6 +709,22 @@ def main():
     cross_host_parser.add_argument("--hosts", default="codex,claude")
     cross_host_parser.add_argument("--json", action="store_true")
 
+    verify_impl_parser = subparsers.add_parser("verify-implementation", help="Audit actual code against ADR promises")
+    verify_impl_parser.add_argument("project", nargs="?", default=".")
+    verify_impl_parser.add_argument("--json", action="store_true")
+
+    summary_parser = subparsers.add_parser("summary", help="Generate executive summary for stakeholders")
+    summary_parser.add_argument("project", nargs="?", default=".")
+    summary_parser.add_argument("--out", help="Output file path")
+
+    patterns_parser = subparsers.add_parser("patterns", help="Extract decision patterns from project history")
+
+    lifecycle_parser = subparsers.add_parser("lifecycle", help="Check template lifecycle status")
+    lifecycle_parser.add_argument("--template", help="Template name to check")
+    lifecycle_parser.add_argument("--json", action="store_true")
+
+    e2e_parser = subparsers.add_parser("e2e-test", help="Run real end-to-end pipeline tests")
+
     subparsers.add_parser("doctor", help="Check Project Forge runtime and plugin installation")
 
     args = parser.parse_args()
@@ -693,6 +753,11 @@ def main():
         "revise": cmd_revise,
         "diff": cmd_diff,
         "cross-host": cmd_cross_host,
+        "verify-implementation": cmd_verify_impl,
+        "summary": cmd_summary,
+        "patterns": cmd_patterns,
+        "lifecycle": cmd_lifecycle,
+        "e2e-test": cmd_e2e,
         "doctor": cmd_doctor,
     }
     commands[args.command](args)

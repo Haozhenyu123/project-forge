@@ -148,6 +148,30 @@ def build_packet(project, slug):
             "superpowers_owns": ["implementation planning", "TDD", "debugging", "review", "branch completion"],
         },
     }
+    # Generate risks and effort estimate (v0.3.3)
+    try:
+        from project_forge.risks import generate_risks
+        creative_sigs = (packet.get("creative_decision") or {}).get("selected_direction", {}).get("architecture_signals", [])
+        evidence_provisional = any(row.get("provisional") for row in evidence)
+        packet["risks"] = [r.to_dict() for r in generate_risks(
+            primary_stack=contract.primary.template,
+            secondary_stacks=[s.template for s in contract.secondary],
+            creative_signals=creative_sigs,
+            evidence_provisional=evidence_provisional,
+        )]
+    except Exception:
+        packet["risks"] = []
+
+    try:
+        from project_forge.estimation import estimate_effort
+        packet["effort_estimate"] = estimate_effort(
+            primary_stack=contract.primary.template,
+            secondary_stacks=[s.template for s in contract.secondary],
+            creative_signals=creative_sigs,
+        ).to_dict()
+    except Exception:
+        packet["effort_estimate"] = None
+
     return packet
 
 
@@ -213,8 +237,13 @@ def render_markdown(packet, adr_text, harness_text):
         lines.append(f"### {stack['id']} (`{stack['template']}` at `{stack['root']}`)")
         lines.append("")
         for name in COMMAND_ORDER:
-            spec = stack["commands"][name]
-            command = " ".join(spec.get("argv", [])) or spec.get("legacy_shell", "")
+            spec = stack["commands"].get(name)
+            if spec is None:
+                command = "(not configured)"
+            elif isinstance(spec, dict):
+                command = " ".join(spec.get("argv", [])) or spec.get("legacy_shell", "")
+            else:
+                command = str(spec)
             lines.append(f"- `{name}`: `{command}`")
         lines.append("")
     lines.extend([
