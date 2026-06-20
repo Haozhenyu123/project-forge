@@ -1,371 +1,272 @@
-<p align="center">
-  <img src="assets/project-forge-logo.svg" width="112" alt="Project Forge logo">
-</p>
-
-<h1 align="center">Project Forge</h1>
+# ⚒️ Project Forge
 
 <p align="center">
-  <strong>Stop coding the wrong product faster.</strong>
+  <img src="assets/logo.png" alt="Project Forge" width="180">
 </p>
 
 <p align="center">
-  The upstream decision layer for AI coding agents.<br>
-  Turn a vague idea into evidence, an accepted architecture, a runnable harness, and a Superpowers-ready handoff.
+  <b>别急着写代码。先想清楚：做什么、为什么、怎么架构。</b>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Haozhenyu123/project-forge/actions/workflows/ci.yml"><img src="https://github.com/Haozhenyu123/project-forge/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.3.3-f2aa4c" alt="Version 0.3.3"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2f80ed" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/Python-3.9%2B-3776ab" alt="Python 3.9+">
-  <img src="https://img.shields.io/badge/Codex-plugin-101820" alt="Codex plugin">
-  <img src="https://img.shields.io/badge/Claude_Code-plugin-d97757" alt="Claude Code plugin">
-  <a href="https://github.com/Haozhenyu123/project-forge/stargazers"><img src="https://img.shields.io/github/stars/Haozhenyu123/project-forge?style=flat&color=f2aa4c" alt="GitHub stars"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.3.3-brightgreen" alt="Version"></a>
+  <a href="."><img src="https://img.shields.io/badge/tests-132%20passed-brightgreen" alt="Tests"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Python-3.9+-blue?logo=python" alt="Python"></a>
+  <a href="#"><img src="https://img.shields.io/badge/platform-Codex%20%7C%20Claude%20Code-purple" alt="Platform"></a>
 </p>
 
-<p align="center">
-  <a href="#why-project-forge">Why</a> ·
-  <a href="#workflow">Workflow</a> ·
-  <a href="#install">Install</a> ·
-  <a href="#quick-start">Quick Start</a> ·
-  <a href="#what-it-produces">Artifacts</a> ·
-  <a href="#project-forge--superpowers">Superpowers</a> ·
-  <a href="#中文快速入门">中文</a>
-</p>
+---
 
-<p align="center">
-  <img src="assets/marketplace-card.svg" width="900" alt="Project Forge: creative direction, AI architecture, and harness handoff">
-</p>
+## 🤔 你有没有过这样的经历？
 
-## Why Project Forge
+> "这个需求听起来不错，开干吧！"
+>
+> *—— 两周后 ——*
+>
+> "为什么选了 Vue？团队明明全是 React 熟手……"
+> "谁决定的用 MongoDB？数据关系这么复杂……"
+> "当初是怎么想的来着？？"
 
-AI coding agents are very good at implementation. They are also very good at implementing an
-unproven idea, an arbitrary framework choice, or an architecture nobody agreed on.
+**你不是一个人。** 99% 的项目在启动时跳过了最关键的步骤：**系统性决策**。
 
-Project Forge inserts the missing decision layer before coding begins:
+因为做决策很难。需要调研、论证、对比、记录。而人都是懒惰的——写代码多爽啊。
 
-| Without Project Forge | With Project Forge |
-|---|---|
-| "Use the hottest framework" | Compare candidates against constraints and current evidence |
-| Start coding from a one-line idea | Recommend three product angles and select a defensible default |
-| Architecture lives in chat history | Record the decision, rejected options, confidence, and revisit triggers |
-| "It should work" | Define install, test, lint, typecheck, build, run, and smoke contracts |
-| Implementation agent re-decides everything | Hand over a bounded, machine-readable implementation packet |
+**现在，让 AI 替你做好这件事。**
 
-> **Project Forge decides what to build, why it matters, and which architecture fits.**
-> **Superpowers decides how to implement it reliably.**
+---
 
-## Workflow
+## 🎯 一句话说清
+
+**Project Forge = AI 创意总监 + AI 架构师 + 工程脚手架**
+
+在你写下第一行代码之前，它已经帮你完成了：
+
+- ✅ 产品方向分析（面向谁？切哪个点？凭什么赢？）
+- ✅ 证据收集与调研（GitHub / npm / PyPI / Web 搜索）
+- ✅ 架构方案对比与 ADR（为什么选它而不是别的？）
+- ✅ 工程 harness 契约（装什么、怎么测、怎么跑、怎么 CI）
+- ✅ Superpowers 交接包（结构化 Markdown + JSON，可供下游消费）
+
+**它不是代码生成器，它是"决定该生成什么代码"的决策引擎。**
+
+---
+
+## ⚡ 30 秒看懂
 
 ```mermaid
 flowchart LR
-    A["Vague idea"] --> B["3 product angles"]
-    B --> C["Accepted direction"]
-    C --> D["Web + ecosystem evidence"]
-    D --> E["Ranked architecture candidates"]
-    E --> F["ADR + risk + estimate"]
-    F --> G["Harness + CI + smoke"]
-    G --> H["Verified handoff packet"]
-    H --> I["Superpowers implementation"]
-
-    style A fill:#172532,color:#fff,stroke:#f2aa4c
-    style H fill:#2f80ed,color:#fff,stroke:#2f80ed
-    style I fill:#101820,color:#fff,stroke:#f2aa4c
+    A[💭 模糊想法] -->|AI 创意总监| B[🎨 3个产品方向 + 推荐]
+    B -->|AI 架构师| C[🔬 证据调研 + 候选对比]
+    C -->|AI 架构师| D[📋 ADR 架构决策 + 置信度]
+    D -->|工程脚手架| E[⚙️ 安装/测试/构建/CI 契约]
+    E -->|就绪检查| F[📦 Superpowers 交接包]
 ```
 
-The full loop is:
-
-1. **Creative Director** turns ambiguity into three concrete product directions.
-2. **AI Architect** researches comparable projects and ecosystem signals.
-3. **Decision Engine** ranks stacks against product needs, constraints, risk, cost, and evidence.
-4. **Harness Engineer** creates structured command contracts, CI, and smoke checks.
-5. **Readiness Gate** verifies that the packet is safe and complete enough to hand over.
-6. **Superpowers** consumes the accepted packet and begins implementation without reopening settled decisions.
-
-## What It Produces
-
-One run creates a reviewable decision packet inside your project:
-
-```text
-your-project/
-├── project-forge.yaml
-├── .github/workflows/project-forge-ci.yml
-├── .project-forge/
-│   ├── history/
-│   ├── backups/
-│   └── verification/<run-id>/report.json
-└── docs/
-    ├── creative-brief.md
-    ├── product/creative-decision.json
-    ├── research/<slug>/evidence.jsonl
-    ├── architecture/ADR-0001-stack.md
-    ├── architecture/inventory.json
-    ├── harness.md
-    ├── executive-summary.md
-    ├── superpowers-handoff.md
-    └── superpowers-handoff.json
+```
+输入：「我想做一个团队冲刺看板」
+输出：创意简报 + 调研证据 + 架构决策 + CI 配置 + 交接包
 ```
 
-| Role | What it decides | Primary output |
+---
+
+## 🔥 为什么爆？
+
+### 1️⃣ 这是 AI 编程时代最稀缺的能力
+
+Cursor、Copilot、Claude Code 让"写代码"变得极其廉价。
+
+但**"决定写什么代码"**反而变得极度稀缺和昂贵。
+
+Project Forge 补上了 AI 编程工作流中缺失的**决策层**。
+
+### 2️⃣ 和 Superpowers 完美分工
+
+| | Project Forge | Superpowers |
 |---|---|---|
-| AI Creative Design Director | Audience, pain point, product angle, differentiation, validation path | `creative-decision.json` |
-| AI Architect | Stack, framework, topology, rejected options, confidence, revisit triggers | `ADR-0001-stack.md` |
-| Evidence Layer | Freshness, source quality, licenses, activity, package and vulnerability signals | `evidence.jsonl` |
-| Harness Engineer | Structured commands, service dependencies, CI, smoke strategy | `project-forge.yaml` |
-| Agent Evaluator | Pressure scenarios, readiness checks, handoff quality | `evals/`, verification reports |
+| **管什么** | 方向、证据、架构、契约 | 规划、TDD、调试、代码审查、分支 |
+| **产出什么** | creative-brief + ADR + project-forge.yaml + 交接包 | 可运行的代码 |
+| **边界** | "该做什么？为什么？" | "怎么做？做得对吗？" |
 
-## Install
+**Forge 做决策，Superpowers 做实现。上下游关系，各司其职。**
 
-### Codex
+### 3️⃣ 决策可追溯、可审计
+
+每次运行都留下完整决策痕迹：
+
+```
+.project-forge/
+├── history/          ← 每次运行的决策历史
+├── backups/          ← 覆盖前的自动备份
+└── verification/     ← superpowers-ready 检查报告
+```
+
+三个月后有人问"当初为什么选这个技术栈"，你不需要回忆，直接翻 ADR。
+
+---
+
+## 中文快速入门 · Quick Start
+
+Project Forge 负责编码之前的产品方向、研究证据、架构决策、Harness 和 Superpowers 交接。
+
+### 安装
 
 ```powershell
+# Codex
 git clone https://github.com/Haozhenyu123/project-forge.git
 cd project-forge
 python scripts/cli.py plugin install --host codex
 python scripts/cli.py plugin verify --host codex
-```
 
-Restart Codex after installation.
-
-For personal marketplace compatibility, the repository also includes
-`install/codex-marketplace.personal.json`:
-
-```powershell
-Copy-Item -Force "install/codex-marketplace.personal.json" "$env:USERPROFILE\.agents\plugins\marketplace.json"
-```
-
-### Claude Code
-
-```powershell
-git clone https://github.com/Haozhenyu123/project-forge.git
-cd project-forge
+# Claude Code
 python scripts/cli.py plugin install --host claude
 python scripts/cli.py plugin verify --host claude
 ```
 
-The native Claude Code plugin command remains available for a local checkout:
+兼容个人 Marketplace 和 Claude Code 原生命令的安装材料也已包含在仓库中：
+`install/codex-marketplace.personal.json`、`/plugin install $env:USERPROFILE\plugins\project-forge`。
 
-```text
-/plugin install $env:USERPROFILE\plugins\project-forge
-```
-
-## Quick Start
-
-### 1. Start from a vague idea
-
-After installing the plugin, talk to Codex or Claude Code naturally:
-
-```text
-I want to build something that helps small teams make better technical decisions,
-but the idea is still vague. Use Project Forge to recommend the best entry point.
-```
-
-Project Forge should recommend three product angles, choose a default, explain the commercial and
-product reasoning, then ask for confirmation before treating the direction as accepted.
-
-### 2. Ask for architecture
-
-```text
-Research the current ecosystem, compare realistic architecture options for the accepted direction,
-choose a stack, explain why, and create a Project Forge harness and Superpowers handoff.
-```
-
-The architect uses available web tools and provider adapters for GitHub, npm, PyPI, OSV,
-Stack Overflow, Bundlephobia, and npm Trends. Missing network access produces provisional evidence;
-it does not invent citations.
-
-### 3. Run the same flow from the CLI
-
-Preview without writing:
+### 第一次使用
 
 ```powershell
-python scripts/cli.py init decision-hub `
-  --goal "Help small teams compare architecture options before implementation" `
-  --stack nextjs `
-  --interactive `
-  --dry-run
+# 1. 预览（不写文件）
+python scripts/cli.py init my-app --stack nextjs --goal "一个帮助小团队聚焦冲刺目标的仪表盘" --dry-run
+
+# 2. 正式运行
+python scripts/cli.py init my-app --stack nextjs --goal "一个帮助小团队聚焦冲刺目标的仪表盘"
+
+# 3. 检查是否准备好交给 Superpowers
+python scripts/cli.py superpowers-ready --slug my-app my-app
+
+# 4. 看看生成了什么
+ls my-app/docs/
+# creative-brief.md          ← 产品方向分析
+# architecture/ADR-0001-stack.md  ← 架构决策
+# research/my-app/evidence.jsonl   ← 调研证据
+# superpowers-handoff.md     ← 交接清单
+# superpowers-handoff.json   ← 结构化交接包
 ```
 
-Create the decision packet:
+---
+
+## 🧰 命令一览
+
+| 命令 | 作用 | 什么时候用 |
+|---|---|---|
+| `init` | 从想法到决策全覆盖 | 新项目启动 |
+| `detect . --json` | 识别已有项目的技术栈 | 接手老项目 / 做架构审计 |
+| `inspect . --json` | 审查项目结构（不执行代码） | 快速了解陌生仓库 |
+| `research --query "..."` | 针对架构问题做调研 | 技术选型纠结时 |
+| `harness compose` | 编排多技术栈混合项目 | 前后端分离 / monorepo |
+| `superpowers-ready` | 检查交接包是否就绪 | 交付前最后一步验证 |
+| `doctor` | 检查安装和运行时环境 | 遇到问题时排查 |
+| `backups / restore` | 备份和恢复决策文件 | 回滚某个决策 |
+
+---
+
+## 📦 支持的技术栈（8 个模板）
+
+| 模板 | 技术栈 | 自动检测信号 |
+|---|---|---|
+| `nextjs` | Next.js App Router | `package.json` 含 `next` 依赖 |
+| `fastapi` | FastAPI | `pyproject.toml` / `main.py` 特征 |
+| `electron` | Electron 桌面应用 | `package.json` 含 `electron` 依赖 |
+| `cli` | Node.js CLI 工具 | `package.json` 含 `bin` 字段 |
+| `chrome-extension` | Chrome 扩展 MV3 | `manifest.json` 存在 |
+| `node-ts` | Node.js + TypeScript | `package.json` 存在 |
+| `python` | Python 通用 | `pyproject.toml` / `requirements.txt` |
+| `generic` | 任意技术栈 | 手动指定（兜底） |
+
+---
+
+## 🛡️ 安全第一
+
+我们**默认保守**，因为决策文件也是你的重要资产：
+
+- 🔒 已有文件**默认不覆盖**，`--force` 会先自动备份
+- 🔍 `--dry-run` 预览所有操作，不写任何文件
+- 📜 每次成功运行记录完整决策历史
+- 🚫 没有网络时**不编造证据**，标注为 provisional
+- ⚠️ `superpowers-ready` 默认只做结构检查，`--execute` 才执行命令
+- 🛑 `--strict` 模式下，警告也视为失败，确保零问题交接
+
+---
+
+## 🎬 真实案例
 
 ```powershell
-python scripts/cli.py init decision-hub `
-  --goal "Help small teams compare architecture options before implementation" `
-  --stack nextjs `
-  --interactive
+# 案例：一个模糊的想法 —— "团队需要更好的研究协作工具"
+python scripts/cli.py init team-research --stack node-ts --goal "团队研究决策与引文管理"
 ```
 
-Verify the safe command subset:
+产出物：
+
+```
+examples/team-research/
+├── docs/
+│   ├── creative-brief.md              ← 「面向 5-30 人工程团队的研究决策工具」
+│   ├── research/team-research/evidence.jsonl  ← 结构化调研证据
+│   ├── architecture/ADR-0001-stack.md  ← Node.js + TS，Why Not Python/FastAPI
+│   ├── harness.md                      ← 安装 → 测试 → 构建 → 冒烟
+│   ├── superpowers-handoff.md          ← Markdown 交接包
+│   └── superpowers-handoff.json        ← 结构化交接包（JSON Schema）
+├── project-forge.yaml                  ← 命令契约
+└── .github/workflows/project-forge-ci.yml  ← CI 配置
+```
+
+**从一句话到完整、可审计、可交接的决策包。**
+
+👉 更多案例：`examples/fastapi-demo`、`examples/nextjs-fastapi-demo`、`examples/chrome-extension-demo`、`examples/cli-demo`
+
+---
+
+## 🗺️ 架构全景
+
+```
+你的想法
+  │
+  ├─ forge-intake (skill)         ← 澄清目标、范围、约束
+  │
+  ├─ creative-director (skill)    ← 产品方向 × 3，选最佳
+  │
+  ├─ ai-architect (skill)         ← 证据调研 + 方案对比 + ADR
+  │
+  ├─ harness-engineer (skill)     ← 模板应用 + 命令契约 + CI
+  │
+  ├─ forge-project (skill)        ← 协调器：整合所有产出
+  │
+  └─ 输出 ────────────────────────→ Superpowers 接手实现
+```
+
+每个 Skill 之间是**显式传递关系**，上一个产出会自动衔接到下一个输入。不需要调度器——Skill 自己告诉宿主下一步该调谁。
+
+---
+
+## ✅ Verify · 质量保证
 
 ```powershell
-python scripts/cli.py superpowers-ready decision-hub `
-  --slug decision-hub `
-  --execute `
-  --only test,build,smoke
-```
-
-### 4. Review an existing repository
-
-Project Forge is not limited to greenfield projects:
-
-```powershell
-python scripts/cli.py inspect . --json
-python scripts/cli.py audit . --json
-```
-
-Use this prompt in Codex or Claude Code:
-
-```text
-Audit this repository with Project Forge. If we made the architecture decision today,
-would we choose the same stack? Show the evidence, risks, migration cost, and recommendation.
-```
-
-### 5. Compose a real multi-stack harness
-
-```powershell
-python scripts/cli.py harness compose `
-  --slug decision-hub `
-  --goal "Decision dashboard with an API service" `
-  --primary nextjs:. `
-  --secondary fastapi:api
-```
-
-Each stack receives its own `cwd`, structured `argv`, timeout, mutation flag, CI job, and smoke
-strategy. Unconfigured commands are marked blocked instead of being replaced by fake placeholders.
-
-## A Real Example
-
-The repository includes a [Next.js + FastAPI showcase](examples/nextjs-fastapi-demo) that demonstrates:
-
-- an evidence-backed product direction;
-- primary and secondary stack contracts;
-- architecture risks and effort estimation;
-- a Schema v2 handoff packet;
-- a human-readable executive summary;
-- structural readiness for Superpowers.
-
-Inspect it:
-
-```powershell
-python scripts/cli.py audit examples/nextjs-fastapi-demo --json
-python scripts/cli.py superpowers-ready examples/nextjs-fastapi-demo --slug nextjs-fastapi-demo
-python scripts/cli.py summary examples/nextjs-fastapi-demo
-```
-
-More examples: [Node.js research workflow](examples/team-research),
-[FastAPI](examples/fastapi-demo), [Chrome Extension](examples/chrome-extension-demo), and
-[CLI](examples/cli-demo).
-
-## Architecture Decisions You Can Defend
-
-Project Forge does not return a mysterious framework recommendation. Candidate scores can include:
-
-- product and constraint fit;
-- evidence freshness and source diversity;
-- maintenance activity and ecosystem maturity;
-- license and vulnerability risk;
-- deployment cost and operational complexity;
-- harness availability;
-- alignment with the accepted creative direction.
-
-Every score is evidence-aware. Missing evidence lowers confidence instead of creating fake precision.
-Weights and candidate stacks can be customized.
-
-## Harnesses, Not Hope
-
-Supported templates:
-
-| Template | Typical project |
-|---|---|
-| `nextjs` | Next.js App Router application |
-| `fastapi` | Python FastAPI service |
-| `node-ts` | Node.js + TypeScript application |
-| `python` | General Python project |
-| `electron` | Electron desktop application |
-| `chrome-extension` | Manifest V3 browser extension |
-| `cli` | Node.js command-line tool |
-| `generic` | Explicit fallback for unsupported stacks |
-
-Harness commands are structured as `argv`, `cwd`, `timeout_seconds`, and `mutates`. Project Forge
-does not execute arbitrary legacy shell strings unless you explicitly allow them.
-
-## Project Forge + Superpowers
-
-Project Forge is designed as the upstream layer, not a reimplementation of Superpowers.
-
-```text
-Project Forge owns                         Superpowers owns
-──────────────────────────────────────     ──────────────────────────────────
-Product direction                         Implementation planning
-Commercial and user reasoning             TDD
-Research evidence                         Debugging
-Architecture selection                    Code review
-ADR, risks, and estimates                  Worktrees and Git workflow
-Harness command contracts                 Branch completion
-Readiness and handoff                      Implementation agents
-```
-
-The handoff packet tells Superpowers:
-
-- which direction and architecture are already accepted;
-- where the supporting evidence and ADR live;
-- which command contracts define success;
-- what the first implementation task is;
-- when the work must return to Project Forge for a revised decision.
-
-## Safety By Default
-
-- Existing generated files are not overwritten unless `--force` is explicit.
-- Forced updates create backups under `.project-forge/backups/`.
-- Decision changes are recorded under `.project-forge/history/`.
-- `inspect` is read-only and never reads secret values.
-- `superpowers-ready` is structural unless `--execute` is explicit.
-- `install` and long-running `run` commands are excluded unless explicitly included.
-- Legacy shell strings require `--allow-legacy-shell`.
-- Offline research is clearly marked provisional.
-- Verification writes an auditable report with stdout and stderr per command.
-
-## Useful Commands
-
-```powershell
-# Runtime health
-python scripts/cli.py doctor
-
-# Available templates
-python scripts/cli.py list-templates
-
-# Research an architecture question
-python scripts/cli.py research --query "offline-first collaborative web application"
-
-# Revisit an accepted decision
-python scripts/cli.py revise . `
-  --slug my-project `
-  --reason "The implementation now requires strict offline support" `
-  --constraint offline-first
-
-# Audit implementation against the accepted ADR
-python scripts/cli.py verify-implementation .
-
-# Produce a stakeholder-friendly one-page summary
-python scripts/cli.py summary .
-```
-
-## Verify
-
-Run the repository checks:
-
-```powershell
+# 运行全部测试（132 个，当前全通过 ✅）
 python -m pytest tests/ -q
+
+# 兼容 unittest 的核心测试入口
 python -m unittest tests/test_project_forge.py
+
+# 安装验证（12 项检查）
 python scripts/install_test.py
+
+# 评估场景验证
 python scripts/evals/validate_scenarios.py evals/scenarios
-python scripts/evals/e2e_real_test.py
+
+# 交接包就绪检查
+python scripts/cli.py superpowers-ready --slug team-research examples/team-research
+
+# 全面验证
+make verify
 ```
 
-Current local baseline: **132 automated tests** plus a **15-check end-to-end decision-to-handoff
-flow**.
+---
 
-## Update
+## 🔄 Update · 更新
 
 ```powershell
 git pull origin main
@@ -374,54 +275,34 @@ python scripts/cli.py plugin verify --host codex
 python scripts/cli.py doctor
 ```
 
-Use `--host claude` for the Claude Code bundle.
+Claude Code 使用相同流程，将 `--host codex` 替换为 `--host claude`。
 
-## 中文快速入门
+---
 
-Project Forge 负责编码之前最容易被忽略、也最昂贵的三件事：
+## 🤝 贡献
 
-1. 决定做什么产品、面向谁、从哪个切入点开始。
-2. 说明为什么选择这个方向，市场、用户和技术证据是什么。
-3. 选择架构、框架和 Harness，并解释为什么这样选择。
+欢迎贡献！大方向：
 
-安装到 Codex：
+- 🧩 **新模板**：让 Project Forge 支持更多技术栈
+- 🔬 **新证据源**：接入更多数据源（bundlephobia、CVE、Stack Overflow trends 等）
+- 🎯 **Eval 场景**：贡献压力测试用例
+- 🐛 **Bug 修复 & 文档改进**
 
-```powershell
-git clone https://github.com/Haozhenyu123/project-forge.git
-cd project-forge
-python scripts/cli.py plugin install --host codex
-python scripts/cli.py plugin verify --host codex
-```
+详见 [CONTRIBUTING.md](CONTRIBUTING.md)
 
-重启 Codex 后可以直接说：
+---
 
-```text
-我想做一个帮助小团队减少无效会议的产品，但想法还比较模糊。
-请用 Project Forge 推荐三个切入方向，选择一个默认方向，并研究适合的架构。
-```
+## 📜 License · 许可证
 
-Project Forge 会生成创意决策、研究证据、候选架构比较、ADR、风险、工程量估算、Harness、
-CI 和 Superpowers 交接文件。它不会重新实现 Superpowers 的 TDD、调试、代码审查或 Git
-工作流。
+MIT © [Haozhenyu123](https://github.com/Haozhenyu123)
 
-## Documentation
+---
 
-- [5-minute quickstart](docs/quickstart.md)
-- [Architecture overview](docs/architecture.md)
-- [Decision engine](docs/decision-engine.md)
-- [Inventory scanner](docs/inventory.md)
-- [Superpowers handoff protocol](docs/superpowers-handoff.md)
-- [Readiness verification](docs/superpowers-ready.md)
-- [Evaluation system](docs/evaluation.md)
-- [Compatibility matrix](docs/compatibility.md)
-- [Distribution and release](docs/distribution.md)
+<p align="center">
+  <b>写代码之前，先锻造你的决策。</b><br>
+  <sub>Your architecture deserves more than a 3am Slack decision.</sub>
+</p>
 
-## Contributing
-
-New evidence providers, stack templates, pressure scenarios, and host integrations are welcome.
-Start with [CONTRIBUTING.md](CONTRIBUTING.md), then open an issue describing the decision or harness
-gap you want to close.
-
-## License
-
-[MIT](LICENSE)
+<p align="center">
+  ⭐ Star 这个项目，如果你也觉得「先想清楚再写代码」是正道
+</p>
