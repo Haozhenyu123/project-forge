@@ -1,0 +1,12 @@
+{
+  "production_max_lines": 400,
+  "test_max_lines": 600,
+  "excluded": [
+    "scripts/forge_project.py",
+    "scripts/cli.py",
+    "scripts/mcp/server.py",
+    "scripts/creative_brief.py",
+    "tests/test_project_forge.py"
+  ],
+  "note": "Legacy wrappers and the pre-v0.3 aggregate test file are temporarily excluded in v0.3.0 and must only shrink."
+}

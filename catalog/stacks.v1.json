@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "catalog_version": "2026.06",
+  "observed_at": "2026-06-20",
+  "default_weights": {
+    "constraint_fit": 0.25,
+    "evidence_freshness": 0.12,
+    "source_diversity": 0.08,
+    "maintenance_activity": 0.12,
+    "license": 0.08,
+    "security_risk": 0.10,
+    "deployment_cost": 0.08,
+    "complexity": 0.10,
+    "harness_availability": 0.07
+  },
+  "stacks": [
+    {
+      "id": "generic",
+      "name": "Generic Project",
+      "kind": "template",
+      "aliases": ["generic"],
+      "capabilities": ["custom"],
+      "harness": {"primary": "generic", "secondary": []},
+      "baselines": {"maintenance_activity": 45, "license": 50, "security_risk": 50, "deployment_cost": 55, "complexity": 50, "maturity_months": 120},
+      "sources": [{"evidence_id": "CAT-generic-contract", "url": "templates/harness/generic/project-forge.yaml", "title": "Project Forge generic harness contract", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Fallback when no first-class template matches."}]
+    },
+    {
+      "id": "node-ts",
+      "name": "Node.js + TypeScript",
+      "kind": "template",
+      "aliases": ["node", "node.js", "typescript"],
+      "capabilities": ["web", "api", "typescript", "cli", "realtime", "backend"],
+      "harness": {"primary": "node-ts", "secondary": []},
+      "baselines": {"maintenance_activity": 82, "license": 90, "security_risk": 72, "deployment_cost": 78, "complexity": 62, "maturity_months": 180},
+      "sources": [{"evidence_id": "CAT-node-docs", "url": "https://nodejs.org/docs/latest/api/", "title": "Node.js API documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "TypeScript services and command-line tools."}]
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "kind": "template",
+      "aliases": ["python"],
+      "capabilities": ["python", "cli", "automation", "data", "ai"],
+      "harness": {"primary": "python", "secondary": []},
+      "baselines": {"maintenance_activity": 86, "license": 92, "security_risk": 76, "deployment_cost": 82, "complexity": 72, "maturity_months": 300},
+      "sources": [{"evidence_id": "CAT-python-docs", "url": "https://docs.python.org/3/", "title": "Python documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Automation, data, AI, and Python CLI projects."}]
+    },
+    {
+      "id": "nextjs",
+      "name": "Next.js",
+      "kind": "template",
+      "aliases": ["next", "next.js", "react"],
+      "capabilities": ["web", "dashboard", "typescript", "frontend", "content"],
+      "harness": {"primary": "nextjs", "secondary": []},
+      "baselines": {"maintenance_activity": 88, "license": 90, "security_risk": 72, "deployment_cost": 68, "complexity": 58, "maturity_months": 120},
+      "sources": [{"evidence_id": "CAT-nextjs-docs", "url": "https://nextjs.org/docs", "title": "Next.js documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "React web products and dashboards."}]
+    },
+    {
+      "id": "fastapi",
+      "name": "FastAPI",
+      "kind": "template",
+      "aliases": ["fastapi", "python api"],
+      "capabilities": ["api", "backend", "python", "rest", "openapi", "ai"],
+      "harness": {"primary": "fastapi", "secondary": []},
+      "baselines": {"maintenance_activity": 84, "license": 90, "security_risk": 76, "deployment_cost": 80, "complexity": 70, "maturity_months": 90},
+      "sources": [{"evidence_id": "CAT-fastapi-docs", "url": "https://fastapi.tiangolo.com/", "title": "FastAPI documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Python REST and OpenAPI services."}]
+    },
+    {
+      "id": "chrome-extension",
+      "name": "Chrome Extension MV3",
+      "kind": "template",
+      "aliases": ["chrome", "extension", "manifest v3"],
+      "capabilities": ["extension", "browser", "typescript", "web"],
+      "harness": {"primary": "chrome-extension", "secondary": []},
+      "baselines": {"maintenance_activity": 74, "license": 88, "security_risk": 66, "deployment_cost": 88, "complexity": 55, "maturity_months": 96},
+      "sources": [{"evidence_id": "CAT-chrome-docs", "url": "https://developer.chrome.com/docs/extensions", "title": "Chrome Extensions documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Browser-integrated workflows using Manifest V3."}]
+    },
+    {
+      "id": "electron",
+      "name": "Electron",
+      "kind": "template",
+      "aliases": ["electron", "desktop app"],
+      "capabilities": ["desktop", "typescript", "offline", "cross-platform"],
+      "harness": {"primary": "electron", "secondary": []},
+      "baselines": {"maintenance_activity": 80, "license": 90, "security_risk": 60, "deployment_cost": 62, "complexity": 48, "maturity_months": 150},
+      "sources": [{"evidence_id": "CAT-electron-docs", "url": "https://www.electronjs.org/docs/latest/", "title": "Electron documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Cross-platform desktop applications."}]
+    },
+    {
+      "id": "cli",
+      "name": "TypeScript CLI",
+      "kind": "template",
+      "aliases": ["cli", "command line", "terminal"],
+      "capabilities": ["cli", "typescript", "automation", "local"],
+      "harness": {"primary": "cli", "secondary": []},
+      "baselines": {"maintenance_activity": 80, "license": 90, "security_risk": 78, "deployment_cost": 90, "complexity": 75, "maturity_months": 120},
+      "sources": [{"evidence_id": "CAT-cli-contract", "url": "templates/harness/cli/project-forge.yaml", "title": "Project Forge CLI harness contract", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Local terminal-first automation."}]
+    },
+    {
+      "id": "nextjs-fastapi",
+      "name": "Next.js + FastAPI",
+      "kind": "profile",
+      "aliases": ["nextjs fastapi", "next.js fastapi", "typescript frontend python backend"],
+      "capabilities": ["web", "dashboard", "typescript", "frontend", "api", "backend", "python", "rest"],
+      "harness": {"primary": "nextjs", "secondary": ["fastapi"]},
+      "baselines": {"maintenance_activity": 86, "license": 90, "security_risk": 68, "deployment_cost": 54, "complexity": 38, "maturity_months": 80},
+      "sources": [{"evidence_id": "CAT-next-fastapi-profile", "url": "catalog/stacks.v1.json", "title": "Project Forge Next.js and FastAPI profile", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Explicitly separated TypeScript frontend and Python API."}]
+    },
+    {
+      "id": "electron-fastapi",
+      "name": "Electron + FastAPI",
+      "kind": "profile",
+      "aliases": ["electron fastapi", "desktop python backend"],
+      "capabilities": ["desktop", "typescript", "offline", "backend", "python", "api"],
+      "harness": {"primary": "electron", "secondary": ["fastapi"]},
+      "baselines": {"maintenance_activity": 80, "license": 90, "security_risk": 58, "deployment_cost": 46, "complexity": 32, "maturity_months": 80},
+      "sources": [{"evidence_id": "CAT-electron-fastapi-profile", "url": "catalog/stacks.v1.json", "title": "Project Forge Electron and FastAPI profile", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Desktop application with an explicit Python service."}]
+    }
+  ]
+}

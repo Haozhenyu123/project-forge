@@ -9,12 +9,14 @@ architecture, harness contract, and Superpowers handoff. They are not complete a
 | `examples/fastapi-demo` | API-first project planning service | `fastapi` | Python commands and CI |
 | `examples/chrome-extension-demo` | Browser workflow assistant | `chrome-extension` | MV3 harness and handoff |
 | `examples/cli-demo` | Local-first AI planning CLI | `cli` | CLI package contract |
+| `examples/nextjs-fastapi-demo` | Decision dashboard plus API service | `nextjs` + `fastapi` | Multi-stack contract, CI, and handoff |
 
 Run the same confidence checks against any example:
 
 ```powershell
 python scripts/smoke_test.py --project examples/team-research --slug team-research
 python scripts/cli.py superpowers-ready --project examples/team-research --slug team-research
+python scripts/cli.py superpowers-ready --project examples/nextjs-fastapi-demo --slug nextjs-fastapi-demo
 ```
 
 Each example includes:

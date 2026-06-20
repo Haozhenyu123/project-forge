@@ -21,6 +21,7 @@ jobs:
       - run: python -m unittest discover -s tests/runtime -p "test*.py"
       - run: python -m unittest discover -s tests/decision -p "test*.py"
       - run: python -m unittest discover -s tests/agent -p "test*.py"
+      - run: python -m unittest discover -s tests/v3 -p "test*.py"
       - run: python scripts/install_test.py
 
   validate-evals:
@@ -135,7 +136,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - run: python -m compileall scripts
+      - run: python -m compileall src scripts
 
   skill-placeholders:
     name: No Placeholders in Skills

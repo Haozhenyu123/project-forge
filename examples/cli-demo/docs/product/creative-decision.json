@@ -1,0 +1,97 @@
+{
+  "assumptions": [
+    "Commercial reasoning is directional until user interviews, traffic, or payment intent are measured.",
+    "Architecture choices must stay aligned with the accepted creative direction."
+  ],
+  "created_at": "2026-06-20T06:32:03.878570Z",
+  "directions": [
+    {
+      "architecture_signals": [
+        "small-scope",
+        "single-primary-workflow",
+        "fast-feedback"
+      ],
+      "audience": "a narrow first user group with an urgent, repeated workflow",
+      "differentiation": 62,
+      "evidence_confidence": "provisional",
+      "evidence_ids": [],
+      "id": "focused-mvp",
+      "implementation_cost": 35,
+      "name": "Focused MVP",
+      "promise": "Ship the smallest useful version of: CLI tool that converts markdown planning packets to HTML and PDF",
+      "provisional": true,
+      "reachability": 82,
+      "reason": "fastest path to validation and lowest scope risk",
+      "target_user_pain": "The user needs one painful job completed reliably before broader platform value matters.",
+      "validation_speed": 90,
+      "value_signal": 68
+    },
+    {
+      "architecture_signals": [
+        "stateful-guidance",
+        "decision-history",
+        "human-readable-artifacts"
+      ],
+      "audience": "users who know the outcome they want but not the sequence of choices",
+      "differentiation": 74,
+      "evidence_confidence": "provisional",
+      "evidence_ids": [],
+      "id": "guided-workflow",
+      "implementation_cost": 48,
+      "name": "Guided Workflow",
+      "promise": "Turn the problem into a step-by-step decision journey.",
+      "provisional": true,
+      "reachability": 76,
+      "reason": "best fit when the idea is vague and users need momentum more than customization",
+      "target_user_pain": "The user is blocked by ambiguity, not lack of tools.",
+      "validation_speed": 82,
+      "value_signal": 70
+    },
+    {
+      "architecture_signals": [
+        "auditability",
+        "evidence-store",
+        "multi-view-comparison"
+      ],
+      "audience": "teams that need shared confidence before implementation",
+      "differentiation": 80,
+      "evidence_confidence": "provisional",
+      "evidence_ids": [],
+      "id": "evidence-dashboard",
+      "implementation_cost": 58,
+      "name": "Evidence Dashboard",
+      "promise": "Make options, evidence, confidence, and next actions visible.",
+      "provisional": true,
+      "reachability": 70,
+      "reason": "commercially strongest when stakeholders must compare options and justify tradeoffs",
+      "target_user_pain": "The team needs decisions to be inspectable, repeatable, and defensible.",
+      "validation_speed": 72,
+      "value_signal": 78
+    }
+  ],
+  "goal": "CLI tool that converts markdown planning packets to HTML and PDF",
+  "next_decision": "Confirm the selected direction before architecture is treated as accepted.",
+  "schema_version": 1,
+  "selected_direction": {
+    "architecture_signals": [
+      "small-scope",
+      "single-primary-workflow",
+      "fast-feedback"
+    ],
+    "audience": "a narrow first user group with an urgent, repeated workflow",
+    "differentiation": 62,
+    "evidence_confidence": "provisional",
+    "evidence_ids": [],
+    "id": "focused-mvp",
+    "implementation_cost": 35,
+    "name": "Focused MVP",
+    "promise": "Ship the smallest useful version of: CLI tool that converts markdown planning packets to HTML and PDF",
+    "provisional": true,
+    "reachability": 82,
+    "reason": "fastest path to validation and lowest scope risk",
+    "target_user_pain": "The user needs one painful job completed reliably before broader platform value matters.",
+    "validation_speed": 90,
+    "value_signal": 68
+  },
+  "selected_direction_id": "focused-mvp"
+}

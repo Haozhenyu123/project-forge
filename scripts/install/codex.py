@@ -1,45 +1,42 @@
 #!/usr/bin/env python3
-"""Install Project Forge into a local Codex plugin directory."""
+"""Codex plugin lifecycle compatibility API."""
 
-import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import InstallResult, copy_payload, manifest_version, update_json
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC = str(ROOT / "src")
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
+
+from project_forge.hosts import HostService, manifest_version
 
 
-def install_codex(source, codex_home, agents_home, cachebuster=None):
-    source = Path(source)
-    plugin_dir = Path(codex_home) / "plugins" / "project-forge"
-    copy_payload(source, plugin_dir)
-    if cachebuster:
-        manifest_path = plugin_dir / ".codex-plugin" / "plugin.json"
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        manifest["version"] = f"{manifest['version']}+codex.{cachebuster}"
-        manifest_path.write_text(
-            json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+def service(source, codex_home, agents_home):
+    return HostService.codex(source, codex_home, agents_home)
 
-    marketplace = Path(agents_home) / "plugins" / "marketplace.json"
 
-    def merge(data):
-        data.setdefault("name", "personal")
-        data.setdefault("interface", {"displayName": "Personal Plugins"})
-        plugins = data.setdefault("plugins", [])
-        plugins[:] = [plugin for plugin in plugins if plugin.get("name") != "project-forge"]
-        plugins.append(
-            {
-                "name": "project-forge",
-                "path": str(plugin_dir),
-                "version": verify_codex(plugin_dir),
-            }
-        )
+def install_codex(source, codex_home, agents_home, cachebuster=None, dry_run=False):
+    return service(source, codex_home, agents_home).install(cachebuster, dry_run)
 
-    update_json(marketplace, merge)
-    return InstallResult(plugin_dir=plugin_dir, marketplace_file=marketplace)
+
+def update_codex(source, codex_home, agents_home, cachebuster=None, dry_run=False):
+    return service(source, codex_home, agents_home).update(cachebuster, dry_run)
 
 
 def verify_codex(plugin_dir):
+    """Return the installed manifest version, preserving the v0.2 interface."""
     return manifest_version(plugin_dir, ".codex-plugin/plugin.json")
+
+
+def verify_codex_install(source, codex_home, agents_home):
+    return service(source, codex_home, agents_home).verify()
+
+
+def uninstall_codex(source, codex_home, agents_home, dry_run=False):
+    return service(source, codex_home, agents_home).uninstall(dry_run)
+
+
+def restore_codex(source, codex_home, agents_home, backup_dir, dry_run=False):
+    return service(source, codex_home, agents_home).restore(backup_dir, dry_run)

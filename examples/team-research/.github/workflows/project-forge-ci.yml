@@ -1,0 +1,33 @@
+name: Project Forge CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify_node_ts:
+    name: Verify node-ts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: node-ts install
+        working-directory: .
+        run: npm ci
+      - name: node-ts test
+        working-directory: .
+        run: npm test
+      - name: node-ts lint
+        working-directory: .
+        run: npm run lint
+      - name: node-ts typecheck
+        working-directory: .
+        run: npm run typecheck
+      - name: node-ts build
+        working-directory: .
+        run: npm run build
+      - name: node-ts smoke
+        working-directory: .
+        run: npm run smoke

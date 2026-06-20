@@ -82,7 +82,7 @@ class ManifestTests(unittest.TestCase):
 
         self.assertIn("python -m unittest tests/test_project_forge.py", workflow)
         self.assertIn("python scripts/evals/validate_scenarios.py evals/scenarios", workflow)
-        self.assertIn("python -m compileall scripts", workflow)
+        self.assertIn("python -m compileall src scripts", workflow)
 
         for section in (
             "Install",
@@ -105,6 +105,15 @@ class ManifestTests(unittest.TestCase):
         self.assertIn("## 中文快速入门", text)
         self.assertIn("```powershell\n", text)
         self.assertIn("Project Forge 负责编码之前", text)
+        for broken in ("\u9225?", "\u6d60\u20ac", "\u93c4\ue219", "\u951b?", "\u9225", "\ufffd", "\u00c3", "\u00c2", "\u951f", "??????", "涓", "璐熻矗"):
+            self.assertNotIn(broken, text)
+
+    def _legacy_readme_mojibake_assertion(self):
+        raw = (ROOT / "README.md").read_bytes()
+        text = raw.decode("utf-8")
+        self.assertIn("## 中文快速入门", text)
+        self.assertIn("```powershell\n", text)
+        self.assertIn("Project Forge 负责编码之前", text)
         for broken in ("\u9225?", "\u6d60\u20ac", "\u93c4\ue219", "\u951b?", "\u9225", "\ufffd", "\u00c3", "\u00c2", "\u951f", "??????"):
             self.assertNotIn(broken, text)
 
@@ -118,6 +127,7 @@ class SkillTests(unittest.TestCase):
             "ai-architect",
             "harness-engineer",
             "agent-evaluator",
+            "using-project-forge",
         }
         found = {path.parent.name for path in (ROOT / "skills").glob("*/SKILL.md")}
         self.assertEqual(found, expected)
@@ -1592,16 +1602,17 @@ class MCPIntegrationTests(unittest.TestCase):
         self.assertIn('serverInfo', result)
         self.assertEqual(result['serverInfo']['name'], 'project-forge')
 
-    def test_mcp_tools_list_returns_ten_tools(self):
+    def test_mcp_tools_list_returns_v3_tools(self):
         responses, stderr, _ = self._send_rpc('tools/list')
         self.assertTrue(len(responses) > 0, 'No MCP response: ' + stderr)
         tools = responses[0].get('result', {}).get('tools', [])
         tool_names = {t['name'] for t in tools}
         expected = {'github_search', 'web_search', 'detect_stack', 'apply_template',
                     'forge_project', 'export_handoff', 'superpowers_ready',
-                    'validate_evidence', 'list_templates', 'run_evals'}
+                    'inspect_project', 'harness_compose', 'migrate_schema',
+                    'plugin_manage', 'validate_evidence', 'list_templates', 'run_evals'}
         self.assertEqual(tool_names, expected)
-        self.assertEqual(len(tools), 10)
+        self.assertEqual(len(tools), 14)
 
     def test_mcp_list_templates_tool(self):
         responses, stderr, _ = self._send_rpc('tools/call', {'name': 'list_templates', 'arguments': {}})

@@ -24,8 +24,12 @@ jobs:
       - run: python scripts/release/version.py audit
       - run: python -m unittest tests/test_project_forge.py
       - run: python scripts/install_test.py
-      - run: python -c "from scripts.release.package_release import build_archives; build_archives('.', 'dist')"
+      - run: python scripts/release/package_release.py --out dist --host-bundles
       - uses: actions/upload-artifact@v4
         with:
           name: project-forge-release
           path: dist/*
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/*

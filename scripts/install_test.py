@@ -17,6 +17,7 @@ REQUIRED_SKILLS = [
     "ai-architect",
     "harness-engineer",
     "agent-evaluator",
+    "using-project-forge",
 ]
 
 REQUIRED_TEMPLATES = [
@@ -39,14 +40,19 @@ REQUIRED_SCRIPTS = [
     "creative_brief.py",
     "clean.py",
     "install_test.py",
+    "inspect_project.py",
+    "migrate.py",
     "harness/detect_stack.py",
     "harness/apply_template.py",
+    "harness/compose.py",
     "research/github_search.py",
     "research/web_search.py",
     "research/normalize_evidence.py",
     "research/validate_evidence.py",
     "evals/validate_scenarios.py",
     "evals/run_scenarios.py",
+    "evals/superpowers_compat.py",
+    "install/manage.py",
     "mcp/server.py",
 ]
 
@@ -182,6 +188,8 @@ def check_docs():
         "docs/superpowers-ready.md",
         "docs/showcase.md",
         "docs/marketplace.md",
+        "docs/compatibility.md",
+        "docs/inventory.md",
     )
     for doc in required_docs:
         path = ROOT / doc
@@ -200,6 +208,7 @@ def check_examples():
         ("examples/fastapi-demo", "fastapi-demo"),
         ("examples/chrome-extension-demo", "chrome-extension"),
         ("examples/cli-demo", "cli-demo"),
+        ("examples/nextjs-fastapi-demo", "nextjs-fastapi-demo"),
     ]
     for project_dir, slug in examples:
         path = ROOT / project_dir
@@ -211,7 +220,7 @@ def check_examples():
         contract = (path / "project-forge.yaml").read_text(encoding="utf-8-sig")
         if slug not in contract:
             return fail(f"Example {project_dir} contract missing slug {slug}")
-    print("  [OK] Examples (4)")
+    print("  [OK] Examples ({})".format(len(examples)))
     return True
 
 

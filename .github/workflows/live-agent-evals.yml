@@ -1,0 +1,111 @@
+name: Live Agent Compatibility Evals
+
+on:
+  schedule:
+    - cron: "23 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codex-superpowers:
+    name: Codex and Superpowers
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        if: env.OPENAI_API_KEY != ''
+        with:
+          node-version: "22"
+      - name: Record unavailable credentials
+        if: env.OPENAI_API_KEY == ''
+        run: >-
+          python scripts/evals/superpowers_compat.py
+          --host codex
+          --project examples/team-research
+          --out compatibility-result.json
+      - uses: actions/checkout@v4
+        if: env.OPENAI_API_KEY != ''
+        with:
+          repository: obra/superpowers
+          ref: v5.1.3
+          path: superpowers
+      - name: Install Codex CLI
+        if: env.OPENAI_API_KEY != ''
+        run: npm install --global @openai/codex
+      - name: Run plan-only compatibility evaluation
+        if: env.OPENAI_API_KEY != ''
+        run: >-
+          python scripts/evals/superpowers_compat.py
+          --host codex
+          --project examples/team-research
+          --superpowers-dir superpowers
+          --superpowers-version 5.1.3
+          --out compatibility-result.json
+      - name: Publish result summary
+        if: always() && hashFiles('compatibility-result.json') != ''
+        run: cat compatibility-result.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always() && hashFiles('compatibility-result.json') != ''
+        with:
+          name: codex-superpowers-compatibility
+          path: |
+            compatibility-result.json
+            .project-forge/compatibility/
+
+  claude-superpowers:
+    name: Claude Code and Superpowers
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        if: env.ANTHROPIC_API_KEY != ''
+        with:
+          node-version: "22"
+      - name: Record unavailable credentials
+        if: env.ANTHROPIC_API_KEY == ''
+        run: >-
+          python scripts/evals/superpowers_compat.py
+          --host claude
+          --project examples/team-research
+          --out compatibility-result.json
+      - uses: actions/checkout@v4
+        if: env.ANTHROPIC_API_KEY != ''
+        with:
+          repository: obra/superpowers
+          ref: v5.1.3
+          path: superpowers
+      - name: Install Claude Code CLI
+        if: env.ANTHROPIC_API_KEY != ''
+        run: npm install --global @anthropic-ai/claude-code
+      - name: Run plan-only compatibility evaluation
+        if: env.ANTHROPIC_API_KEY != ''
+        run: >-
+          python scripts/evals/superpowers_compat.py
+          --host claude
+          --project examples/team-research
+          --superpowers-dir superpowers
+          --superpowers-version 5.1.3
+          --out compatibility-result.json
+      - name: Publish result summary
+        if: always() && hashFiles('compatibility-result.json') != ''
+        run: cat compatibility-result.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always() && hashFiles('compatibility-result.json') != ''
+        with:
+          name: claude-superpowers-compatibility
+          path: |
+            compatibility-result.json
+            .project-forge/compatibility/
+

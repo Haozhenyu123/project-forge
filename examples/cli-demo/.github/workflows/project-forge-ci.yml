@@ -5,18 +5,29 @@ on:
   pull_request:
 
 jobs:
-  verify:
-    name: Project Forge CI
+  verify_cli:
+    name: Verify cli
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: corepack enable
-      - run: npm ci
-      - run: npm run test
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run build
-      - run: npm run smoke
+      - name: cli install
+        working-directory: .
+        run: npm ci
+      - name: cli test
+        working-directory: .
+        run: npm run test
+      - name: cli lint
+        working-directory: .
+        run: npm run lint
+      - name: cli typecheck
+        working-directory: .
+        run: npm run typecheck
+      - name: cli build
+        working-directory: .
+        run: npm run build
+      - name: cli smoke
+        working-directory: .
+        run: npm run smoke

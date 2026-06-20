@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
 
 SERVER_NAME = "project-forge"
-SERVER_VERSION = "0.2.5"
+SERVER_VERSION = "0.3.0"
 
 TEMPLATES = ["node-ts", "python", "generic", "nextjs", "fastapi", "electron", "cli", "chrome-extension"]
 
@@ -141,8 +141,70 @@ TOOLS = [
                 "project": {"type": "string", "description": "Project directory"},
                 "slug": {"type": "string", "description": "Project slug"},
                 "strict": {"type": "boolean", "description": "Treat warnings as failures", "default": False},
+                "execute": {"type": "boolean", "description": "Execute selected structured commands", "default": False},
+                "only": {"type": "string", "description": "Comma-separated command names"},
+                "include_install": {"type": "boolean", "description": "Include install", "default": False},
+                "include_run": {"type": "boolean", "description": "Include run", "default": False},
+                "allow_legacy_shell": {"type": "boolean", "description": "Allow legacy shell strings", "default": False},
+                "timeout": {"type": "integer", "description": "Per-command timeout seconds", "default": 300},
             },
             "required": ["project", "slug"],
+        },
+    },
+    {
+        "name": "inspect_project",
+        "description": "Inspect an existing project architecture without executing project code.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "project": {"type": "string", "description": "Project directory"},
+                "json": {"type": "boolean", "description": "Return JSON", "default": True},
+                "no_write": {"type": "boolean", "description": "Do not write inventory artifacts", "default": False},
+            },
+            "required": ["project"],
+        },
+    },
+    {
+        "name": "harness_compose",
+        "description": "Compose a Schema v2 primary/secondary harness contract.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "project": {"type": "string", "description": "Project directory"},
+                "slug": {"type": "string", "description": "Project slug"},
+                "goal": {"type": "string", "description": "Project goal"},
+                "primary": {"type": "string", "description": "Primary TEMPLATE[:PATH]"},
+                "secondary": {"type": "array", "items": {"type": "string"}, "description": "Secondary TEMPLATE[:PATH] entries"},
+                "dry_run": {"type": "boolean", "default": False},
+            },
+            "required": ["project", "slug", "goal", "primary"],
+        },
+    },
+    {
+        "name": "migrate_schema",
+        "description": "Migrate Project Forge artifacts from Schema v1 to v2 or preview the migration.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "project": {"type": "string", "description": "Project directory"},
+                "dry_run": {"type": "boolean", "default": True},
+            },
+            "required": ["project"],
+        },
+    },
+    {
+        "name": "plugin_manage",
+        "description": "Install, verify, update, uninstall, or restore a Codex/Claude plugin bundle. Dry-run is recommended for planning.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "action": {"type": "string", "enum": ["install", "verify", "update", "uninstall", "restore"]},
+                "host": {"type": "string", "enum": ["codex", "claude"]},
+                "dry_run": {"type": "boolean", "default": True},
+                "cachebuster": {"type": "string"},
+                "backup": {"type": "string"},
+            },
+            "required": ["action", "host"],
         },
     },
     {
@@ -240,6 +302,42 @@ def handle_tools_call(request_id, params):
             "--slug", a["slug"],
             "--json",
             *(["--strict"] if a.get("strict") else []),
+            *(["--execute"] if a.get("execute") else []),
+            *(["--only", a["only"]] if a.get("only") else []),
+            *(["--include-install"] if a.get("include_install") else []),
+            *(["--include-run"] if a.get("include_run") else []),
+            *(["--allow-legacy-shell"] if a.get("allow_legacy_shell") else []),
+            "--timeout", str(a.get("timeout", 300)),
+        ),
+        "inspect_project": lambda a: run_script(
+            "inspect_project.py",
+            a["project"],
+            *(["--json"] if a.get("json", True) else []),
+            *(["--no-write"] if a.get("no_write") else []),
+        ),
+        "harness_compose": lambda a: run_script(
+            "harness/compose.py",
+            "--project", a["project"],
+            "--slug", a["slug"],
+            "--goal", a["goal"],
+            "--primary", a["primary"],
+            *(sum((["--secondary", item] for item in a.get("secondary", [])), [])),
+            *(["--dry-run"] if a.get("dry_run") else []),
+        ),
+        "migrate_schema": lambda a: run_script(
+            "migrate.py",
+            a["project"],
+            "--from", "1",
+            "--to", "2",
+            *(["--dry-run"] if a.get("dry_run", True) else []),
+        ),
+        "plugin_manage": lambda a: run_script(
+            "install/manage.py",
+            a["action"],
+            "--host", a["host"],
+            *(["--dry-run"] if a.get("dry_run", True) else []),
+            *(["--cachebuster", a["cachebuster"]] if a.get("cachebuster") else []),
+            *(["--backup", a["backup"]] if a.get("backup") else []),
         ),
         "validate_evidence": lambda a: run_script(
             "research/validate_evidence.py", a["evidence_file"],

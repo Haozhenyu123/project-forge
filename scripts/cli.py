@@ -7,6 +7,9 @@ Usage:
   project-forge research --query QUERY [--limit N] [--out DIR]
   project-forge handoff --slug SLUG [--out FILE] [PROJECT_DIR]
   project-forge superpowers-ready --slug SLUG [--json] [--strict] [PROJECT_DIR]
+  project-forge inspect [--json] [PROJECT_DIR]
+  project-forge harness compose --primary TEMPLATE:PATH [--secondary TEMPLATE:PATH]
+  project-forge migrate --from 1 --to 2 [--dry-run] [PROJECT_DIR]
   project-forge smoke --slug SLUG [PROJECT_DIR]
   project-forge validate-evidence [EVIDENCE_FILE]
   project-forge list-templates
@@ -25,7 +28,7 @@ from pathlib import Path
 SCRIPTS_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPTS_ROOT.parent
 
-VERSION = "0.2.5"
+VERSION = "0.3.0"
 
 TEMPLATES = [
     "node-ts",
@@ -97,6 +100,7 @@ def cmd_init(args):
                     "slug": args.slug,
                     "goal": goal,
                     "stack": stack or "auto",
+                    "secondary": args.secondary,
                     "would_research": args.evidence is None,
                     "evidence": str(args.evidence) if args.evidence else None,
                     "would_generate": [
@@ -189,6 +193,8 @@ def cmd_init(args):
         forge_args.extend(["--decision-file", str(Path(args.decision_file).resolve())])
     if args.force:
         forge_args.append("--force")
+    for secondary in args.secondary:
+        forge_args.extend(["--secondary", secondary])
     forge_output = run_script(*forge_args)
 
     handoff = project / "docs" / "superpowers-handoff.md"
@@ -269,8 +275,75 @@ def cmd_superpowers_ready(args):
         ready_args.append("--json")
     if args.strict:
         ready_args.append("--strict")
+    if args.execute:
+        ready_args.append("--execute")
+    if args.only:
+        ready_args.extend(["--only", args.only])
+    if args.include_install:
+        ready_args.append("--include-install")
+    if args.include_run:
+        ready_args.append("--include-run")
+    if args.allow_legacy_shell:
+        ready_args.append("--allow-legacy-shell")
+    ready_args.extend(["--timeout", str(args.timeout)])
+    if args.continue_on_failure:
+        ready_args.append("--continue-on-failure")
     output = run_script(*ready_args)
     print(output, end="")
+
+
+def cmd_inspect(args):
+    inspect_args = ["inspect_project.py", args.project]
+    if args.json:
+        inspect_args.append("--json")
+    if args.out:
+        inspect_args.extend(["--out-dir", args.out])
+    print(run_script(*inspect_args), end="")
+
+
+def cmd_harness_compose(args):
+    compose_args = [
+        "harness/compose.py",
+        "--project", args.project,
+        "--slug", args.slug,
+        "--goal", args.goal,
+        "--primary", args.primary,
+    ]
+    for secondary in args.secondary:
+        compose_args.extend(["--secondary", secondary])
+    if args.out:
+        compose_args.extend(["--out", args.out])
+    if args.dry_run:
+        compose_args.append("--dry-run")
+    print(run_script(*compose_args), end="")
+
+
+def cmd_migrate(args):
+    migrate_args = ["migrate.py", args.project, "--from", str(args.source), "--to", str(args.target)]
+    if args.dry_run:
+        migrate_args.append("--dry-run")
+    if args.rollback:
+        migrate_args.extend(["--rollback", args.rollback])
+    print(run_script(*migrate_args), end="")
+
+
+def cmd_plugin(args):
+    plugin_args = ["install/manage.py", args.plugin_action, "--host", args.host]
+    optional = {
+        "--source": args.source,
+        "--home": args.home,
+        "--codex-home": args.codex_home,
+        "--agents-home": args.agents_home,
+        "--marketplace-root": args.marketplace_root,
+        "--cachebuster": args.cachebuster,
+        "--backup": args.backup,
+    }
+    for flag, value in optional.items():
+        if value:
+            plugin_args.extend([flag, value])
+    if args.dry_run:
+        plugin_args.append("--dry-run")
+    print(run_script(*plugin_args), end="")
 
 
 def cmd_smoke(args):
@@ -366,6 +439,7 @@ def main():
     init_parser.add_argument("--goal", help="Project goal description")
     init_parser.add_argument("--evidence", help="Path to pre-existing evidence file or directory")
     init_parser.add_argument("--decision-file", help="Structured architecture decision JSON")
+    init_parser.add_argument("--secondary", action="append", default=[], help="Secondary TEMPLATE[:PATH]")
     init_parser.add_argument("--force", action="store_true", help="Back up and replace generated files")
     init_parser.add_argument("--dry-run", action="store_true", help="Show planned changes without writing")
 
@@ -388,7 +462,51 @@ def main():
     ready_parser.add_argument("--slug", required=True, help="Project slug")
     ready_parser.add_argument("--json", action="store_true", help="Output JSON")
     ready_parser.add_argument("--strict", action="store_true", help="Treat warnings as failures")
+    ready_parser.add_argument("--execute", action="store_true", help="Execute selected structured harness commands")
+    ready_parser.add_argument("--only", help="Comma-separated command names")
+    ready_parser.add_argument("--include-install", action="store_true", help="Include install command")
+    ready_parser.add_argument("--include-run", action="store_true", help="Include long-running run command")
+    ready_parser.add_argument("--allow-legacy-shell", action="store_true", help="Allow legacy shell strings")
+    ready_parser.add_argument("--timeout", type=int, default=300, help="Per-command timeout seconds")
+    ready_parser.add_argument("--continue-on-failure", action="store_true")
     ready_parser.add_argument("project", nargs="?", default=".", help="Project directory")
+
+    inspect_parser = subparsers.add_parser("inspect", help="Inspect an existing project architecture")
+    inspect_parser.add_argument("project", nargs="?", default=".")
+    inspect_parser.add_argument("--json", action="store_true")
+    inspect_parser.add_argument("--out", help="Output directory")
+
+    harness_parser = subparsers.add_parser("harness", help="Harness contract operations")
+    harness_sub = harness_parser.add_subparsers(dest="harness_command", required=True)
+    compose_parser = harness_sub.add_parser("compose", help="Compose Schema v2 harnesses")
+    compose_parser.add_argument("--project", default=".")
+    compose_parser.add_argument("--slug", required=True)
+    compose_parser.add_argument("--goal", required=True)
+    compose_parser.add_argument("--primary", required=True)
+    compose_parser.add_argument("--secondary", action="append", default=[])
+    compose_parser.add_argument("--out")
+    compose_parser.add_argument("--dry-run", action="store_true")
+
+    migrate_parser = subparsers.add_parser("migrate", help="Migrate Project Forge schemas")
+    migrate_parser.add_argument("project", nargs="?", default=".")
+    migrate_parser.add_argument("--from", dest="source", type=int, default=1)
+    migrate_parser.add_argument("--to", dest="target", type=int, default=2)
+    migrate_parser.add_argument("--dry-run", action="store_true")
+    migrate_parser.add_argument("--rollback")
+
+    plugin_parser = subparsers.add_parser("plugin", help="Manage Codex or Claude Code plugin installation")
+    plugin_sub = plugin_parser.add_subparsers(dest="plugin_action", required=True)
+    for action in ("install", "verify", "update", "uninstall", "restore"):
+        action_parser = plugin_sub.add_parser(action, help=f"{action} a host plugin bundle")
+        action_parser.add_argument("--host", choices=["codex", "claude"], required=True)
+        action_parser.add_argument("--source")
+        action_parser.add_argument("--home")
+        action_parser.add_argument("--codex-home")
+        action_parser.add_argument("--agents-home")
+        action_parser.add_argument("--marketplace-root")
+        action_parser.add_argument("--cachebuster")
+        action_parser.add_argument("--backup")
+        action_parser.add_argument("--dry-run", action="store_true")
 
     smoke_parser = subparsers.add_parser("smoke", help="Validate project artifacts")
     smoke_parser.add_argument("--slug", required=True, help="Project slug")
@@ -421,6 +539,10 @@ def main():
         "research": cmd_research,
         "handoff": cmd_handoff,
         "superpowers-ready": cmd_superpowers_ready,
+        "inspect": cmd_inspect,
+        "harness": cmd_harness_compose,
+        "migrate": cmd_migrate,
+        "plugin": cmd_plugin,
         "smoke": cmd_smoke,
         "validate-evidence": cmd_validate_evidence,
         "list-templates": cmd_list_templates,

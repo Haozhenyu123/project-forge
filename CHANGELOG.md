@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.0] - 2026-06-20
+
+### Added
+- `src/project_forge/` domain package for creative direction, evidence, architecture decisions, inventory, harness, readiness, handoff, hosts, and eval compatibility.
+- Schema v2 `project-forge.yaml` contracts with primary/secondary stacks, structured argv commands, services, verification reports, and one-release root command mirrors.
+- Multi-stack harness composition with `project-forge harness compose` and repeatable `init --secondary TEMPLATE:PATH`.
+- Executable `superpowers-ready --execute` verification reports under `.project-forge/verification/<run-id>/`.
+- Read-only `project-forge inspect` inventory scanner with JSON, Markdown, and Mermaid topology output.
+- Creative decision JSON at `docs/product/creative-decision.json` with commercial/product scoring and evidence confidence.
+- Evidence normalization with canonical URLs, fingerprints, source-quality tiers, freshness, provider fallbacks, and stdlib GitHub/npm/PyPI/OSV provider abstractions.
+- Codex/Claude plugin lifecycle commands and host-specific release bundles.
+- Plan-only Superpowers compatibility runner, compatibility matrix, live eval workflow, and `using-project-forge` routing skill.
+- Next.js + FastAPI multi-stack showcase example.
+
+### Changed
+- Decision scoring now uses the versioned stack catalog instead of hard-coded script-local stacks.
+- Handoff packets are Schema v2 and include creative decision, inventory links, verification report links, compatibility metadata, and explicit Project Forge/Superpowers boundary guardrails.
+- Existing examples were regenerated to Schema v2.
+- Release packaging now builds general archives plus Codex and Claude submission bundles.
+- README Chinese quickstart was restored as valid UTF-8.
+
+### Fixed
+- Python 3.9 compatibility for generated file writes.
+- Local compatibility evals now preserve system environment variables while still isolating HOME.
+
 ## [0.2.5] - 2026-06-20
 
 ### Added

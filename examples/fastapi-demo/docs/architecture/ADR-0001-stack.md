@@ -7,43 +7,41 @@ Accepted
 ## Context
 
 - Project slug: `fastapi-demo`
-- Goal: Show an API-first planning service with typed endpoints and a Python verification harness.
+- Goal: API-first planning service for architecture decisions
 - Selected stack: `fastapi`
 
 ## Evidence
 
-- [E1] FastAPI framework repository demonstrates a maintained Python API framework with production usage.
-- [E2] FastAPI documentation emphasizes standard Python type hints, OpenAPI generation, and fast local development.
+- [E1] FastAPI framework, high performance, easy to learn, fast to code, ready for production fastapi-demo: https://github.com/tiangolo/fastapi
+- [E2] FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.7+ based on standard Python type hints. fastapi-demo: https://fastapi.tiangolo.com/
 
 ## Considered Options
 
-- `fastapi` (score: 89): Strong fit for typed APIs, generated docs, and simple Python CI.
-- `python` (score: 72): Useful generic Python baseline, but lacks API-specific run and smoke commands.
-- `node-ts` (score: 61): Good ecosystem, but adds a JavaScript runtime for an API-first Python example.
+- `fastapi`: selected from the requested harness and available evidence.
+- Additional alternatives were not scored; this decision remains provisional.
 
 ## Decision
 
 Use `fastapi` as the primary harness for `fastapi-demo`.
-
-- Rationale: the example is explicitly API-first, and FastAPI gives the clearest command contract for install, tests, linting, running Uvicorn, and smoke checks.
+- Rationale: This stack matches the current project goal and has an available harness contract.
 
 ## Explicitly Rejected
 
-- `python`: rejected because the generic Python template does not communicate the API server lifecycle clearly enough.
-- `node-ts`: rejected because it would add an unnecessary runtime and weaken the typed Python API story.
+- No alternative has enough evidence for a responsible rejection.
+- Re-run architecture research before treating this choice as final.
 
 ## Confidence Assessment
 
-- **Stack choice**: High confidence -- the evidence and product shape both point to a Python API service.
+- **Stack choice**: High confidence -- multiple current, independent sources support the decision.
 
 ## Consequences
 
-- The repository receives a Project Forge harness contract and Python CI workflow.
+- The repository receives a Project Forge harness contract and CI workflow.
 - Future architecture changes should cite updated research evidence.
-- Superpowers can begin implementation from a typed API surface instead of reselecting the backend stack.
+- Low-confidence decisions should be re-evaluated before expanding scope beyond MVP.
 
 ## Risks and Revisit Triggers
 
-- Revisit if the product becomes a mostly static dashboard with little API logic.
-- Revisit if deployment constraints require a platform that does not support Python services well.
-- Revisit if the API needs realtime bidirectional collaboration as the primary workflow.
+- The project needs capabilities not covered by the current stack.
+- A critical dependency becomes unmaintained or changes licensing.
+- A required Architecture Signal cannot be verified by the harness.

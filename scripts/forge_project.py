@@ -8,9 +8,23 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+SRC = Path(__file__).resolve().parents[1] / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from project_forge.contract import write_contract
+from project_forge.creative import write_creative_outputs
+from project_forge.handoff import export_handoff
+from project_forge.harness.ci import write_ci
+from project_forge.harness.composer import command_specs_from_strings, parse_stack_spec
+from project_forge.harness.templates import commands_for
+from project_forge.models import ProjectContract, ProjectMeta, StackContract
+
 
 GENERATED_FILES = (
     Path("docs") / "research" / "{slug}" / "evidence.jsonl",
+    Path("docs") / "creative-brief.md",
+    Path("docs") / "product" / "creative-decision.json",
     Path("docs") / "architecture" / "ADR-0001-stack.md",
     Path("project-forge.yaml"),
     Path("docs") / "harness.md",
@@ -27,6 +41,7 @@ def parse_args():
     parser.add_argument("--goal", required=True)
     parser.add_argument("--stack", required=True)
     parser.add_argument("--secondary-stack", default="", help="Optional secondary stack for multi-stack projects")
+    parser.add_argument("--secondary", action="append", default=[], help="Secondary TEMPLATE[:PATH]")
     parser.add_argument("--evidence", required=True)
     parser.add_argument("--decision-file", help="Optional structured decision JSON")
     parser.add_argument("--force", action="store_true")
@@ -75,19 +90,6 @@ def import_state_helpers():
         except ValueError:
             pass
     return backup_files, record_run
-
-
-def import_handoff_helpers():
-    scripts_dir = repo_root() / "scripts"
-    sys.path.insert(0, str(scripts_dir))
-    try:
-        from export_handoff import export_handoff
-    finally:
-        try:
-            sys.path.remove(str(scripts_dir))
-        except ValueError:
-            pass
-    return export_handoff
 
 
 def validate_slug(slug):
@@ -346,32 +348,41 @@ def adr_text(slug, stack, goal, evidence_rows, decision=None):
     return "\n".join(lines)
 
 
-def yaml_scalar(value):
-    text = str(value)
-    return json.dumps(text)
-
-
-def write_project_contract(path, slug, stack, goal, commands, secondary_stack="", decision=None):
-    lines = [
-        "project:",
-        f"  slug: {yaml_scalar(slug)}",
-        f"  goal: {yaml_scalar(goal)}",
-        f"  stack: {yaml_scalar(stack)}",
-        "  decision_status: accepted",
-        "  harness_status: configured",
-    ]
+def write_project_contract(path, slug, stack, goal, commands, secondary_stack="", decision=None, secondary=()):
+    primary = StackContract(
+        id=stack,
+        template=stack,
+        root=".",
+        commands=command_specs_from_strings(commands),
+    )
+    secondary_specs = list(secondary)
     if secondary_stack:
-        lines.append(f"  secondary_stack: {yaml_scalar(secondary_stack)}")
-    lines.append("commands:")
-    for name in ("install", "test", "lint", "typecheck", "build", "run", "smoke"):
-        lines.append(f"  {name}: {commands.get(name, 'echo command not configured')}")
-    if secondary_stack:
-        lines.append("secondary_commands:")
-        for name in ("install", "test", "lint", "typecheck", "build", "run", "smoke"):
-            lines.append(f"  {name}: echo secondary stack command not configured")
-    text = "\n".join(lines) + "\n"
-    with path.open("w", encoding="utf-8", newline="\n") as handle:
-        handle.write(text)
+        secondary_specs.insert(0, secondary_stack)
+    secondary_contracts = []
+    used = {primary.id}
+    for value in secondary_specs:
+        template, root = parse_stack_spec(value)
+        identifier = template
+        suffix = 2
+        while identifier in used:
+            identifier = f"{template}-{suffix}"
+            suffix += 1
+        used.add(identifier)
+        secondary_contracts.append(
+            StackContract(
+                id=identifier,
+                template=template,
+                root=root,
+                commands=commands_for(template, root),
+            )
+        )
+    contract = ProjectContract(
+        project=ProjectMeta(slug=slug, goal=goal),
+        primary=primary,
+        secondary=secondary_contracts,
+    )
+    write_contract(path, contract)
+    return contract
 
 
 def commands_for_project(project, stack):
@@ -384,96 +395,6 @@ def commands_for_project(project, stack):
             return commands
         return commands_by_template.get(stack, commands_by_template["node-ts"])
     return commands_by_template.get(stack, commands_by_template["generic"])
-
-
-def write_ci_contract(path, stack, commands):
-    verify_names = ("install", "test", "lint", "typecheck", "build", "smoke")
-    NODE_STACKS = {"node-ts", "nextjs", "electron", "cli", "chrome-extension"}
-    PYTHON_STACKS = {"python", "fastapi"}
-    lines = [
-        "name: Project Forge CI",
-        "",
-        "on:",
-        "  push:",
-        "  pull_request:",
-        "",
-        "jobs:",
-        "  verify:",
-        "    name: Project Forge CI",
-        "    runs-on: ubuntu-latest",
-        "    steps:",
-        "      - uses: actions/checkout@v4",
-    ]
-    if stack in NODE_STACKS:
-        lines.extend(
-            [
-                "      - uses: actions/setup-node@v4",
-                "        with:",
-                "          node-version: \"22\"",
-                "      - run: corepack enable",
-            ]
-        )
-    elif stack in PYTHON_STACKS:
-        lines.extend(
-            [
-                "      - uses: actions/setup-python@v5",
-                "        with:",
-                "          python-version: \"3.12\"",
-            ]
-        )
-    for name in verify_names:
-        lines.append(f"      - run: {commands[name]}")
-    with path.open("w", encoding="utf-8", newline="\n") as handle:
-        handle.write("\n".join(lines) + "\n")
-
-def write_handoff_text(slug, stack, goal, evidence_rows, commands):
-    """Generate superpowers-handoff.md from project artifacts."""
-    evidence_list = []
-    for row in evidence_rows[:5]:
-        eid = row.get("evidence_id", "?")
-        title = row.get("title", "Unknown")
-        url = row.get("url", "")
-        summary = row.get("summary", "")[:120]
-        evidence_list.append(f"- [{eid}] {title}: {summary} ({url})")
-
-    evidence_block = "\n".join(evidence_list) if evidence_list else "No evidence recorded."
-    commands_block = "\n".join(f"- `{k}`: {v}" for k, v in commands.items())
-
-    return f"""# Superpowers Handoff
-
-## Brief
-
-- Project slug: `{slug}`
-- Goal: {goal}
-- Stack signal: {stack}
-- Assignment: consume this packet, preserve the evidence-backed architecture, and implement against the harness contract.
-
-## Creative Direction
-
-- Build the smallest coherent product experience that satisfies the goal and keeps future iteration easy.
-- Keep user-facing choices aligned with the accepted ADR and the current harness constraints.
-- When product direction is ambiguous, make the assumption explicit under Open Questions before expanding scope.
-
-## Evidence
-
-Source: `docs/research/{slug}/evidence.jsonl`
-
-{evidence_block}
-
-## Architecture Decision
-
-See `docs/architecture/ADR-0001-stack.md` for the full decision record.
-
-## Harness Contract
-
-See `project-forge.yaml` and `docs/harness.md` for the full harness contract.
-
-{commands_block}
-
-## Open Questions
-
-- Left blank intentionally; fill in as the implementation progresses.
-"""
 
 
 def main():
@@ -536,11 +457,12 @@ def main():
         commands = commands_for_project(project, args.stack)
 
         write_jsonl(research_path, rows)
+        write_creative_outputs(project, slug, args.goal, rows)
         adr_path.parent.mkdir(parents=True, exist_ok=True)
         with adr_path.open("w", encoding="utf-8", newline="\n") as handle:
             handle.write(adr_text(slug, args.stack, args.goal, rows, decision))
 
-        write_project_contract(
+        contract = write_project_contract(
             contract_path,
             slug,
             args.stack,
@@ -548,11 +470,11 @@ def main():
             commands,
             args.secondary_stack,
             decision,
+            args.secondary,
         )
-        write_ci_contract(ci_path, args.stack, commands)
+        write_ci(ci_path, contract)
         handoff_path = project / "docs" / "superpowers-handoff.md"
         handoff_json_path = project / "docs" / "superpowers-handoff.json"
-        export_handoff = import_handoff_helpers()
         export_handoff(project, slug, handoff_path, handoff_json_path)
 
         _, record_run = import_state_helpers()
@@ -561,7 +483,7 @@ def main():
             {
                 "slug": slug,
                 "stack": args.stack,
-                "secondary_stack": args.secondary_stack or None,
+                "secondary_stack": args.secondary_stack or args.secondary or None,
                 "goal": args.goal,
                 "evidence_count": len(rows),
                 "decision_file": args.decision_file,

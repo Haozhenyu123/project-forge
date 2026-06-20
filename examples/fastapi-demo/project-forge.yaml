@@ -1,7 +1,11 @@
+schema_version: 2
 project:
   slug: "fastapi-demo"
-  goal: "Test"
-  stack: "fastapi"
+  goal: "API-first planning service for architecture decisions"
+  decision_status: "accepted"
+  harness_status: "configured"
+stacks: {"primary": {"commands": {"build": {"cwd": ".", "legacy_shell": "echo FastAPI projects do not require a build step", "mutates": true, "timeout_seconds": 300}, "install": {"argv": ["pip", "install", "-r", "requirements.txt"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "lint": {"argv": ["python", "-m", "ruff", "check", "."], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "run": {"argv": ["uvicorn", "app.main:app", "--reload"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "smoke": {"argv": ["python", "-m", "pytest", "tests/smoke/"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "test": {"argv": ["python", "-m", "pytest"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "typecheck": {"argv": ["python", "-m", "mypy", "."], "cwd": ".", "mutates": false, "timeout_seconds": 300}}, "environment": [], "id": "fastapi", "root": ".", "services": [], "template": "fastapi"}, "secondary": []}
+services: []
 commands:
   install: pip install -r requirements.txt
   test: python -m pytest
@@ -10,3 +14,4 @@ commands:
   build: echo FastAPI projects do not require a build step
   run: uvicorn app.main:app --reload
   smoke: python -m pytest tests/smoke/
+verification: {"latest_report": null}

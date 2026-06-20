@@ -23,5 +23,5 @@
   "name": "project-forge",
   "repository": "https://github.com/Haozhenyu123/project-forge",
   "skills": "./skills/",
-  "version": "0.2.5"
+  "version": "0.3.0"
 }

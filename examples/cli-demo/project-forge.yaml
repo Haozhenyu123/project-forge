@@ -1,7 +1,11 @@
+schema_version: 2
 project:
   slug: "cli-demo"
-  goal: "A CLI tool that converts markdown files to HTML and PDF with syntax highlighting"
-  stack: "cli"
+  goal: "CLI tool that converts markdown planning packets to HTML and PDF"
+  decision_status: "accepted"
+  harness_status: "configured"
+stacks: {"primary": {"commands": {"build": {"argv": ["npm", "run", "build"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "install": {"argv": ["npm", "ci"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "lint": {"argv": ["npm", "run", "lint"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "run": {"argv": ["node", "dist/index.js"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "smoke": {"argv": ["npm", "run", "smoke"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "test": {"argv": ["npm", "run", "test"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "typecheck": {"argv": ["npm", "run", "typecheck"], "cwd": ".", "mutates": false, "timeout_seconds": 300}}, "environment": [], "id": "cli", "root": ".", "services": [], "template": "cli"}, "secondary": []}
+services: []
 commands:
   install: npm ci
   test: npm run test
@@ -10,3 +14,4 @@ commands:
   build: npm run build
   run: node dist/index.js
   smoke: npm run smoke
+verification: {"latest_report": null}

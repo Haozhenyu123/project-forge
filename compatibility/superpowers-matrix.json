@@ -1,0 +1,30 @@
+{
+  "boundary": {
+    "project_forge": "product direction, evidence, architecture, harness, and handoff",
+    "superpowers": "implementation planning and implementation disciplines"
+  },
+  "project_forge_contracts": [
+    1,
+    2
+  ],
+  "schema_version": 1,
+  "versions": [
+    {
+      "contracts": [
+        1,
+        2
+      ],
+      "hosts": [
+        "codex",
+        "claude"
+      ],
+      "mode": "plan-only",
+      "required_skills": [
+        "brainstorming",
+        "writing-plans"
+      ],
+      "status": "contract-tested",
+      "superpowers": "5.1.3"
+    }
+  ]
+}

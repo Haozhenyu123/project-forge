@@ -1,0 +1,7 @@
+interface:
+  display_name: "Using Project Forge"
+  short_description: "Route product and architecture decisions"
+  default_prompt: "Use $using-project-forge to route this early project request."
+
+policy:
+  allow_implicit_invocation: true

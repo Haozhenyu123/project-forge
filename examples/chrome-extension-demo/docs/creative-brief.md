@@ -1,46 +1,65 @@
 # Creative Brief
 
 - Project slug: `chrome-extension`
-- Created: 2026-06-19T09:47:41Z
+- Goal: Chrome extension that summarizes selected text with a configurable AI backend
+- Selected direction: `Focused MVP`
+- Created: 2026-06-20T06:32:03.314014Z
 
 ## Experience Thesis
 
-A Chrome extension that summarizes selected text on any webpage
+Ship the smallest useful version of: Chrome extension that summarizes selected text with a configurable AI backend
 
 ## Target User
 
-Knowledge workers who read and summarize content daily
+a narrow first user group with an urgent, repeated workflow
+
+## Primary Workflow
+
+Guide the user from an initial idea to an accepted product direction, then to architecture and harness readiness.
 
 ## First Interaction
 
-Popup showing last summary with copy-to-clipboard button
+Present three concrete angles, choose a default, and ask only for corrections that would change the decision.
 
 ## Interaction Style
 
-Right-click context menu + popup
+Opinionated, evidence-aware, and concise; make the next decision obvious.
 
 ## Content Tone
 
-Concise, helpful
+Clear, commercially grounded, and calm.
 
 ## Platform
 
-chrome-extension
+Host-agent workflow with repository artifacts; no SaaS backend required for V1.
+
+## Competitive Context
+
+Compare direct competitors, substitute workflows, and manual decision processes when evidence is available.
+
+## Differentiation
+
+fastest path to validation and lowest scope risk
+
+## Architecture Signals
+
+- small-scope
+- single-primary-workflow
+- fast-feedback
 
 ## Assumptions
 
-- Target user 'Knowledge workers who read and summarize content daily' is an assumption; validate with user research.
-- Platform 'chrome-extension' is an assumption; confirm deployment target.
-- Interaction style 'Right-click context menu + popup' is an assumption; validate with a prototype.
+- Commercial reasoning is directional until user interviews, traffic, or payment intent are measured.
+- Architecture choices must stay aligned with the accepted creative direction.
 
 ## Risks
 
-- If the target user or platform is wrong, the MVP may need significant rework.
-- Vague goals lead to scope creep; pin down the first useful workflow before expanding.
-- Creative direction without user validation is speculation; test assumptions early.
+- Direction is provisional when evidence confidence is low.
+- Architecture must be revisited if the accepted creative direction changes.
+- Product claims need validation before they become implementation scope.
 
 ## Next Steps
 
-1. Hand this brief to `ai-architect` for evidence-backed stack selection.
-2. Run research scripts to gather GitHub and web evidence for the chosen direction.
-3. Apply a harness template once the stack is confirmed.
+1. Feed the accepted direction into architecture scoring.
+2. Record evidence gaps as provisional instead of inventing confidence.
+3. Generate harness and handoff only after the direction is explicit.

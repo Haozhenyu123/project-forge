@@ -5,17 +5,29 @@ on:
   pull_request:
 
 jobs:
-  verify:
-    name: Project Forge CI
+  verify_fastapi:
+    name: Verify fastapi
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r requirements.txt
-      - run: python -m pytest
-      - run: python -m ruff check .
-      - run: python -m mypy .
-      - run: echo FastAPI projects do not require a build step
-      - run: python -m pytest tests/smoke/
+      - name: fastapi install
+        working-directory: .
+        run: pip install -r requirements.txt
+      - name: fastapi test
+        working-directory: .
+        run: python -m pytest
+      - name: fastapi lint
+        working-directory: .
+        run: python -m ruff check .
+      - name: fastapi typecheck
+        working-directory: .
+        run: python -m mypy .
+      - name: fastapi build (legacy)
+        working-directory: .
+        run: echo FastAPI projects do not require a build step
+      - name: fastapi smoke
+        working-directory: .
+        run: python -m pytest tests/smoke/

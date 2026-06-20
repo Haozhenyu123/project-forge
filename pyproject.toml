@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "project-forge"
+version = "0.3.0"
+description = "Evidence-backed product direction, architecture, harness, and Superpowers handoff"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+validation = ["PyYAML>=6,<7", "jsonschema>=4,<5"]
+dev = ["ruff>=0.5", "mypy>=1.10", "PyYAML>=6,<7", "jsonschema>=4,<5"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.mypy]
+python_version = "3.9"
+warn_unused_ignores = true
+check_untyped_defs = true

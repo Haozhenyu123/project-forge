@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
-"""Build Project Forge release archives."""
+"""Build Project Forge release archives and host submission bundles."""
 
+import argparse
 import hashlib
 import json
+import sys
 import tarfile
 import zipfile
 from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC = str(ROOT / "src")
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
+
+from project_forge.hosts import build_host_bundles
 
 
 def iter_package_files(root):
@@ -55,3 +65,20 @@ def build_archives(root, out):
         encoding="utf-8",
     )
     return [zip_path, tar_path, sums]
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", default=str(ROOT))
+    parser.add_argument("--out", default="dist")
+    parser.add_argument("--host-bundles", action="store_true")
+    args = parser.parse_args(argv)
+    artifacts = build_archives(args.root, args.out)
+    if args.host_bundles:
+        artifacts.extend(build_host_bundles(args.root, args.out))
+    print(json.dumps({"artifacts": [str(path) for path in artifacts]}, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,370 @@
+{
+  "artifacts": {
+    "adr": "docs/architecture/ADR-0001-stack.md",
+    "contract": "project-forge.yaml",
+    "creative_decision": "docs/product/creative-decision.json",
+    "evidence": "docs/research/nextjs-fastapi-demo/evidence.jsonl",
+    "harness": "docs/harness.md",
+    "inventory": null,
+    "verification_report": null
+  },
+  "boundary": {
+    "project_forge_owns": [
+      "product direction",
+      "evidence",
+      "architecture",
+      "harness",
+      "handoff"
+    ],
+    "superpowers_owns": [
+      "implementation planning",
+      "TDD",
+      "debugging",
+      "review",
+      "branch completion"
+    ]
+  },
+  "compatibility": {
+    "handoff_schema": 2,
+    "project_forge_contract": 2,
+    "superpowers": "see compatibility/superpowers.json"
+  },
+  "creative_decision": {
+    "assumptions": [
+      "Commercial reasoning is directional until user interviews, traffic, or payment intent are measured.",
+      "Architecture choices must stay aligned with the accepted creative direction."
+    ],
+    "created_at": "2026-06-20T06:33:36.075586Z",
+    "directions": [
+      {
+        "architecture_signals": [
+          "small-scope",
+          "single-primary-workflow",
+          "fast-feedback"
+        ],
+        "audience": "a narrow first user group with an urgent, repeated workflow",
+        "differentiation": 62,
+        "evidence_confidence": "provisional",
+        "evidence_ids": [],
+        "id": "focused-mvp",
+        "implementation_cost": 35,
+        "name": "Focused MVP",
+        "promise": "Ship the smallest useful version of: Decision dashboard with a TypeScript frontend and Python REST API backend",
+        "provisional": true,
+        "reachability": 82,
+        "reason": "fastest path to validation and lowest scope risk",
+        "target_user_pain": "The user needs one painful job completed reliably before broader platform value matters.",
+        "validation_speed": 90,
+        "value_signal": 68
+      },
+      {
+        "architecture_signals": [
+          "stateful-guidance",
+          "decision-history",
+          "human-readable-artifacts"
+        ],
+        "audience": "users who know the outcome they want but not the sequence of choices",
+        "differentiation": 74,
+        "evidence_confidence": "provisional",
+        "evidence_ids": [],
+        "id": "guided-workflow",
+        "implementation_cost": 48,
+        "name": "Guided Workflow",
+        "promise": "Turn the problem into a step-by-step decision journey.",
+        "provisional": true,
+        "reachability": 76,
+        "reason": "best fit when the idea is vague and users need momentum more than customization",
+        "target_user_pain": "The user is blocked by ambiguity, not lack of tools.",
+        "validation_speed": 82,
+        "value_signal": 70
+      },
+      {
+        "architecture_signals": [
+          "auditability",
+          "evidence-store",
+          "multi-view-comparison"
+        ],
+        "audience": "teams that need shared confidence before implementation",
+        "differentiation": 80,
+        "evidence_confidence": "low",
+        "evidence_ids": [
+          "E1"
+        ],
+        "id": "evidence-dashboard",
+        "implementation_cost": 58,
+        "name": "Evidence Dashboard",
+        "promise": "Make options, evidence, confidence, and next actions visible.",
+        "provisional": false,
+        "reachability": 70,
+        "reason": "commercially strongest when stakeholders must compare options and justify tradeoffs",
+        "target_user_pain": "The team needs decisions to be inspectable, repeatable, and defensible.",
+        "validation_speed": 72,
+        "value_signal": 78
+      }
+    ],
+    "goal": "Decision dashboard with a TypeScript frontend and Python REST API backend",
+    "next_decision": "Confirm the selected direction before architecture is treated as accepted.",
+    "schema_version": 1,
+    "selected_direction": {
+      "architecture_signals": [
+        "auditability",
+        "evidence-store",
+        "multi-view-comparison"
+      ],
+      "audience": "teams that need shared confidence before implementation",
+      "differentiation": 80,
+      "evidence_confidence": "low",
+      "evidence_ids": [
+        "E1"
+      ],
+      "id": "evidence-dashboard",
+      "implementation_cost": 58,
+      "name": "Evidence Dashboard",
+      "promise": "Make options, evidence, confidence, and next actions visible.",
+      "provisional": false,
+      "reachability": 70,
+      "reason": "commercially strongest when stakeholders must compare options and justify tradeoffs",
+      "target_user_pain": "The team needs decisions to be inspectable, repeatable, and defensible.",
+      "validation_speed": 72,
+      "value_signal": 78
+    },
+    "selected_direction_id": "evidence-dashboard"
+  },
+  "evidence": [
+    {
+      "evidence_id": "E1",
+      "observed_at": "2026-06-19T08:00:00Z",
+      "provisional": false,
+      "source": "official-docs",
+      "source_quality": "primary",
+      "summary": "Next.js supports TypeScript web applications and dashboard-style product surfaces.",
+      "title": "Next.js documentation",
+      "url": "https://nextjs.org/docs"
+    },
+    {
+      "evidence_id": "E2",
+      "observed_at": "2026-06-19T08:05:00Z",
+      "provisional": false,
+      "source": "official-docs",
+      "source_quality": "primary",
+      "summary": "FastAPI supports Python REST APIs with OpenAPI contracts for separated backend services.",
+      "title": "FastAPI documentation",
+      "url": "https://fastapi.tiangolo.com/"
+    }
+  ],
+  "harness": {
+    "primary": {
+      "commands": {
+        "build": {
+          "argv": [
+            "npm",
+            "run",
+            "build"
+          ],
+          "cwd": ".",
+          "mutates": true,
+          "timeout_seconds": 300
+        },
+        "install": {
+          "argv": [
+            "npm",
+            "ci"
+          ],
+          "cwd": ".",
+          "mutates": true,
+          "timeout_seconds": 300
+        },
+        "lint": {
+          "argv": [
+            "npm",
+            "run",
+            "lint"
+          ],
+          "cwd": ".",
+          "mutates": false,
+          "timeout_seconds": 300
+        },
+        "run": {
+          "argv": [
+            "npm",
+            "run",
+            "dev"
+          ],
+          "cwd": ".",
+          "mutates": true,
+          "timeout_seconds": 300
+        },
+        "smoke": {
+          "argv": [
+            "npm",
+            "run",
+            "smoke"
+          ],
+          "cwd": ".",
+          "mutates": false,
+          "timeout_seconds": 300
+        },
+        "test": {
+          "argv": [
+            "npm",
+            "run",
+            "test"
+          ],
+          "cwd": ".",
+          "mutates": false,
+          "timeout_seconds": 300
+        },
+        "typecheck": {
+          "argv": [
+            "npm",
+            "run",
+            "typecheck"
+          ],
+          "cwd": ".",
+          "mutates": false,
+          "timeout_seconds": 300
+        }
+      },
+      "environment": [],
+      "id": "nextjs",
+      "root": ".",
+      "services": [],
+      "template": "nextjs"
+    },
+    "required_commands": [
+      "install",
+      "test",
+      "lint",
+      "typecheck",
+      "build",
+      "run",
+      "smoke"
+    ],
+    "secondary": [
+      {
+        "commands": {
+          "build": {
+            "argv": [
+              "python",
+              "-m",
+              "compileall",
+              "app"
+            ],
+            "cwd": "api",
+            "mutates": true,
+            "timeout_seconds": 300
+          },
+          "install": {
+            "argv": [
+              "python",
+              "-m",
+              "pip",
+              "install",
+              "-r",
+              "requirements.txt"
+            ],
+            "cwd": "api",
+            "mutates": true,
+            "timeout_seconds": 300
+          },
+          "lint": {
+            "argv": [
+              "python",
+              "-m",
+              "ruff",
+              "check",
+              "."
+            ],
+            "cwd": "api",
+            "mutates": false,
+            "timeout_seconds": 300
+          },
+          "run": {
+            "argv": [
+              "python",
+              "-m",
+              "uvicorn",
+              "app.main:app",
+              "--reload"
+            ],
+            "cwd": "api",
+            "mutates": true,
+            "timeout_seconds": 300
+          },
+          "smoke": {
+            "argv": [
+              "python",
+              "-m",
+              "pytest",
+              "tests/smoke"
+            ],
+            "cwd": "api",
+            "mutates": false,
+            "timeout_seconds": 300
+          },
+          "test": {
+            "argv": [
+              "python",
+              "-m",
+              "pytest"
+            ],
+            "cwd": "api",
+            "mutates": false,
+            "timeout_seconds": 300
+          },
+          "typecheck": {
+            "argv": [
+              "python",
+              "-m",
+              "mypy",
+              "."
+            ],
+            "cwd": "api",
+            "mutates": false,
+            "timeout_seconds": 300
+          }
+        },
+        "environment": [],
+        "id": "fastapi",
+        "root": "api",
+        "services": [],
+        "template": "fastapi"
+      }
+    ]
+  },
+  "inventory": null,
+  "kind": "project-forge.superpowers-handoff",
+  "project": {
+    "goal": "Decision dashboard with a TypeScript frontend and Python REST API backend",
+    "primary_stack": "nextjs",
+    "secondary_stacks": [
+      "fastapi"
+    ],
+    "slug": "nextjs-fastapi-demo"
+  },
+  "readiness": {
+    "status": "structurally_ready",
+    "verification_report": null
+  },
+  "schema_version": 2,
+  "superpowers": {
+    "acceptance_criteria": [
+      "Preserve the accepted ADR unless new evidence is recorded.",
+      "Run the relevant structured harness commands and explain remaining failures.",
+      "Keep implementation scope inside the accepted creative direction.",
+      "Return to Project Forge when direction, architecture, or harness assumptions become stale."
+    ],
+    "assignment": "Consume this packet and implement without re-litigating accepted product and architecture decisions.",
+    "consume_steps": [
+      "Read this packet and the Markdown handoff.",
+      "Open the ADR, creative decision, inventory, and evidence only when more detail is needed.",
+      "Use Superpowers implementation workflows after accepting the packet."
+    ],
+    "first_task": "Implement the smallest user-visible workflow from the accepted creative direction and prove it with the harness contract.",
+    "guardrails": [
+      "Project Forge does not replace TDD, debugging, code review, worktrees, or branch completion.",
+      "Do not silently replace provisional evidence with unsupported claims.",
+      "Do not execute commands that are absent from the harness contract."
+    ]
+  }
+}

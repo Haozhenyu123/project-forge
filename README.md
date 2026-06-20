@@ -1,8 +1,8 @@
 # Project Forge
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.5-brightgreen)](CHANGELOG.md)
-[![Tests](https://img.shields.io/badge/tests-92%20passed-brightgreen)](.)
+[![Version](https://img.shields.io/badge/version-0.3.0-brightgreen)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-139%20passed-brightgreen)](.)
 
 **Decide what to build, why it should exist, and which architecture fits before implementation begins.**
 
@@ -82,6 +82,12 @@ Check that the packet is ready for Superpowers:
 python scripts/cli.py superpowers-ready --slug my-app my-app
 ```
 
+Execute the safe verification subset when the harness commands are real:
+
+```powershell
+python scripts/cli.py superpowers-ready --execute --only test,build,smoke --slug my-app my-app
+```
+
 Inspect the installation and available runtime integrations:
 
 ```powershell
@@ -92,6 +98,18 @@ Detect an existing project's stack:
 
 ```powershell
 python scripts/cli.py detect . --json
+```
+
+Inspect an existing repository without running project code:
+
+```powershell
+python scripts/cli.py inspect . --json
+```
+
+Compose a multi-stack harness contract:
+
+```powershell
+python scripts/cli.py harness compose --slug my-app --goal "Dashboard plus API" --primary nextjs:. --secondary fastapi:api
 ```
 
 Research a current architecture question:
@@ -114,6 +132,9 @@ python scripts/cli.py restore <backup-id> my-app --force
 - Every successful Forge run records decision history under `.project-forge/history/`.
 - `--dry-run` reports planned files and conflicts without modifying the project.
 - Missing search credentials produce provisional evidence instead of fabricated claims.
+- `superpowers-ready` is structural by default; it executes commands only with `--execute`.
+- `install` and `run` are skipped unless `--include-install` or `--include-run` is explicit.
+- Legacy shell command strings require `--allow-legacy-shell`.
 - `superpowers-ready --strict` blocks handoff when warnings should be treated as failures.
 
 ## Available Templates

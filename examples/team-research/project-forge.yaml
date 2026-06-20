@@ -1,7 +1,11 @@
+schema_version: 2
 project:
-  slug: team-research
-  goal: Help small teams convert research evidence into architecture decisions and handoffs.
-  stack: node-ts
+  slug: "team-research"
+  goal: "Help small teams convert research evidence into architecture decisions and handoffs."
+  decision_status: "accepted"
+  harness_status: "configured"
+stacks: {"primary": {"commands": {"build": {"argv": ["npm", "run", "build"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "install": {"argv": ["npm", "ci"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "lint": {"argv": ["npm", "run", "lint"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "run": {"argv": ["npm", "start"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "smoke": {"argv": ["npm", "run", "smoke"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "test": {"argv": ["npm", "test"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "typecheck": {"argv": ["npm", "run", "typecheck"], "cwd": ".", "mutates": false, "timeout_seconds": 300}}, "environment": [], "id": "node-ts", "root": ".", "services": [], "template": "node-ts"}, "secondary": []}
+services: []
 commands:
   install: npm ci
   test: npm test
@@ -9,9 +13,5 @@ commands:
   typecheck: npm run typecheck
   build: npm run build
   run: npm start
-  smoke: python ../../scripts/smoke_test.py --project . --slug team-research
-artifacts:
-  evidence: docs/research/team-research/evidence.jsonl
-  adr: docs/architecture/ADR-0001-stack.md
-  harness: docs/harness.md
-  handoff: docs/superpowers-handoff.md
+  smoke: npm run smoke
+verification: {"latest_report": null}

@@ -76,4 +76,4 @@ Six JSON scenario files under `evals/scenarios/` define pressure tests for the s
 
 ## MCP Server
 
-`scripts/mcp/server.py` implements the Model Context Protocol over stdin/stdout. It exposes ten tools: `github_search`, `web_search`, `detect_stack`, `apply_template`, `forge_project`, `export_handoff`, `superpowers_ready`, `validate_evidence`, `list_templates`, `run_evals`. Any MCP-compatible host can connect to it.
+`scripts/mcp/server.py` implements the Model Context Protocol over stdin/stdout. It exposes fourteen tools: `github_search`, `web_search`, `detect_stack`, `apply_template`, `forge_project`, `export_handoff`, `superpowers_ready`, `inspect_project`, `harness_compose`, `migrate_schema`, `plugin_manage`, `validate_evidence`, `list_templates`, `run_evals`. Any MCP-compatible host can connect to it.

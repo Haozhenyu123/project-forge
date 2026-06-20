@@ -5,18 +5,29 @@ on:
   pull_request:
 
 jobs:
-  verify:
-    name: Project Forge CI
+  verify_chrome_extension:
+    name: Verify chrome-extension
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: corepack enable
-      - run: npm ci
-      - run: npm run test
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run build
-      - run: npm run smoke
+      - name: chrome-extension install
+        working-directory: .
+        run: npm ci
+      - name: chrome-extension test
+        working-directory: .
+        run: npm run test
+      - name: chrome-extension lint
+        working-directory: .
+        run: npm run lint
+      - name: chrome-extension typecheck
+        working-directory: .
+        run: npm run typecheck
+      - name: chrome-extension build
+        working-directory: .
+        run: npm run build
+      - name: chrome-extension smoke
+        working-directory: .
+        run: npm run smoke

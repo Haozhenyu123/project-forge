@@ -1,46 +1,65 @@
 # Creative Brief
 
 - Project slug: `team-research`
-- Created: 2026-06-19T09:52:58Z
+- Goal: Help small teams convert research evidence into architecture decisions and handoffs.
+- Selected direction: `Evidence Dashboard`
+- Created: 2026-06-20T06:32:02.287517Z
 
 ## Experience Thesis
 
-Help small teams turn research into architecture decisions
+Make options, evidence, confidence, and next actions visible.
 
 ## Target User
 
-Engineering teams and tech leads
+teams that need shared confidence before implementation
+
+## Primary Workflow
+
+Guide the user from an initial idea to an accepted product direction, then to architecture and harness readiness.
 
 ## First Interaction
 
-Project overview with active research threads
+Present three concrete angles, choose a default, and ask only for corrections that would change the decision.
 
 ## Interaction Style
 
-dashboard
+Opinionated, evidence-aware, and concise; make the next decision obvious.
 
 ## Content Tone
 
-Professional, data-driven
+Clear, commercially grounded, and calm.
 
 ## Platform
 
-web
+Host-agent workflow with repository artifacts; no SaaS backend required for V1.
+
+## Competitive Context
+
+Compare direct competitors, substitute workflows, and manual decision processes when evidence is available.
+
+## Differentiation
+
+commercially strongest when stakeholders must compare options and justify tradeoffs
+
+## Architecture Signals
+
+- auditability
+- evidence-store
+- multi-view-comparison
 
 ## Assumptions
 
-- Target user 'Engineering teams and tech leads' is an assumption; validate with user research.
-- Platform 'web' is an assumption; confirm deployment target.
-- Interaction style 'dashboard' is an assumption; validate with a prototype.
+- Commercial reasoning is directional until user interviews, traffic, or payment intent are measured.
+- Architecture choices must stay aligned with the accepted creative direction.
 
 ## Risks
 
-- If the target user or platform is wrong, the MVP may need significant rework.
-- Vague goals lead to scope creep; pin down the first useful workflow before expanding.
-- Creative direction without user validation is speculation; test assumptions early.
+- Direction is provisional when evidence confidence is low.
+- Architecture must be revisited if the accepted creative direction changes.
+- Product claims need validation before they become implementation scope.
 
 ## Next Steps
 
-1. Hand this brief to `ai-architect` for evidence-backed stack selection.
-2. Run research scripts to gather GitHub and web evidence for the chosen direction.
-3. Apply a harness template once the stack is confirmed.
+1. Feed the accepted direction into architecture scoring.
+2. Record evidence gaps as provisional instead of inventing confidence.
+3. Generate harness and handoff only after the direction is explicit.

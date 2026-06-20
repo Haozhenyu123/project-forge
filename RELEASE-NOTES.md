@@ -1,5 +1,25 @@
 # Release Notes
 
+## 0.3.0
+
+Project Forge 0.3.0 upgrades the project from a working decision plugin into a maintainable, verifiable handoff system.
+
+Highlights:
+
+- domain package under `src/project_forge/` with thin compatibility scripts;
+- Schema v2 multi-stack contracts and handoff packets;
+- executable readiness reports via `superpowers-ready --execute`;
+- read-only inventory inspection for existing projects;
+- creative decision JSON with commercial reasoning and evidence confidence;
+- versioned architecture catalog and evidence-aware scoring;
+- Codex/Claude plugin lifecycle commands and host-specific release bundles;
+- plan-only Superpowers compatibility evals and routing skill;
+- migrated showcases plus a Next.js + FastAPI multi-stack example.
+
+Scope note:
+
+Project Forge still decides what to build, why, which architecture fits, and how to verify/handoff. Superpowers remains responsible for implementation planning, TDD, debugging, review, worktrees, and branch completion.
+
 ## 0.2.5
 
 Project Forge 0.2.5 completes the Superpowers integration maturity pass while preserving the

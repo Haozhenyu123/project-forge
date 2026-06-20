@@ -9,5 +9,8 @@ node_modules/
 dist/
 build/
 coverage/
-evidence/
+.project-forge/
+.project-forge-dist/
+.project-forge-eval-results-*.json
+/evidence/
 docs/research/*/raw/

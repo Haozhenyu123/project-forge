@@ -63,13 +63,14 @@ def validate_evidence(path, slug):
 
 def validate_handoff_json(path, slug):
     payload = json.loads(path.read_text(encoding="utf-8-sig"))
-    if payload.get("schema_version") != 1:
-        raise ValueError(f"{path}: expected schema_version 1")
+    if payload.get("schema_version") not in {1, 2}:
+        raise ValueError(f"{path}: expected schema_version 1 or 2")
     if payload.get("kind") != "project-forge.superpowers-handoff":
         raise ValueError(f"{path}: unexpected handoff kind")
     if (payload.get("project") or {}).get("slug") != slug:
         raise ValueError(f"{path}: project slug does not match {slug!r}")
-    commands = ((payload.get("harness") or {}).get("commands") or {})
+    harness = payload.get("harness") or {}
+    commands = harness.get("commands") or ((harness.get("primary") or {}).get("commands") or {})
     missing = [name for name in ("install", "test", "lint", "typecheck", "build", "run", "smoke") if name not in commands]
     if missing:
         raise ValueError(f"{path}: missing harness command(s): {', '.join(missing)}")

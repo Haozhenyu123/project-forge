@@ -1,7 +1,11 @@
+schema_version: 2
 project:
-  slug: "chrome-extension-demo"
-  goal: "A Chrome extension that summarizes selected text on any webpage using a configurable AI backend"
-  stack: "chrome-extension"
+  slug: "chrome-extension"
+  goal: "Chrome extension that summarizes selected text with a configurable AI backend"
+  decision_status: "accepted"
+  harness_status: "configured"
+stacks: {"primary": {"commands": {"build": {"argv": ["npm", "run", "build"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "install": {"argv": ["npm", "ci"], "cwd": ".", "mutates": true, "timeout_seconds": 300}, "lint": {"argv": ["npm", "run", "lint"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "run": {"cwd": ".", "legacy_shell": "echo Load from chrome://extensions in developer mode", "mutates": true, "timeout_seconds": 300}, "smoke": {"argv": ["npm", "run", "smoke"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "test": {"argv": ["npm", "run", "test"], "cwd": ".", "mutates": false, "timeout_seconds": 300}, "typecheck": {"argv": ["npm", "run", "typecheck"], "cwd": ".", "mutates": false, "timeout_seconds": 300}}, "environment": [], "id": "chrome-extension", "root": ".", "services": [], "template": "chrome-extension"}, "secondary": []}
+services: []
 commands:
   install: npm ci
   test: npm run test
@@ -10,3 +14,4 @@ commands:
   build: npm run build
   run: echo Load from chrome://extensions in developer mode
   smoke: npm run smoke
+verification: {"latest_report": null}
