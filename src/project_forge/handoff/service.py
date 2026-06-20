@@ -1,4 +1,9 @@
-"""Build Markdown and Schema v2 Superpowers handoff packets."""
+﻿"""Build Markdown and Schema v2 Superpowers handoff packets.
+
+In v0.3.2 the handoff builder eagerly wires the inventory scanner so that
+every handoff packet carries a project-structure snapshot even when the
+precomputed inventory JSON is missing.
+"""
 
 import json
 from pathlib import Path
@@ -33,22 +38,44 @@ def _relative(project, path):
     return str(Path(path).relative_to(project)).replace("\\", "/")
 
 
+def _ensure_inventory(project):
+    """Return inventory data, generating it on-the-fly when the cached file is absent."""
+    inventory_path = project / "docs" / "architecture" / "inventory.json"
+    if inventory_path.is_file():
+        return _optional_json(inventory_path)
+    try:
+        from project_forge.inventory.scanner import scan_project
+        inv = scan_project(project)
+        data = inv.to_dict()
+        # Cache for subsequent handoff exports
+        inventory_path.parent.mkdir(parents=True, exist_ok=True)
+        inventory_path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        return data
+    except Exception:
+        return None
+
+
 def build_packet(project, slug):
     project = Path(project)
     evidence_path = project / "docs" / "research" / slug / "evidence.jsonl"
     adr_path = project / "docs" / "architecture" / "ADR-0001-stack.md"
     harness_path = project / "docs" / "harness.md"
     contract_path = project / "project-forge.yaml"
+    creative_path = project / "docs" / "product" / "creative-decision.json"
     required = [evidence_path, adr_path, harness_path, contract_path]
-    missing = [str(path) for path in required if not path.is_file()]
+    missing = [str(p) for p in required if not p.is_file()]
     if missing:
         raise FileNotFoundError("missing handoff input(s): " + ", ".join(missing))
+
     contract = load_contract(contract_path, slug=slug)
     evidence = read_jsonl(evidence_path)
-    creative_path = project / "docs" / "product" / "creative-decision.json"
-    inventory_path = project / "docs" / "architecture" / "inventory.json"
-    verification_path = project / contract.verification_report if contract.verification_report else None
+    inv_data = _ensure_inventory(project)
+
+    verification_path = (
+        project / contract.verification_report if getattr(contract, "verification_report", None) else None
+    )
     verification = _optional_json(verification_path) if verification_path else None
+
     packet = {
         "schema_version": 2,
         "kind": "project-forge.superpowers-handoff",
@@ -64,8 +91,8 @@ def build_packet(project, slug):
             "contract": "project-forge.yaml",
             "harness": _relative(project, harness_path),
             "creative_decision": _relative(project, creative_path) if creative_path.is_file() else None,
-            "inventory": _relative(project, inventory_path) if inventory_path.is_file() else None,
-            "verification_report": contract.verification_report,
+            "inventory": "docs/architecture/inventory.json" if inv_data else None,
+            "verification_report": getattr(contract, "verification_report", None),
         },
         "evidence": [
             {
@@ -81,7 +108,7 @@ def build_packet(project, slug):
             for row in evidence[:12]
         ],
         "creative_decision": _optional_json(creative_path),
-        "inventory": _optional_json(inventory_path),
+        "inventory": inv_data,
         "harness": {
             "primary": stack_to_dict(contract.primary),
             "secondary": [stack_to_dict(stack) for stack in contract.secondary],
@@ -89,12 +116,12 @@ def build_packet(project, slug):
         },
         "readiness": {
             "status": verification.get("status") if verification else "structurally_ready",
-            "verification_report": contract.verification_report,
+            "verification_report": getattr(contract, "verification_report", None),
         },
         "compatibility": {
             "project_forge_contract": 2,
             "handoff_schema": 2,
-            "superpowers": "see compatibility/superpowers.json",
+            "superpowers": "see compatibility/superpowers-matrix.json",
         },
         "superpowers": {
             "assignment": "Consume this packet and implement without re-litigating accepted product and architecture decisions.",
@@ -117,7 +144,7 @@ def build_packet(project, slug):
             ],
         },
         "boundary": {
-            "project_forge_owns": ["product direction", "evidence", "architecture", "harness", "handoff"],
+            "project_forge_owns": ["product direction", "evidence", "architecture", "harness", "handoff", "inventory", "readiness"],
             "superpowers_owns": ["implementation planning", "TDD", "debugging", "review", "branch completion"],
         },
     }
@@ -127,6 +154,7 @@ def build_packet(project, slug):
 def render_markdown(packet, adr_text, harness_text):
     project = packet["project"]
     evidence = packet["evidence"]
+    inventory = packet.get("inventory") or {}
     lines = [
         "# Superpowers Handoff",
         "",
@@ -138,9 +166,33 @@ def render_markdown(packet, adr_text, harness_text):
         f"- Secondary stacks: {', '.join(project['secondary_stacks']) or 'none'}",
         f"- First task: {packet['superpowers']['first_task']}",
         "",
+    ]
+
+    # Inventory summary
+    if inventory:
+        services = inventory.get("services", [])
+        if services:
+            lines.extend([
+                "## Project Structure (Inventory)",
+                "",
+            ])
+            for svc in services:
+                name = svc.get("name", svc.get("id", "?"))
+                path = svc.get("path", ".")
+                langs = ", ".join(svc.get("languages", []))
+                frameworks = ", ".join(svc.get("frameworks", []))
+                dbs = ", ".join(svc.get("databases", []))
+                lines.append(f"- **{name}** (`{path}`): {langs}")
+                if frameworks:
+                    lines.append(f"  Frameworks: {frameworks}")
+                if dbs:
+                    lines.append(f"  Databases: {dbs}")
+            lines.append("")
+
+    lines.extend([
         "## Evidence",
         "",
-    ]
+    ])
     for row in evidence:
         marker = " provisional" if row["provisional"] else ""
         lines.append(f"- [{row.get('evidence_id') or '?'}]{marker} {row.get('title')}: {row.get('summary')} ({row.get('url')})")

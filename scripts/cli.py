@@ -459,6 +459,34 @@ def cmd_audit(args):
     output = run_script(*audit_args)
     print(output, end="")
 
+def cmd_feature(args):
+    feature_args = ["feature_handoff.py", args.feature_command, "--slug", args.slug]
+    if hasattr(args, "feature_id"): feature_args.extend(["--feature", args.feature_id])
+    if hasattr(args, "goal"): feature_args.extend(["--goal", args.goal])
+    feature_args.append(getattr(args, "project", "."))
+    output = run_script(*feature_args)
+    print(output, end="")
+
+def cmd_revise(args):
+    revise_args = ["revise_project.py", args.project, "--slug", args.slug, "--reason", args.reason]
+    for c in getattr(args, "constraint", []): revise_args.extend(["--constraint", c])
+    if getattr(args, "refresh_evidence", False): revise_args.append("--refresh-evidence")
+    if getattr(args, "json", False): revise_args.append("--json")
+    output = run_script(*revise_args)
+    print(output, end="")
+
+def cmd_diff(args):
+    diff_args = ["diff_decisions.py", args.project]
+    if getattr(args, "json", False): diff_args.append("--json")
+    output = run_script(*diff_args)
+    print(output, end="")
+
+def cmd_cross_host(args):
+    cross_args = ["evals/cross_host_compare.py", args.project, "--hosts", args.hosts]
+    if getattr(args, "json", False): cross_args.append("--json")
+    output = run_script(*cross_args)
+    print(output, end="")
+
 def cmd_doctor(args):
     checks = {
         "python": sys.version.split()[0],
@@ -606,6 +634,37 @@ def main():
     audit_parser.add_argument("project", nargs="?", default=".", help="Project directory")
     audit_parser.add_argument("--json", action="store_true", help="Output JSON")
 
+    feature_parser = subparsers.add_parser("feature", help="Manage scoped feature-level handoffs")
+    feature_sub = feature_parser.add_subparsers(dest="feature_command", required=True)
+    feat_new = feature_sub.add_parser("new", help="Create a scoped feature")
+    feat_new.add_argument("--slug", required=True)
+    feat_new.add_argument("--feature", required=True, dest="feature_id")
+    feat_new.add_argument("--goal", required=True)
+    feat_new.add_argument("project", nargs="?", default=".")
+    feat_list = feature_sub.add_parser("list", help="List scoped features")
+    feat_list.add_argument("project", nargs="?", default=".")
+    feat_handoff = feature_sub.add_parser("handoff", help="Generate feature-level handoff")
+    feat_handoff.add_argument("--slug", required=True)
+    feat_handoff.add_argument("--feature", required=True, dest="feature_id")
+    feat_handoff.add_argument("project", nargs="?", default=".")
+
+    revise_parser = subparsers.add_parser("revise", help="Revise architecture when Superpowers signals issues")
+    revise_parser.add_argument("project", nargs="?", default=".")
+    revise_parser.add_argument("--slug", required=True)
+    revise_parser.add_argument("--reason", required=True)
+    revise_parser.add_argument("--constraint", action="append", default=[])
+    revise_parser.add_argument("--refresh-evidence", action="store_true")
+    revise_parser.add_argument("--json", action="store_true")
+
+    diff_parser = subparsers.add_parser("diff", help="Compare two architecture decisions")
+    diff_parser.add_argument("project", nargs="?", default=".")
+    diff_parser.add_argument("--json", action="store_true")
+
+    cross_host_parser = subparsers.add_parser("cross-host", help="Compare handoff quality across hosts")
+    cross_host_parser.add_argument("project", nargs="?", default=".")
+    cross_host_parser.add_argument("--hosts", default="codex,claude")
+    cross_host_parser.add_argument("--json", action="store_true")
+
     subparsers.add_parser("doctor", help="Check Project Forge runtime and plugin installation")
 
     args = parser.parse_args()
@@ -630,6 +689,10 @@ def main():
         "backups": cmd_backups,
         "restore": cmd_restore,
         "audit": cmd_audit,
+        "feature": cmd_feature,
+        "revise": cmd_revise,
+        "diff": cmd_diff,
+        "cross-host": cmd_cross_host,
         "doctor": cmd_doctor,
     }
     commands[args.command](args)

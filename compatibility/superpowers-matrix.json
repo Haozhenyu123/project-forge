@@ -1,30 +1,49 @@
 {
   "boundary": {
-    "project_forge": "product direction, evidence, architecture, harness, and handoff",
+    "project_forge": "product direction, evidence, architecture, harness, inventory, readiness, and handoff",
     "superpowers": "implementation planning and implementation disciplines"
   },
-  "project_forge_contracts": [
-    1,
-    2
-  ],
+  "project_forge_contracts": [1, 2],
   "schema_version": 1,
   "versions": [
     {
-      "contracts": [
-        1,
-        2
-      ],
-      "hosts": [
-        "codex",
-        "claude"
-      ],
+      "superpowers": "5.1.3",
+      "hosts": ["codex", "claude"],
       "mode": "plan-only",
-      "required_skills": [
-        "brainstorming",
-        "writing-plans"
-      ],
+      "required_skills": ["brainstorming", "writing-plans"],
       "status": "contract-tested",
-      "superpowers": "5.1.3"
+      "contracts": [1, 2]
+    },
+    {
+      "superpowers": "5.1.5",
+      "hosts": ["codex", "claude"],
+      "mode": "plan-only",
+      "required_skills": ["brainstorming", "writing-plans"],
+      "status": "planned",
+      "contracts": [1, 2],
+      "note": "Inferred compatibility based on 5.1.3 testing. Real test pending."
+    },
+    {
+      "superpowers": "5.2.0",
+      "hosts": ["codex", "claude"],
+      "mode": "plan-only",
+      "required_skills": ["brainstorming", "writing-plans"],
+      "status": "planned",
+      "contracts": [1, 2],
+      "note": "Major version bump — handoff schema v2 backwards compatibility must be verified."
+    },
+    {
+      "superpowers": "6.0.0",
+      "hosts": ["codex", "claude"],
+      "mode": "unknown",
+      "required_skills": [],
+      "status": "not-tested",
+      "contracts": [],
+      "note": "Future major version — no assumptions made."
     }
-  ]
+  ],
+  "auto_probe": {
+    "enabled": false,
+    "note": "Set to true and run 'python scripts/evals/probe_superpowers.py' to auto-detect installed Superpowers versions."
+  }
 }

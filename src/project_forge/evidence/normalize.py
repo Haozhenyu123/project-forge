@@ -179,3 +179,32 @@ def _record_rank(record: EvidenceRecord) -> tuple:
         parse_day(record.observed_at) or date.min,
         record.score,
     )
+
+
+def freshness_warnings(rows, as_of=None, stale_days=540, aging_days=365):
+    """Produce proactive warnings for evidence that is aging or stale."""
+    warnings = []
+    for row in rows:
+        freshness = row.get("freshness") or freshness_for(row.get("observed_at", ""), as_of)
+        title = row.get("title", "Unknown evidence")
+        eid = row.get("evidence_id", "?")
+        if freshness in ("STALE", "AGING"):
+            age_days = _age_days(row.get("observed_at", ""), as_of)
+            level = "warn" if freshness == "STALE" else "info"
+            warnings.append({
+                "evidence_id": eid,
+                "title": title,
+                "freshness": freshness,
+                "age_days": age_days,
+                "level": level,
+                "message": f"{'STALE' if freshness == 'STALE' else 'Aging'} evidence [{eid}] {title} is {age_days} days old. Consider refreshing."
+            })
+    return warnings
+
+
+def _age_days(observed_at, as_of=None):
+    observed = parse_day(observed_at)
+    current = parse_day(as_of) if as_of else date.today()
+    if not observed or not current:
+        return None
+    return max(0, (current - observed).days)
