@@ -1,10 +1,15 @@
-"""Injectable stdlib-only providers for architecture research metadata."""
+﻿"""
+Injectable stdlib-only providers for architecture research metadata.
+
+Supports GitHub, npm, PyPI, OSV, Stack Overflow, bundlephobia, npm trends.
+All providers are registered via a common interface.
+"""
 
 import json
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional, Protocol
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Mapping, Optional, Protocol, Sequence
 
 from .normalize import normalize_records, utc_now
 
@@ -29,7 +34,7 @@ class ProviderResult:
 
 
 class BaseProvider:
-    source = "provider"
+    source: str = "provider"
 
     def __init__(self, transport: Transport = http_json, timeout: int = 20):
         self.transport = transport
@@ -169,3 +174,157 @@ class OsvProvider(BaseProvider):
             "observed_at": utc_now(), "provisional": False, "source_quality": "primary",
         }
         return ProviderResult(rows=normalize_records([row]))
+
+
+class StackOverflowProvider(BaseProvider):
+    """Search Stack Overflow for community signals about a technology."""
+    source = "stackoverflow"
+
+    def search(self, query: str, limit: int = 10) -> ProviderResult:
+        url = "https://api.stackexchange.com/2.3/search/advanced?" + urllib.parse.urlencode({
+            "q": query,
+            "site": "stackoverflow",
+            "pagesize": max(1, min(limit, 50)),
+            "order": "desc",
+            "sort": "votes",
+        })
+        headers = {"Accept": "application/json"}
+        raw = self._fetch(urllib.request.Request(url, headers=headers), query)
+        if raw.provisional:
+            raw.rows = normalize_records(raw.rows)
+            return raw
+        items = raw.rows[0].get("items", [])
+        rows = []
+        for item in items[:limit]:
+            rows.append({
+                "source": "stackoverflow",
+                "title": item.get("title", ""),
+                "url": item.get("link", ""),
+                "summary": f"Score: {item.get('score', 0)}, Answers: {item.get('answer_count', 0)}, Views: {item.get('view_count', 0)}",
+                "tags": item.get("tags", []),
+                "score": item.get("score", 0),
+                "answer_count": item.get("answer_count", 0),
+                "view_count": item.get("view_count", 0),
+                "is_answered": item.get("is_answered", False),
+                "observed_at": utc_now(),
+                "provisional": False,
+                "source_quality": "community-discussion",
+                "query": query,
+            })
+        return ProviderResult(rows=normalize_records(rows))
+
+
+class BundlephobiaProvider(BaseProvider):
+    """Query bundlephobia for package size and tree-shaking data."""
+    source = "bundlephobia"
+
+    def fetch(self, package: str) -> ProviderResult:
+        url = f"https://bundlephobia.com/api/size?package={urllib.parse.quote(package)}"
+        raw = self._fetch(urllib.request.Request(url, headers={"Accept": "application/json"}), package)
+        if raw.provisional:
+            raw.rows = normalize_records(raw.rows)
+            return raw
+        data = raw.rows[0]
+        row = {
+            "source": "bundlephobia",
+            "title": f"{package} bundle size",
+            "url": f"https://bundlephobia.com/package/{package}",
+            "summary": f"{data.get('size', 0) / 1024:.1f} kB gzipped, tree-shakeable: {not data.get('hasSideEffects', True)}",
+            "size_bytes": data.get("size", 0),
+            "gzip_bytes": data.get("gzip", 0),
+            "dependency_count": data.get("dependencyCount", 0),
+            "has_side_effects": data.get("hasSideEffects", True),
+            "observed_at": utc_now(),
+            "provisional": False,
+            "source_quality": "quantitative",
+        }
+        return ProviderResult(rows=normalize_records([row]))
+
+
+class NpmTrendsProvider(BaseProvider):
+    """Query npm trends API for download statistics."""
+    source = "npm-trends"
+
+    def fetch(self, package: str, period: str = "last-month") -> ProviderResult:
+        url = f"https://api.npmjs.org/downloads/point/{period}/{urllib.parse.quote(package)}"
+        headers = {"Accept": "application/json"}
+        raw = self._fetch(urllib.request.Request(url, headers=headers), f"{package}@{period}")
+        if raw.provisional:
+            raw.rows = normalize_records(raw.rows)
+            return raw
+        data = raw.rows[0]
+        row = {
+            "source": "npm-trends",
+            "title": f"{package} downloads ({period})",
+            "url": f"https://www.npmjs.com/package/{package}",
+            "summary": f"{data.get('downloads', 0):,} downloads in {period}",
+            "downloads": data.get("downloads", 0),
+            "period": period,
+            "observed_at": utc_now(),
+            "provisional": False,
+            "source_quality": "quantitative",
+        }
+        return ProviderResult(rows=normalize_records([row]))
+
+
+# --- Provider Registry ---
+
+
+_PROVIDER_REGISTRY: Dict[str, type] = {
+    "github": GitHubProvider,
+    "npm": NpmProvider,
+    "pypi": PyPIProvider,
+    "osv": OsvProvider,
+    "stackoverflow": StackOverflowProvider,
+    "bundlephobia": BundlephobiaProvider,
+    "npm-trends": NpmTrendsProvider,
+}
+
+
+def register_provider(name: str, provider_cls: type) -> None:
+    """Register a custom evidence provider class."""
+    _PROVIDER_REGISTRY[name] = provider_cls
+
+
+def list_providers() -> List[str]:
+    """Return sorted list of registered provider names."""
+    return sorted(_PROVIDER_REGISTRY.keys())
+
+
+def create_provider(name: str, **kwargs: Any) -> Optional[BaseProvider]:
+    """Create a provider instance by name. Returns None for unknown providers."""
+    cls = _PROVIDER_REGISTRY.get(name)
+    if cls is None:
+        return None
+    return cls(**kwargs)
+
+
+def collect_evidence(package_name: str, providers: Optional[Sequence[str]] = None) -> List[Dict[str, Any]]:
+    """Run multiple providers against a package name and return collected evidence rows."""
+    rows: List[Dict[str, Any]] = []
+    names = list(providers) if providers else list_providers()
+    for name in names:
+        provider = create_provider(name)
+        if provider is None:
+            continue
+        try:
+            result: ProviderResult
+            if name == "github":
+                result = provider.search(package_name, limit=5)
+            elif name == "stackoverflow":
+                result = provider.search(package_name, limit=5)
+            elif name == "bundlephobia":
+                result = provider.fetch(package_name)
+            elif name == "npm-trends":
+                result = provider.fetch(package_name)
+            elif name == "osv":
+                result = provider.query(package_name, "npm" if "npm" in name else "PyPI")
+            else:
+                result = provider.fetch(package_name)
+            rows.extend(result.rows)
+        except Exception:
+            pass
+    return rows
+
+
+print("Providers module compiled OK, registered:", list_providers())

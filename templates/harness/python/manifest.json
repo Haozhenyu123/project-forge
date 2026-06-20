@@ -1,0 +1,69 @@
+{
+  "name": "Python",
+  "kind": "python",
+  "aliases": [
+    "python"
+  ],
+  "detection": {
+    "files": [
+      "pyproject.toml",
+      "requirements.txt"
+    ],
+    "dependencies": [],
+    "exclude_dependencies": [],
+    "has_bin": false,
+    "match_content": []
+  },
+  "commands": {
+    "install": [
+      "python",
+      "-m",
+      "pip",
+      "install",
+      "-r",
+      "requirements.txt"
+    ],
+    "test": [
+      "python",
+      "-m",
+      "pytest"
+    ],
+    "lint": [
+      "python",
+      "-m",
+      "ruff",
+      "check",
+      "."
+    ],
+    "typecheck": [
+      "python",
+      "-m",
+      "mypy",
+      "."
+    ],
+    "build": [
+      "python",
+      "-m",
+      "build"
+    ],
+    "run": [
+      "python",
+      "-m",
+      "app"
+    ],
+    "smoke": [
+      "python",
+      "-m",
+      "pytest",
+      "-m",
+      "smoke"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest",
+      "windows-latest"
+    ],
+    "python-version": "3.12"
+  }
+}

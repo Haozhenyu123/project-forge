@@ -1,0 +1,59 @@
+{
+  "name": "Chrome Extension MV3",
+  "kind": "chrome-extension",
+  "aliases": [
+    "chrome",
+    "extension",
+    "manifest v3"
+  ],
+  "detection": {
+    "files": [
+      "manifest.json"
+    ],
+    "dependencies": [],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "ci"
+    ],
+    "test": [
+      "npm",
+      "run",
+      "test"
+    ],
+    "lint": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "typecheck": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "build": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "run": [
+      "python",
+      "-c",
+      "print('Load the extension from chrome://extensions')"
+    ],
+    "smoke": [
+      "npm",
+      "run",
+      "smoke"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ],
+    "node-version": "20"
+  }
+}

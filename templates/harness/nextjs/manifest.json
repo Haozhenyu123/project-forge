@@ -1,0 +1,61 @@
+{
+  "name": "Next.js",
+  "kind": "nextjs",
+  "aliases": [
+    "next",
+    "next.js",
+    "react"
+  ],
+  "detection": {
+    "files": [
+      "package.json"
+    ],
+    "dependencies": [
+      "next"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "ci"
+    ],
+    "test": [
+      "npm",
+      "run",
+      "test"
+    ],
+    "lint": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "typecheck": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "build": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "run": [
+      "npm",
+      "run",
+      "dev"
+    ],
+    "smoke": [
+      "npm",
+      "run",
+      "smoke"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ],
+    "node-version": "20"
+  }
+}

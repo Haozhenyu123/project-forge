@@ -1,0 +1,63 @@
+{
+  "name": "TypeScript CLI",
+  "kind": "cli",
+  "aliases": [
+    "cli",
+    "command line",
+    "terminal"
+  ],
+  "detection": {
+    "files": [
+      "package.json"
+    ],
+    "dependencies": [],
+    "exclude_dependencies": [
+      "next",
+      "electron"
+    ],
+    "has_bin": true
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "ci"
+    ],
+    "test": [
+      "npm",
+      "run",
+      "test"
+    ],
+    "lint": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "typecheck": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "build": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "run": [
+      "node",
+      "dist/index.js"
+    ],
+    "smoke": [
+      "npm",
+      "run",
+      "smoke"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest",
+      "windows-latest",
+      "macos-latest"
+    ],
+    "node-version": "20"
+  }
+}

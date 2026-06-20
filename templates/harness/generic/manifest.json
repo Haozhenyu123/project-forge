@@ -1,0 +1,55 @@
+{
+  "name": "Generic Project",
+  "kind": "generic",
+  "aliases": [
+    "generic"
+  ],
+  "detection": {
+    "files": [],
+    "dependencies": [],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "python",
+      "-c",
+      "print('No install command configured')"
+    ],
+    "test": [
+      "python",
+      "-c",
+      "print('No test command configured')"
+    ],
+    "lint": [
+      "python",
+      "-c",
+      "print('No lint command configured')"
+    ],
+    "typecheck": [
+      "python",
+      "-c",
+      "print('No typecheck command configured')"
+    ],
+    "build": [
+      "python",
+      "-c",
+      "print('No build command configured')"
+    ],
+    "run": [
+      "python",
+      "-c",
+      "print('No run command configured')"
+    ],
+    "smoke": [
+      "python",
+      "-c",
+      "print('No smoke command configured')"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

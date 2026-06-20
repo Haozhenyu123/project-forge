@@ -69,7 +69,7 @@ class ScenarioCompatibilityTests(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(validate.returncode, 0, validate.stderr)
-            self.assertEqual(json.loads(validate.stdout)["scenario_count"], 6)
+            self.assertEqual(json.loads(validate.stdout)["scenario_count"], 9)
 
             score = subprocess.run(
                 [
@@ -88,7 +88,7 @@ class ScenarioCompatibilityTests(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(score.returncode, 0, score.stderr)
-            self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["scenario_count"], 6)
+            self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["scenario_count"], 9)
 
     def test_live_agent_cases_validate(self):
         paths = sorted((ROOT / "evals" / "agent").glob("*.json"))

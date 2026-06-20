@@ -1,0 +1,46 @@
+{
+  "id": "multi-language",
+  "name": "Multi-Language Stack",
+  "title": "Multi-Language Stack Detection",
+  "category": "multi language",
+  "purpose": "Verify the agent handles projects with multiple languages and recommends a multi-stack harness.",
+  "prompt": "Build a performance-critical dashboard with Python FastAPI backend and Next.js frontend.",
+  "setup": "Project has both package.json with next dependency and requirements.txt with fastapi. Subdirectories frontend/ and backend/ exist.",
+  "steps": [
+    "Submit the prompt with multi-language signals.",
+    "Confirm the agent detects both Python and TypeScript domains.",
+    "Check it recommends a multi-stack harness or profile.",
+    "Verify harness covers both frontend and backend commands."
+  ],
+  "expected_behaviors": [
+    "Detect Python and TypeScript domains",
+    "Recommend multi-stack harness",
+    "Cover frontend and backend commands"
+  ],
+  "expected": "The agent detects both languages, recommends nextjs-fastapi or similar multi-stack profile.",
+  "evidence": [
+    "Domain detection",
+    "Multi-stack harness",
+    "Command coverage"
+  ],
+  "rubric": {
+    "correctness": [
+      "both languages detected",
+      "multi-stack recommended"
+    ],
+    "completeness": [
+      "frontend commands",
+      "backend commands"
+    ],
+    "reliability": [
+      "harness available for both"
+    ],
+    "usability": [
+      "clear multi-stack documentation"
+    ],
+    "evidence": [
+      "detection evidence",
+      "harness evidence"
+    ]
+  }
+}

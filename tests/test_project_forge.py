@@ -711,7 +711,7 @@ class TemplateAndEvalTests(unittest.TestCase):
         )
         self.assertEqual(proc.returncode, 0, proc.stderr)
         payload = json.loads(proc.stdout)
-        self.assertEqual(payload["scenario_count"], 6)
+        self.assertEqual(payload["scenario_count"], 9)
         self.assertEqual(payload["status"], "ok")
 
     def test_evaluation_scenarios_use_full_rubric_schema(self):
@@ -744,7 +744,7 @@ class TemplateAndEvalTests(unittest.TestCase):
             )
             self.assertEqual(proc.returncode, 0, proc.stderr)
             payload = load_json(out)
-            self.assertEqual(payload["scenario_count"], 6)
+            self.assertEqual(payload["scenario_count"], 9)
             self.assertEqual(payload["status"], "ok")
             self.assertTrue(all("score" in result for result in payload["results"]))
 

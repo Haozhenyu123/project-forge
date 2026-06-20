@@ -1,0 +1,48 @@
+{
+  "id": "error-recovery",
+  "name": "Network Error Recovery",
+  "title": "Network Error Recovery",
+  "category": "error recovery",
+  "purpose": "Verify the agent degrades gracefully when evidence providers are unavailable.",
+  "prompt": "Build a real-time collaboration tool for remote teams.",
+  "setup": "Evidence providers (web search, GitHub API) are unavailable or return errors. No cached evidence exists.",
+  "steps": [
+    "Present the prompt to the agent.",
+    "Confirm it detects the network error without crashing.",
+    "Check that it produces provisional evidence and a low-confidence decision.",
+    "Verify it does not fabricate specific evidence details."
+  ],
+  "expected_behaviors": [
+    "Detect network error without crashing",
+    "Produce provisional evidence",
+    "Return low-confidence decision",
+    "Do not fabricate evidence"
+  ],
+  "expected": "The agent degrades to provisional evidence, returns Low confidence, does not crash.",
+  "evidence": [
+    "Provisional evidence records",
+    "Low confidence score",
+    "No crash"
+  ],
+  "rubric": {
+    "correctness": [
+      "provisional evidence",
+      "low confidence"
+    ],
+    "completeness": [
+      "evidence degradation",
+      "decision still produced"
+    ],
+    "reliability": [
+      "no crash",
+      "no fabricated data"
+    ],
+    "usability": [
+      "clear error message"
+    ],
+    "evidence": [
+      "provisional records",
+      "error handling"
+    ]
+  }
+}

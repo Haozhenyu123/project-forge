@@ -168,6 +168,73 @@ def cmd_init(args):
         )
         decision_payload = json.loads(generated_decision.read_text(encoding="utf-8"))
         stack = decision_payload.get("selected_stack") or "generic"
+
+        # Interactive mode: let user pick direction and stack
+        if args.interactive:
+            print()
+            print("=== Interactive Decision Mode ===")
+            print(f"Goal: {goal}")
+            print()
+
+            # Step 1: Pick creative direction
+            directions = decision_payload.get("product_directions", [])
+            if directions:
+                print("Creative Directions:")
+                for i, d in enumerate(directions, 1):
+                    print(f"  [{i}] {d['name']}: {d['promise']}")
+                    print(f"      Audience: {d['audience']}")
+                    print(f"      Scores: reach={d['scores']['reachability']}, diff={d['scores']['differentiation']}, value={d['scores']['value_signal']}, speed={d['scores']['validation_speed']}, cost={d['scores']['implementation_cost']}")
+                    print(f"      Evidence: {d['evidence_confidence']} ({len(d.get('evidence_ids', []))} sources)")
+                    print()
+                choice = input(f"Pick direction [1-{len(directions)}, default=1]: ").strip()
+                try:
+                    idx = int(choice) - 1 if choice else 0
+                    if 0 <= idx < len(directions):
+                        decision_payload["selected_direction"] = directions[idx]["id"]
+                        # Re-run decision with selected direction
+                        payload_for_rerun = json.loads(decision_input.read_text(encoding="utf-8"))
+                        payload_for_rerun["selected_direction_id"] = directions[idx]["id"]
+                        decision_input.write_text(json.dumps(payload_for_rerun, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                        run_script(
+                            "decision/engine.py",
+                            "--input", str(decision_input),
+                            "--out", str(generated_decision),
+                            "--as-of", date.today().isoformat(),
+                        )
+                        decision_payload = json.loads(generated_decision.read_text(encoding="utf-8"))
+                except (ValueError, IndexError):
+                    pass  # Keep default
+
+            # Step 2: Pick architecture stack
+            candidates = decision_payload.get("architecture_candidates", [])
+            if candidates:
+                print()
+                print("Architecture Candidates (top 3):")
+                for i, c in enumerate(candidates, 1):
+                    primary = c.get("harness", {}).get("primary", c["id"])
+                    secondary = c.get("harness", {}).get("secondary", [])
+                    stack_desc = primary
+                    if secondary:
+                        stack_desc += " + " + ", ".join(secondary)
+                    print(f"  [{i}] {c['name']} (score: {c['score']})")
+                    print(f"      Stack: {stack_desc}")
+                    print(f"      Reason: {c.get('reason', '')}")
+                    dims = c.get("scores", {}).get("dimensions", {})
+                    if dims:
+                        dim_str = ", ".join(f"{k}={v['score']}" for k, v in list(dims.items())[:5])
+                        print(f"      Dimensions: {dim_str}")
+                    print()
+                choice = input(f"Pick stack [1-{len(candidates)}, default=1]: ").strip()
+                try:
+                    idx = int(choice) - 1 if choice else 0
+                    if 0 <= idx < len(candidates):
+                        stack = candidates[idx].get("harness", {}).get("primary", candidates[idx]["id"])
+                        secondaries = candidates[idx].get("harness", {}).get("secondary", [])
+                        if secondaries and not args.secondary:
+                            args.secondary = secondaries
+                except (ValueError, IndexError):
+                    pass  # Keep default
+
         args.decision_file = str(generated_decision)
 
     if not stack:
@@ -385,6 +452,13 @@ def cmd_restore(args):
     print(output, end="")
 
 
+def cmd_audit(args):
+    audit_args = ["audit_project.py", args.project]
+    if args.json:
+        audit_args.append("--json")
+    output = run_script(*audit_args)
+    print(output, end="")
+
 def cmd_doctor(args):
     checks = {
         "python": sys.version.split()[0],
@@ -440,7 +514,9 @@ def main():
     init_parser.add_argument("--evidence", help="Path to pre-existing evidence file or directory")
     init_parser.add_argument("--decision-file", help="Structured architecture decision JSON")
     init_parser.add_argument("--secondary", action="append", default=[], help="Secondary TEMPLATE[:PATH]")
+    init_parser.add_argument("--weights", help="JSON file with custom scoring weights")
     init_parser.add_argument("--force", action="store_true", help="Back up and replace generated files")
+    init_parser.add_argument("--interactive", action="store_true", help="Pause at creative direction and architecture for manual selection")
     init_parser.add_argument("--dry-run", action="store_true", help="Show planned changes without writing")
 
     detect_parser = subparsers.add_parser("detect", help="Detect project stack")
@@ -525,6 +601,11 @@ def main():
     restore_parser.add_argument("project", nargs="?", default=".", help="Project directory")
     restore_parser.add_argument("--force", action="store_true", help="Replace current generated files")
 
+    
+    audit_parser = subparsers.add_parser("audit", help="Audit an existing project architecture")
+    audit_parser.add_argument("project", nargs="?", default=".", help="Project directory")
+    audit_parser.add_argument("--json", action="store_true", help="Output JSON")
+
     subparsers.add_parser("doctor", help="Check Project Forge runtime and plugin installation")
 
     args = parser.parse_args()
@@ -548,6 +629,7 @@ def main():
         "list-templates": cmd_list_templates,
         "backups": cmd_backups,
         "restore": cmd_restore,
+        "audit": cmd_audit,
         "doctor": cmd_doctor,
     }
     commands[args.command](args)

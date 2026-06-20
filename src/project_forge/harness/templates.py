@@ -1,8 +1,60 @@
-"""Structured command templates for supported harnesses."""
-
+﻿import json
 from copy import deepcopy
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from project_forge.models import CommandSpec
+
+
+@dataclass
+class TemplateManifest:
+    name: str
+    kind: str
+    aliases: List[str] = field(default_factory=list)
+    detection: Dict[str, Any] = field(default_factory=dict)
+    commands: Dict[str, List[str]] = field(default_factory=dict)
+    ci: Dict[str, Any] = field(default_factory=dict)
+
+    def argv_for(self, command: str) -> List[str]:
+        return list(self.commands.get(command, []))
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def _load_manifest(template_dir: Path) -> Optional[TemplateManifest]:
+    manifest_path = template_dir / "manifest.json"
+    if not manifest_path.is_file():
+        return None
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    return TemplateManifest(
+        name=str(payload.get("name", "")),
+        kind=str(payload.get("kind", "")),
+        aliases=[str(s) for s in payload.get("aliases", [])],
+        detection=dict(payload.get("detection", {})),
+        commands={k: [str(a) for a in v] for k, v in payload.get("commands", {}).items()},
+        ci=dict(payload.get("ci", {})),
+    )
+
+
+def load_manifests(repo_root: Optional[Path] = None) -> Dict[str, TemplateManifest]:
+    root = repo_root or _repo_root()
+    harness_dir = root / "templates" / "harness"
+    if not harness_dir.is_dir():
+        return {}
+    manifests: Dict[str, TemplateManifest] = {}
+    for child in sorted(harness_dir.iterdir()):
+        if not child.is_dir():
+            continue
+        manifest = _load_manifest(child)
+        if manifest:
+            manifests[manifest.kind] = manifest
+    return manifests
+
+
+MANIFEST_REGISTRY: Dict[str, TemplateManifest] = {}
 
 
 TEMPLATES = {
@@ -81,6 +133,12 @@ TEMPLATES = {
 }
 
 
+def _ensure_registry():
+    global MANIFEST_REGISTRY
+    if not MANIFEST_REGISTRY:
+        MANIFEST_REGISTRY = load_manifests()
+
+
 def commands_for(template, root="."):
     if template not in TEMPLATES:
         raise ValueError(f"unknown harness template: {template}")
@@ -88,3 +146,29 @@ def commands_for(template, root="."):
         name: CommandSpec(argv=deepcopy(argv), cwd=root, mutates=mutates)
         for name, (argv, mutates) in TEMPLATES[template].items()
     }
+
+
+def manifest_commands_for(template: str, root: str = ".") -> Dict[str, CommandSpec]:
+    _ensure_registry()
+    manifest = MANIFEST_REGISTRY.get(template)
+    if not manifest:
+        return commands_for(template, root)
+    return {name: CommandSpec(argv=deepcopy(argv), cwd=root, mutates=name in ("install","build")) for name, argv in manifest.commands.items()}
+
+
+def available_templates() -> List[str]:
+    _ensure_registry()
+    from_manifests = list(MANIFEST_REGISTRY.keys())
+    return sorted(set(from_manifests) | set(TEMPLATES.keys()))
+
+
+def template_commands_for(template: str) -> Dict[str, List[str]]:
+    _ensure_registry()
+    manifest = MANIFEST_REGISTRY.get(template)
+    if manifest:
+        return dict(manifest.commands)
+    if template in TEMPLATES:
+        return {name: list(argv) for name, (argv, _) in TEMPLATES[template].items()}
+    return {}
+
+#

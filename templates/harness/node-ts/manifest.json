@@ -1,0 +1,60 @@
+{
+  "name": "Node.js + TypeScript",
+  "kind": "node-ts",
+  "aliases": [
+    "node",
+    "node.js",
+    "typescript"
+  ],
+  "detection": {
+    "files": [
+      "package.json"
+    ],
+    "dependencies": [],
+    "exclude_dependencies": [
+      "next",
+      "electron"
+    ],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "ci"
+    ],
+    "test": [
+      "npm",
+      "test"
+    ],
+    "lint": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "typecheck": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "build": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "run": [
+      "npm",
+      "start"
+    ],
+    "smoke": [
+      "npm",
+      "run",
+      "smoke"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ],
+    "node-version": "20"
+  }
+}

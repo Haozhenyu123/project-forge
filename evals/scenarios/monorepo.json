@@ -1,0 +1,46 @@
+{
+  "id": "monorepo",
+  "name": "Monorepo Detection",
+  "title": "Monorepo Project Detection",
+  "category": "monorepo",
+  "purpose": "Verify the agent detects monorepo structures and generates multi-directory CI harnesses.",
+  "prompt": "Build a full-stack SaaS platform with monorepo structure containing frontend/ and backend/ subdirectories.",
+  "setup": "Project has a root package.json with workspaces, frontend/ with Next.js, and backend/ with FastAPI.",
+  "steps": [
+    "Submit the prompt with monorepo constraints.",
+    "Confirm the agent detects the monorepo structure.",
+    "Check it generates CI with multiple jobs or workspace-aware configuration.",
+    "Verify harness covers each workspace directory."
+  ],
+  "expected_behaviors": [
+    "Detect monorepo structure",
+    "Generate multi-job CI",
+    "Cover each workspace"
+  ],
+  "expected": "The agent detects monorepo, generates multi-job CI covering each workspace directory.",
+  "evidence": [
+    "Monorepo detection",
+    "Multi-job CI",
+    "Workspace coverage"
+  ],
+  "rubric": {
+    "correctness": [
+      "monorepo detected",
+      "multi-job CI"
+    ],
+    "completeness": [
+      "frontend workspace",
+      "backend workspace"
+    ],
+    "reliability": [
+      "each workspace independently verifiable"
+    ],
+    "usability": [
+      "clear workspace documentation"
+    ],
+    "evidence": [
+      "monorepo detection evidence",
+      "CI evidence"
+    ]
+  }
+}

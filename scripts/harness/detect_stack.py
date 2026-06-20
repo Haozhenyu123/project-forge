@@ -1,5 +1,8 @@
-#!/usr/bin/env python3
-"""Detect a project stack and emit a Project Forge harness command contract."""
+﻿#!/usr/bin/env python3
+"""Detect a project stack and emit a Project Forge harness command contract.
+
+Uses template manifests for detection signals and commands.
+"""
 
 import argparse
 import json
@@ -7,156 +10,103 @@ import re
 import sys
 from pathlib import Path
 
-KNOWN_TEMPLATES = {
-    "node-ts",
-    "python",
-    "generic",
-    "nextjs",
-    "fastapi",
-    "electron",
-    "cli",
-    "chrome-extension",
-}
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+from project_forge.harness.templates import (
+    load_manifests,
+    MANIFEST_REGISTRY,
+    TemplateManifest,
+)
+
+MANIFESTS = {}
 
 
-COMMANDS = {
-    "node-ts": {
-        "install": "npm ci",
-        "test": "npm test",
-        "lint": "npm run lint",
-        "typecheck": "npm run typecheck",
-        "build": "npm run build",
-        "run": "npm start",
-        "smoke": "npm run smoke",
-    },
-    "python": {
-        "install": "python -m pip install -r requirements.txt",
-        "test": "python -m pytest",
-        "lint": "python -m ruff check .",
-        "typecheck": "python -m mypy .",
-        "build": "python -m build",
-        "run": "python -m app",
-        "smoke": "python -m pytest",
-    },
-    "fastapi": {
-        "install": "pip install -r requirements.txt",
-        "test": "python -m pytest",
-        "lint": "python -m ruff check .",
-        "typecheck": "python -m mypy .",
-        "build": "echo FastAPI projects do not require a build step",
-        "run": "uvicorn app.main:app --reload",
-        "smoke": "python -m pytest tests/smoke/",
-    },
-    "nextjs": {
-        "install": "npm ci",
-        "test": "npm run test",
-        "lint": "npm run lint",
-        "typecheck": "npm run typecheck",
-        "build": "npm run build",
-        "run": "npm run dev",
-        "smoke": "npm run smoke",
-    },
-    "electron": {
-        "install": "npm ci",
-        "test": "npm run test",
-        "lint": "npm run lint",
-        "typecheck": "npm run typecheck",
-        "build": "npm run build",
-        "run": "npm start",
-        "smoke": "npm run smoke",
-    },
-    "cli": {
-        "install": "npm ci",
-        "test": "npm run test",
-        "lint": "npm run lint",
-        "typecheck": "npm run typecheck",
-        "build": "npm run build",
-        "run": "node dist/index.js",
-        "smoke": "npm run smoke",
-    },
-    "chrome-extension": {
-        "install": "npm ci",
-        "test": "npm run test",
-        "lint": "npm run lint",
-        "typecheck": "npm run typecheck",
-        "build": "npm run build",
-        "run": "echo Load from chrome://extensions in developer mode",
-        "smoke": "npm run smoke",
-    },
-    "generic": {
-        "install": "echo no install command configured",
-        "test": "echo no test command configured",
-        "lint": "echo no lint command configured",
-        "typecheck": "echo no typecheck command configured",
-        "build": "echo no build command configured",
-        "run": "echo no run command configured",
-        "smoke": "echo no smoke command configured",
-    },
-}
-
-NODE_SCRIPT_COMMANDS = ("test", "lint", "typecheck", "build", "smoke")
+def _ensure_manifests():
+    global MANIFESTS
+    if not MANIFESTS:
+        MANIFESTS = load_manifests()
 
 
-def failing_node_command(script_name):
-    return (
-        "node -e \"console.error('No package.json script named "
-        + script_name
-        + " configured'); process.exit(1)\""
-    )
+def detect_by_manifest(project: Path) -> str:
+    _ensure_manifests()
+    pkg_json = project / "package.json"
+    manifest_json = project / "manifest.json"
 
+    # Chrome extension: manifest.json in project root
+    if manifest_json.exists():
+        try:
+            payload = json.loads(manifest_json.read_text(encoding="utf-8"))
+            if "manifest_version" in payload:
+                return "chrome-extension"
+        except (OSError, json.JSONDecodeError):
+            pass
 
-def parse_args():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--project", required=True)
-    parser.add_argument("--json", action="store_true")
-    return parser.parse_args()
-
-
-def detect_template(project):
-    root = Path(project)
-    pkg_json = root / "package.json"
+    # Node-based projects
     if pkg_json.exists():
         try:
             pkg = json.loads(pkg_json.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             pkg = {}
         deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
-        if "next" in deps:
-            return "nextjs"
-        if "electron" in deps:
-            return "electron"
-        if "bin" in pkg and isinstance(pkg["bin"], (str, dict)):
-            return "cli"
+
+        # Check each manifest for dependency matches
+        # Order matters: specific frameworks first
+        ordered = ["nextjs", "electron", "cli", "node-ts"]
+        for kind in ordered:
+            m = MANIFESTS.get(kind)
+            if not m or not m.detection:
+                continue
+            req_deps = m.detection.get("dependencies", [])
+            excl_deps = m.detection.get("exclude_dependencies", [])
+            has_bin = m.detection.get("has_bin", False)
+
+            if req_deps and any(d in deps for d in req_deps):
+                return kind
+            if excl_deps and any(d in deps for d in excl_deps):
+                continue
+            if has_bin and "bin" in pkg and isinstance(pkg["bin"], (str, dict)):
+                return kind
+
         return "node-ts"
-    if (root / "manifest.json").exists():
-        return "chrome-extension"
-    if (root / "pyproject.toml").exists() or (root / "requirements.txt").exists():
+
+    # Python-based projects
+    if (project / "pyproject.toml").exists() or (project / "requirements.txt").exists():
+        if (project / "main.py").exists():
+            main_text = (project / "main.py").read_text(encoding="utf-8")
+            if "fastapi" in main_text.lower() or "FastAPI" in main_text:
+                return "fastapi"
         return "python"
-    if (root / "main.py").exists():
-        main_text = (root / "main.py").read_text(encoding="utf-8")
-        if "fastapi" in main_text.lower():
+
+    # Standalone main.py (no requirements.txt/pyproject.toml)
+    if (project / "main.py").exists():
+        main_text = (project / "main.py").read_text(encoding="utf-8")
+        if "fastapi" in main_text.lower() or "FastAPI" in main_text:
             return "fastapi"
         return "python"
-    # Fallback: read stack from existing project-forge.yaml (Forge workspace)
-    forge_yaml = root / "project-forge.yaml"
+
+    # Fallback: read stack from existing project-forge.yaml
+    forge_yaml = project / "project-forge.yaml"
     if forge_yaml.exists():
         yaml_text = forge_yaml.read_text(encoding="utf-8")
         match = re.search(r'^\s*stack:\s*"?([^"\s]+)"?\s*$', yaml_text, re.MULTILINE)
         if match:
             known = match.group(1).strip('"')
-            if known in KNOWN_TEMPLATES:
+            if known in MANIFESTS:
                 return known
+
     return "generic"
 
 
 def detect_package_manager(root):
-    for lockfile, package_manager in (
+    for lockfile, pm in (
         ("pnpm-lock.yaml", "pnpm"),
         ("yarn.lock", "yarn"),
         ("package-lock.json", "npm"),
     ):
         if (root / lockfile).exists():
-            return package_manager
+            return pm
     return "npm"
 
 
@@ -166,7 +116,6 @@ def load_package_scripts(root):
         payload = json.loads(package_json.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return {}
-
     scripts = payload.get("scripts", {})
     if not isinstance(scripts, dict):
         return {}
@@ -174,40 +123,56 @@ def load_package_scripts(root):
 
 
 def node_commands(root):
-    package_manager = detect_package_manager(root)
+    pm = detect_package_manager(root)
     scripts = load_package_scripts(root)
-    commands = {"install": f"{package_manager} install"}
+    cmds = {"install": f"{pm} install"}
+    for name in ("test", "lint", "typecheck", "build", "smoke"):
+        cmds[name] = f"{pm} run {name}" if name in scripts else f"node -e \"console.error('No script: {name}'); process.exit(1)\""
+    cmds["run"] = f"{pm} run dev" if "dev" in scripts else (f"{pm} start" if "start" in scripts else "node -e \"console.error('No dev/start'); process.exit(1)\"")
+    return pm, cmds
 
-    for script_name in NODE_SCRIPT_COMMANDS:
-        if script_name in scripts:
-            commands[script_name] = f"{package_manager} run {script_name}"
-        else:
-            commands[script_name] = failing_node_command(script_name)
 
-    if "dev" in scripts:
-        commands["run"] = f"{package_manager} run dev"
-    elif "start" in scripts:
-        commands["run"] = f"{package_manager} start"
-    else:
-        commands["run"] = failing_node_command("dev or start")
+def parse_args():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--project", required=True)
+    p.add_argument("--json", action="store_true")
+    return p.parse_args()
 
-    return package_manager, commands
 
+
+# Backward-compatible exports for forge_project.py
+# Eagerly load manifests for module-level COMMANDS
+_ensure_manifests()
+COMMANDS = {}
+for _k, _m in MANIFESTS.items():
+    COMMANDS[_k] = {}
+    for _cmd, _argv in _m.commands.items():
+        COMMANDS[_k][_cmd] = ' '.join(_argv)
+
+NODE_TEMPLATES = {'node-ts', 'nextjs', 'electron', 'cli', 'chrome-extension'}
+
+def node_commands(root):
+    """Return (package_manager, commands_dict) for a Node project."""
+    pm = detect_package_manager(root)
+    scripts = load_package_scripts(root)
+    cmds = {'install': f'{pm} install'}
+    for name in ('test', 'lint', 'typecheck', 'build', 'smoke'):
+        cmds[name] = f'{pm} run {name}' if name in scripts else 'echo No script configured'
+    cmds['run'] = f'{pm} run dev' if 'dev' in scripts else (f'{pm} start' if 'start' in scripts else 'echo No run command')
+    return pm, cmds
 
 def main():
     args = parse_args()
     root = Path(args.project)
-    template = detect_template(root)
-    package_manager = None
-    if template == "node-ts":
-        package_manager, commands = node_commands(root)
+    template = detect_by_manifest(root)
+    pm = None
+    if template in ("node-ts", "nextjs", "electron", "cli"):
+        pm, cmds = node_commands(root)
     else:
-        commands = COMMANDS[template]
-    payload = {
-        "template": template,
-        "package_manager": package_manager,
-        "commands": commands,
-    }
+        _ensure_manifests()
+        m = MANIFESTS.get(template)
+        cmds = {k: " ".join(v) for k, v in m.commands.items()} if m else {}
+    payload = {"template": template, "package_manager": pm, "commands": cmds}
     if args.json:
         print(json.dumps(payload, sort_keys=True))
     else:
@@ -217,8 +182,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-
-
-
-
-
