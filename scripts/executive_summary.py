@@ -118,7 +118,7 @@ def main():
     summary = generate_summary(args.project)
     out = Path(args.out or project / "docs" / "executive-summary.md")
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(summary, encoding="utf-8", newline="\n")
+    out.write_text(summary, encoding="utf-8")
     print(f"Executive summary written: {out}")
     return 0
 

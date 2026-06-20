@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
 
 SERVER_NAME = "project-forge"
-SERVER_VERSION = "0.3.0"
+SERVER_VERSION = "0.3.3"
 
 TEMPLATES = ["node-ts", "python", "generic", "nextjs", "fastapi", "electron", "cli", "chrome-extension"]
 

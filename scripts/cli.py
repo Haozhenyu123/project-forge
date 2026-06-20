@@ -18,6 +18,7 @@ Usage:
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -27,8 +28,11 @@ from pathlib import Path
 
 SCRIPTS_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPTS_ROOT.parent
+SRC = str(REPO_ROOT / "src")
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
 
-VERSION = "0.3.0"
+VERSION = "0.3.3"
 
 TEMPLATES = [
     "node-ts",
@@ -501,9 +505,11 @@ def cmd_summary(args):
 
 def cmd_patterns(args):
     import subprocess as _sp
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(REPO_ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
     result = _sp.run(
         [sys.executable, "-c", "from project_forge.decision.patterns import extract_patterns_from_history, save_patterns; p=extract_patterns_from_history(); save_patterns(p); print(len(p), 'patterns saved')"],
-        cwd=REPO_ROOT, text=True, capture_output=True, timeout=30,
+        cwd=REPO_ROOT, text=True, capture_output=True, timeout=30, env=env,
     )
     print(result.stdout, end="")
     if result.stderr:
