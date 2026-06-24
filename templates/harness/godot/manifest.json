@@ -1,0 +1,58 @@
+{
+  "name": "Godot Game",
+  "kind": "godot",
+  "aliases": [
+    "godot",
+    "godot engine",
+    "gdscript"
+  ],
+  "detection": {
+    "files": [
+      "project.godot"
+    ],
+    "dependencies": [],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "echo",
+      "Download Godot Engine and open project"
+    ],
+    "test": [
+      "godot",
+      "--headless",
+      "--script",
+      "tests/run_tests.gd"
+    ],
+    "lint": [
+      "echo",
+      "Use GDScript toolkit or gdformat"
+    ],
+    "typecheck": [
+      "godot",
+      "--headless",
+      "--check-only"
+    ],
+    "build": [
+      "godot",
+      "--headless",
+      "--export-release",
+      "Web"
+    ],
+    "run": [
+      "godot",
+      "--editor"
+    ],
+    "smoke": [
+      "godot",
+      "--headless",
+      "--quit"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

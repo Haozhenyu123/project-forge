@@ -1,13 +1,13 @@
 {
-  "description": "Inject Project Forge decision, architecture, harness, and handoff context.",
+  "description": "Project Forge session startup context for Codex and Claude Code.",
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume|clear|compact",
+        "matcher": "startup|resume",
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/runtime/session_start.py\"",
+            "command": "python {{pluginRoot}}/scripts/runtime/session_start.py",
             "timeout": 10
           }
         ]

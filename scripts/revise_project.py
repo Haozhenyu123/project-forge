@@ -1,4 +1,5 @@
 """Revise a project's architecture when Superpowers signals issues with the current handoff.
+In v0.4.0, revise delegates to the Loop Engine for signal-aware processing.
 
 Usage:
   project-forge revise [PROJECT] --slug SLUG --reason "..." [--constraint ...] [--refresh-evidence]
@@ -14,6 +15,30 @@ if SRC not in sys.path:
 
 
 def run_revise(project_dir, slug, reason, new_constraints=None, refresh_evidence=False):
+    # Delegate to Loop Engine when available (v0.4.0+)
+    try:
+        from project_forge.loop.service import ingest_signal, run_loop
+        signal_data = {
+            "signal_id": f"revise-{slug}-{reason[:20].replace(' ', '-').lower()}",
+            "source": "project-forge.revise",
+            "kind": "manual",
+            "severity": "medium",
+            "observed_at": date.today().isoformat(),
+            "summary": reason,
+            "affected_constraints": new_constraints or [],
+            "suggested_owner": "forge",
+        }
+        ingest_result = ingest_signal(project_dir, signal_data)
+        loop_result = run_loop(project_dir, slug, json_output=True)
+        return {
+            "revise_entry": "loop-delegated",
+            "signal_ingest": ingest_result,
+            "loop_run": loop_result,
+        }
+    except Exception:
+        pass
+
+    # Fallback: legacy revise flow
     project = Path(project_dir)
     contract_path = project / "project-forge.yaml"
     if not contract_path.exists():

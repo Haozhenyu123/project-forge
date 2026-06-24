@@ -1,0 +1,18 @@
+project:
+  goal: "LLM-powered API backend"
+  chosen_stack:
+    name: "langchain-fastapi"
+    language: "Python"
+    runtime: "FastAPI + LangChain"
+    rationale: "Production LLM API with LangChain orchestration."
+commands:
+  install: "pip install -e ."
+  test: "pytest"
+  lint: "ruff check ."
+  typecheck: "mypy src"
+  build: "echo No build step"
+  run: "uvicorn src.main:app --reload"
+  smoke: "python -c from src.main import app; print(OK)"
+harness:
+  status: "sample"
+  verified: false

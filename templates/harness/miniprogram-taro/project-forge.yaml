@@ -1,0 +1,18 @@
+project:
+  goal: "Mini Program project built with Taro"
+  chosen_stack:
+    name: "miniprogram-taro"
+    language: "TypeScript"
+    runtime: "Taro + WeChat DevTools"
+    rationale: "React syntax for WeChat mini programs with Taro."
+commands:
+  install: "npm install"
+  test: "npm run test"
+  lint: "npm run lint"
+  typecheck: "npm run typecheck"
+  build: "npm run build:weapp"
+  run: "npm run dev:weapp"
+  smoke: "npm run build:weapp"
+harness:
+  status: "sample"
+  verified: false

@@ -1,0 +1,18 @@
+project:
+  goal: "Data pipeline for analytics and ETL"
+  chosen_stack:
+    name: "data-pipeline"
+    language: "Python"
+    runtime: "dbt + Airflow"
+    rationale: "Analytics engineering with dbt and Airflow orchestration."
+commands:
+  install: "pip install -e ."
+  test: "pytest"
+  lint: "ruff check ."
+  typecheck: "mypy src"
+  build: "dbt build"
+  run: "airflow standalone"
+  smoke: "dbt compile"
+harness:
+  status: "sample"
+  verified: false

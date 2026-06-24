@@ -1,0 +1,18 @@
+project:
+  goal: "Mini Program project built with uni-app"
+  chosen_stack:
+    name: "miniprogram-uniapp"
+    language: "JavaScript/TypeScript"
+    runtime: "uni-app + WeChat DevTools"
+    rationale: "Cross-platform mini program framework for WeChat/Alipay/ByteDance."
+commands:
+  install: "npm install"
+  test: "npm run test"
+  lint: "npm run lint"
+  typecheck: "npm run typecheck"
+  build: "npm run build:mp-weixin"
+  run: "npm run dev:mp-weixin"
+  smoke: "npm run build:mp-weixin"
+harness:
+  status: "sample"
+  verified: false

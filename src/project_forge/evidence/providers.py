@@ -299,8 +299,8 @@ def create_provider(name: str, **kwargs: Any) -> Optional[BaseProvider]:
     return cls(**kwargs)
 
 
-def collect_evidence(package_name: str, providers: Optional[Sequence[str]] = None) -> List[Dict[str, Any]]:
-    """Run multiple providers against a package name and return collected evidence rows."""
+def collect_evidence(package_name: str, providers: Optional[Sequence[str]] = None, domain_tag: str = "general") -> List[Dict[str, Any]]:
+    """Run multiple providers against a package name and return collected evidence rows. Pass domain_tag for domain-specific queries."""
     rows: List[Dict[str, Any]] = []
     names = list(providers) if providers else list_providers()
     for name in names:
@@ -324,7 +324,7 @@ def collect_evidence(package_name: str, providers: Optional[Sequence[str]] = Non
             rows.extend(result.rows)
         except Exception:
             pass
+
     return rows
 
 
-print("Providers module compiled OK, registered:", list_providers())

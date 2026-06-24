@@ -1,0 +1,65 @@
+{
+  "name": "Graph RAG",
+  "kind": "graph-rag",
+  "aliases": [
+    "graphrag",
+    "graph rag",
+    "knowledge graph",
+    "neo4j rag"
+  ],
+  "detection": {
+    "files": [
+      "pyproject.toml"
+    ],
+    "dependencies": [
+      "neo4j",
+      "langchain",
+      "langgraph"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "pip",
+      "install",
+      "-e",
+      "."
+    ],
+    "test": [
+      "pytest"
+    ],
+    "lint": [
+      "ruff",
+      "check",
+      "."
+    ],
+    "typecheck": [
+      "mypy",
+      "src"
+    ],
+    "build": [
+      "python",
+      "-c",
+      "print('No build step')"
+    ],
+    "run": [
+      "uvicorn",
+      "src.main:app",
+      "--reload"
+    ],
+    "smoke": [
+      "python",
+      "-c",
+      "from src.main import app; print('OK')"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ],
+    "services": [
+      "neo4j"
+    ]
+  }
+}

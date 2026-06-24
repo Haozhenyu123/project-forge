@@ -1,0 +1,18 @@
+project:
+  goal: "LLM fine-tuning pipeline"
+  chosen_stack:
+    name: "llm-fine-tune"
+    language: "Python"
+    runtime: "PyTorch + HuggingFace"
+    rationale: "Fine-tune LLMs on domain-specific data."
+commands:
+  install: "pip install -e ."
+  test: "pytest"
+  lint: "ruff check ."
+  typecheck: "mypy src"
+  build: "python -m src.train"
+  run: "python -m src.serve"
+  smoke: "python -c import transformers; print(OK)"
+harness:
+  status: "sample"
+  verified: false

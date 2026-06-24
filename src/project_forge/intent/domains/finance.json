@@ -1,0 +1,45 @@
+{
+  "domain": "finance",
+  "domain_profile": "金融领域。交易完整性、审计追溯、监管合规不可妥协。每一笔数据变动必须可溯源。实时性要求可能极高。",
+  "probing_axes": [
+    {
+      "axis": "transaction_nature",
+      "prompt": "系统是否涉及真实资金流转？是交易执行系统还是信息展示/分析工具？",
+      "why_matters": "涉及资金流转意味着 PCI-DSS、SOX 等强制合规，架构复杂度和安全等级质变。"
+    },
+    {
+      "axis": "real_time_requirements",
+      "prompt": "是否需要实时行情数据？延迟容忍度是多少（毫秒级 / 秒级 / 分钟级）？",
+      "why_matters": "延迟要求直接决定技术选型：毫秒级需要 C++/Rust/FPGA，分钟级可以用 Python。"
+    },
+    {
+      "axis": "user_profile",
+      "prompt": "用户是专业交易员、机构投资者还是普通消费者？并发量和操作频率如何？",
+      "why_matters": "面向机构用户的高频交易系统和面向消费者的理财 App 架构天差地别。"
+    },
+    {
+      "axis": "data_retention",
+      "prompt": "数据保留要求是什么？是否需要完整的审计日志、不可篡改的账本？保留多少年？",
+      "why_matters": "决定了存储架构（事件溯源 / 不可变日志）、备份策略和合规要求。"
+    }
+  ],
+  "compliance": [
+    "PCI-DSS",
+    "SOX",
+    "KYC/AML",
+    "PSD2",
+    "GDPR"
+  ],
+  "risk_weights": {
+    "security_risk": 2.5,
+    "complexity": 0.7,
+    "maintenance_activity": 0.9
+  },
+  "capabilities": [
+    "api",
+    "python",
+    "data",
+    "high-security",
+    "low-latency"
+  ]
+}

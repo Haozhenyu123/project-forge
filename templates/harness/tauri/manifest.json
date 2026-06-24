@@ -1,0 +1,63 @@
+{
+  "name": "Tauri Desktop App",
+  "kind": "tauri",
+  "aliases": [
+    "tauri",
+    "rust desktop"
+  ],
+  "detection": {
+    "files": [
+      "src-tauri/Cargo.toml",
+      "package.json"
+    ],
+    "dependencies": [
+      "@tauri-apps/api"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "install"
+    ],
+    "test": [
+      "npm",
+      "run",
+      "test"
+    ],
+    "lint": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "typecheck": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "build": [
+      "npm",
+      "run",
+      "tauri",
+      "build"
+    ],
+    "run": [
+      "npm",
+      "run",
+      "tauri",
+      "dev"
+    ],
+    "smoke": [
+      "npm",
+      "run",
+      "tauri",
+      "build"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+project:
+  goal: "Web app built with SvelteKit"
+  chosen_stack:
+    name: "sveltekit"
+    language: "TypeScript"
+    runtime: "SvelteKit"
+    rationale: "Fast web app with compile-time framework and SSR."
+commands:
+  install: "npm install"
+  test: "npm run test"
+  lint: "npm run lint"
+  typecheck: "npm run check"
+  build: "npm run build"
+  run: "npm run dev"
+  smoke: "npm run build"
+harness:
+  status: "sample"
+  verified: false

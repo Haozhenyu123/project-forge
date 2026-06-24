@@ -8,6 +8,16 @@ from typing import Dict, Iterable, List, Optional
 from .models import CreativeDecision, CreativeDirection
 
 
+
+
+def _domain_directions(domain_tag: str, goal: str, constraints, evidence_rows, any_verified, team_ids, dashboard_ids, automation_ids):
+    """Return domain-specific creative directions based on the domain tag."""
+    # Default to universal if domain not recognized
+    return _universal_directions(goal, constraints, evidence_rows, any_verified, team_ids, dashboard_ids, automation_ids)
+
+
+def _universal_directions(goal: str, constraints, evidence_rows, any_verified, team_ids, dashboard_ids, automation_ids):
+    """Return the three universal creative directions."""
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
@@ -40,6 +50,7 @@ def build_creative_decision(
     constraints: Optional[Iterable[str]] = None,
     evidence: Optional[Iterable[Dict[str, object]]] = None,
     selected_direction_id: Optional[str] = None,
+    domain_tag: str = "general",
 ) -> CreativeDecision:
     """Return three concrete angles and one default recommendation."""
 

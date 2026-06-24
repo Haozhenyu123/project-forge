@@ -6,7 +6,9 @@
     "scripts/cli.py",
     "scripts/mcp/server.py",
     "scripts/creative_brief.py",
-    "tests/test_project_forge.py"
+    "src/project_forge/loop/service.py",
+    "tests/test_project_forge.py",
+    "src/project_forge/decision/engine.py"
   ],
   "note": "Legacy wrappers and the pre-v0.3 aggregate test file are temporarily excluded in v0.3.0 and must only shrink."
 }

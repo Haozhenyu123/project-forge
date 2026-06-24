@@ -1,0 +1,43 @@
+{
+  "domain": "education",
+  "domain_profile": "教育领域。内容可访问性、学习体验流畅性、学习者数据隐私是关键。如果是未成年人用户，合规要求大幅提升。",
+  "probing_axes": [
+    {
+      "axis": "learner_profile",
+      "prompt": "面向什么年龄段的学习者？K-12 / 高等教育 / 职业培训 / 企业内训？",
+      "why_matters": "K-12 触发 COPPA/FERPA 合规；职业培训注重实用性；高等教育需要学术严谨性。"
+    },
+    {
+      "axis": "content_modality",
+      "prompt": "内容以什么形式呈现？视频课程 / 文字教材 / 交互式练习 / 直播教学 / 混合？",
+      "why_matters": "视频为主需要 CDN 和转码管道；交互式练习需要实时反馈；直播需要 WebRTC 基础设施。"
+    },
+    {
+      "axis": "assessment_model",
+      "prompt": "是否有考试/评估功能？是自动批改、AI 评分还是人工评价？",
+      "why_matters": "AI 评分需要可解释性和防作弊机制；考试需要高可用架构应对峰值并发。"
+    },
+    {
+      "axis": "accessibility_demands",
+      "prompt": "是否需要无障碍访问（WCAG 合规）？是否需要在低带宽环境下使用？",
+      "why_matters": "WCAG 合规影响前端框架选择和组件库。低带宽需要离线能力和渐进式加载。"
+    }
+  ],
+  "compliance": [
+    "FERPA",
+    "COPPA",
+    "GDPR",
+    "WCAG 2.1"
+  ],
+  "risk_weights": {
+    "constraint_fit": 1.3,
+    "deployment_cost": 0.9
+  },
+  "capabilities": [
+    "web",
+    "api",
+    "typescript",
+    "data",
+    "collaboration"
+  ]
+}

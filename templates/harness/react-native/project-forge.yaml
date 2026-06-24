@@ -1,0 +1,18 @@
+project:
+  goal: "Cross-platform mobile app built with React Native"
+  chosen_stack:
+    name: "react-native"
+    language: "TypeScript"
+    runtime: "React Native / Expo"
+    rationale: "Cross-platform mobile development with React."
+commands:
+  install: "npm install"
+  test: "npx jest"
+  lint: "npx eslint ."
+  typecheck: "npx tsc --noEmit"
+  build: "npx expo export"
+  run: "npx expo start"
+  smoke: "npx expo export"
+harness:
+  status: "sample"
+  verified: false

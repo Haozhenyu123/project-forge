@@ -76,8 +76,9 @@ def load_catalog(path: Optional[Path] = None) -> StackCatalog:
         )
     template_ids = {stack.harness.get("primary") for stack in stacks if stack.kind == "template"}
     required = {"chrome-extension", "cli", "electron", "fastapi", "generic", "nextjs", "node-ts", "python"}
-    if template_ids != required:
-        raise ValueError(f"catalog template coverage mismatch: {sorted(template_ids ^ required)}")
+    missing = required - template_ids
+    if missing:
+        raise ValueError(f"catalog missing required templates: {sorted(missing)}")
     return StackCatalog(
         schema_version=1,
         catalog_version=str(payload["catalog_version"]),

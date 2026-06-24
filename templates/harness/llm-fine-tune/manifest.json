@@ -1,0 +1,63 @@
+{
+  "name": "LLM Fine-tuning Pipeline",
+  "kind": "llm-fine-tune",
+  "aliases": [
+    "finetune",
+    "fine tune",
+    "llm training",
+    "微调"
+  ],
+  "detection": {
+    "files": [
+      "pyproject.toml",
+      "config.yaml"
+    ],
+    "dependencies": [
+      "transformers",
+      "datasets",
+      "peft"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "pip",
+      "install",
+      "-e",
+      "."
+    ],
+    "test": [
+      "pytest"
+    ],
+    "lint": [
+      "ruff",
+      "check",
+      "."
+    ],
+    "typecheck": [
+      "mypy",
+      "src"
+    ],
+    "build": [
+      "python",
+      "-m",
+      "src.train"
+    ],
+    "run": [
+      "python",
+      "-m",
+      "src.serve"
+    ],
+    "smoke": [
+      "python",
+      "-c",
+      "import transformers; print('OK')"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

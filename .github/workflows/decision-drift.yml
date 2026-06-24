@@ -1,0 +1,57 @@
+name: Decision Drift
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Every Monday at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift-check:
+    name: Check for decision drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run loop status
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, 'src')
+          from project_forge.loop.service import get_loop_status
+          status = get_loop_status('.')
+          import json
+          print(json.dumps(status, indent=2))
+          "
+
+      - name: Aggregate loop signals
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, 'src')
+          from project_forge.loop.storage import list_inbox, load_state
+          from pathlib import Path
+          import json
+          inbox = list_inbox(Path('.'))
+          state = load_state(Path('.'))
+          result = {
+            'inbox_count': len(inbox),
+            'state': state.to_dict() if state else None,
+          }
+          print(json.dumps(result, indent=2))
+          # Signal drift if inbox has unprocessed signals
+          if inbox:
+              print(f'::warning ::{len(inbox)} unprocessed loop signal(s) in inbox')
+          "
+
+      - name: Generate drift report
+        if: always()
+        run: |
+          echo "## Decision Drift Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Decision Drift CI completed. Check loop status above." >> $GITHUB_STEP_SUMMARY

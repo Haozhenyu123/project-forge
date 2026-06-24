@@ -1,0 +1,56 @@
+{
+  "name": "WeChat Mini Program Native",
+  "kind": "miniprogram-native",
+  "aliases": [
+    "wechat native",
+    "miniprogram native",
+    "wxml"
+  ],
+  "detection": {
+    "files": [
+      "app.json",
+      "project.config.json"
+    ],
+    "dependencies": [],
+    "exclude_dependencies": [
+      "@dcloudio/uni-app",
+      "@tarojs/taro"
+    ],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "echo",
+      "No install step - use WeChat DevTools"
+    ],
+    "test": [
+      "echo",
+      "No test framework configured"
+    ],
+    "lint": [
+      "echo",
+      "No lint configured"
+    ],
+    "typecheck": [
+      "echo",
+      "No type checking configured"
+    ],
+    "build": [
+      "echo",
+      "Use WeChat DevTools to preview and upload"
+    ],
+    "run": [
+      "echo",
+      "Open project in WeChat DevTools"
+    ],
+    "smoke": [
+      "echo",
+      "Verify app.json and project.config.json exist"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "Taro Mini Program",
+  "kind": "miniprogram-taro",
+  "aliases": [
+    "taro",
+    "taro.js",
+    "react miniprogram"
+  ],
+  "detection": {
+    "files": [
+      "project.config.json"
+    ],
+    "dependencies": [
+      "@tarojs/taro"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "install"
+    ],
+    "test": [
+      "npm",
+      "run",
+      "test"
+    ],
+    "lint": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "typecheck": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "build": [
+      "npm",
+      "run",
+      "build:weapp"
+    ],
+    "run": [
+      "npm",
+      "run",
+      "dev:weapp"
+    ],
+    "smoke": [
+      "npm",
+      "run",
+      "build:weapp"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

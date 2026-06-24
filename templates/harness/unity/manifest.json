@@ -1,0 +1,53 @@
+{
+  "name": "Unity Game",
+  "kind": "unity",
+  "aliases": [
+    "unity",
+    "unity3d",
+    "c# game"
+  ],
+  "detection": {
+    "files": [
+      "Assets",
+      "ProjectSettings"
+    ],
+    "dependencies": [],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "echo",
+      "Open project in Unity Hub"
+    ],
+    "test": [
+      "echo",
+      "Use Unity Test Framework"
+    ],
+    "lint": [
+      "echo",
+      "Use Rider or Visual Studio analysis"
+    ],
+    "typecheck": [
+      "echo",
+      "C# compiled by Unity"
+    ],
+    "build": [
+      "echo",
+      "File > Build Settings in Unity Editor"
+    ],
+    "run": [
+      "echo",
+      "Press Play in Unity Editor"
+    ],
+    "smoke": [
+      "echo",
+      "Verify Assets/ and ProjectSettings/ exist"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "windows-latest"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+project:
+  goal: "Unity game project"
+  chosen_stack:
+    name: "unity"
+    language: "C#"
+    runtime: "Unity Engine"
+    rationale: "Cross-platform 2D/3D game engine."
+commands:
+  install: "echo Open in Unity Hub"
+  test: "echo Use Unity Test Framework"
+  lint: "echo Use IDE analysis"
+  typecheck: "echo C# compiled by Unity"
+  build: "echo File > Build Settings"
+  run: "echo Press Play in Editor"
+  smoke: "echo Verify project structure"
+harness:
+  status: "sample"
+  verified: false

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_version": "2026.06",
+  "catalog_version": "2026.06-v1.0",
   "observed_at": "2026-06-20",
   "default_weights": {
     "constraint_fit": 0.25,
@@ -8,9 +8,9 @@
     "source_diversity": 0.08,
     "maintenance_activity": 0.12,
     "license": 0.08,
-    "security_risk": 0.10,
+    "security_risk": 0.1,
     "deployment_cost": 0.08,
-    "complexity": 0.10,
+    "complexity": 0.1,
     "harness_availability": 0.07
   },
   "stacks": [
@@ -18,101 +18,1322 @@
       "id": "generic",
       "name": "Generic Project",
       "kind": "template",
-      "aliases": ["generic"],
-      "capabilities": ["custom"],
-      "harness": {"primary": "generic", "secondary": []},
-      "baselines": {"maintenance_activity": 45, "license": 50, "security_risk": 50, "deployment_cost": 55, "complexity": 50, "maturity_months": 120},
-      "sources": [{"evidence_id": "CAT-generic-contract", "url": "templates/harness/generic/project-forge.yaml", "title": "Project Forge generic harness contract", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Fallback when no first-class template matches."}]
+      "aliases": [
+        "generic"
+      ],
+      "capabilities": [
+        "custom"
+      ],
+      "harness": {
+        "primary": "generic",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 45,
+        "license": 50,
+        "security_risk": 50,
+        "deployment_cost": 55,
+        "complexity": 50,
+        "maturity_months": 120
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-generic-contract",
+          "url": "templates/harness/generic/project-forge.yaml",
+          "title": "Project Forge generic harness contract",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Fallback when no first-class template matches."
+        }
+      ]
     },
     {
       "id": "node-ts",
       "name": "Node.js + TypeScript",
       "kind": "template",
-      "aliases": ["node", "node.js", "typescript"],
-      "capabilities": ["web", "api", "typescript", "cli", "realtime", "backend"],
-      "harness": {"primary": "node-ts", "secondary": []},
-      "baselines": {"maintenance_activity": 82, "license": 90, "security_risk": 72, "deployment_cost": 78, "complexity": 62, "maturity_months": 180},
-      "sources": [{"evidence_id": "CAT-node-docs", "url": "https://nodejs.org/docs/latest/api/", "title": "Node.js API documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "TypeScript services and command-line tools."}]
+      "aliases": [
+        "node",
+        "node.js",
+        "typescript"
+      ],
+      "capabilities": [
+        "web",
+        "api",
+        "typescript",
+        "cli",
+        "realtime",
+        "backend"
+      ],
+      "harness": {
+        "primary": "node-ts",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 82,
+        "license": 90,
+        "security_risk": 72,
+        "deployment_cost": 78,
+        "complexity": 62,
+        "maturity_months": 180
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-node-docs",
+          "url": "https://nodejs.org/docs/latest/api/",
+          "title": "Node.js API documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "TypeScript services and command-line tools."
+        }
+      ]
     },
     {
       "id": "python",
       "name": "Python",
       "kind": "template",
-      "aliases": ["python"],
-      "capabilities": ["python", "cli", "automation", "data", "ai"],
-      "harness": {"primary": "python", "secondary": []},
-      "baselines": {"maintenance_activity": 86, "license": 92, "security_risk": 76, "deployment_cost": 82, "complexity": 72, "maturity_months": 300},
-      "sources": [{"evidence_id": "CAT-python-docs", "url": "https://docs.python.org/3/", "title": "Python documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Automation, data, AI, and Python CLI projects."}]
+      "aliases": [
+        "python"
+      ],
+      "capabilities": [
+        "python",
+        "cli",
+        "automation",
+        "data",
+        "ai"
+      ],
+      "harness": {
+        "primary": "python",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 86,
+        "license": 92,
+        "security_risk": 76,
+        "deployment_cost": 82,
+        "complexity": 72,
+        "maturity_months": 300
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-python-docs",
+          "url": "https://docs.python.org/3/",
+          "title": "Python documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Automation, data, AI, and Python CLI projects."
+        }
+      ]
     },
     {
       "id": "nextjs",
       "name": "Next.js",
       "kind": "template",
-      "aliases": ["next", "next.js", "react"],
-      "capabilities": ["web", "dashboard", "typescript", "frontend", "content"],
-      "harness": {"primary": "nextjs", "secondary": []},
-      "baselines": {"maintenance_activity": 88, "license": 90, "security_risk": 72, "deployment_cost": 68, "complexity": 58, "maturity_months": 120},
-      "sources": [{"evidence_id": "CAT-nextjs-docs", "url": "https://nextjs.org/docs", "title": "Next.js documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "React web products and dashboards."}]
+      "aliases": [
+        "next",
+        "next.js",
+        "react"
+      ],
+      "capabilities": [
+        "web",
+        "dashboard",
+        "typescript",
+        "frontend",
+        "content"
+      ],
+      "harness": {
+        "primary": "nextjs",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 88,
+        "license": 90,
+        "security_risk": 72,
+        "deployment_cost": 68,
+        "complexity": 58,
+        "maturity_months": 120
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-nextjs-docs",
+          "url": "https://nextjs.org/docs",
+          "title": "Next.js documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "React web products and dashboards."
+        }
+      ]
     },
     {
       "id": "fastapi",
       "name": "FastAPI",
       "kind": "template",
-      "aliases": ["fastapi", "python api"],
-      "capabilities": ["api", "backend", "python", "rest", "openapi", "ai"],
-      "harness": {"primary": "fastapi", "secondary": []},
-      "baselines": {"maintenance_activity": 84, "license": 90, "security_risk": 76, "deployment_cost": 80, "complexity": 70, "maturity_months": 90},
-      "sources": [{"evidence_id": "CAT-fastapi-docs", "url": "https://fastapi.tiangolo.com/", "title": "FastAPI documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Python REST and OpenAPI services."}]
+      "aliases": [
+        "fastapi",
+        "python api"
+      ],
+      "capabilities": [
+        "api",
+        "backend",
+        "python",
+        "rest",
+        "openapi",
+        "ai"
+      ],
+      "harness": {
+        "primary": "fastapi",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 84,
+        "license": 90,
+        "security_risk": 76,
+        "deployment_cost": 80,
+        "complexity": 70,
+        "maturity_months": 90
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-fastapi-docs",
+          "url": "https://fastapi.tiangolo.com/",
+          "title": "FastAPI documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Python REST and OpenAPI services."
+        }
+      ]
     },
     {
       "id": "chrome-extension",
       "name": "Chrome Extension MV3",
       "kind": "template",
-      "aliases": ["chrome", "extension", "manifest v3"],
-      "capabilities": ["extension", "browser", "typescript", "web"],
-      "harness": {"primary": "chrome-extension", "secondary": []},
-      "baselines": {"maintenance_activity": 74, "license": 88, "security_risk": 66, "deployment_cost": 88, "complexity": 55, "maturity_months": 96},
-      "sources": [{"evidence_id": "CAT-chrome-docs", "url": "https://developer.chrome.com/docs/extensions", "title": "Chrome Extensions documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Browser-integrated workflows using Manifest V3."}]
+      "aliases": [
+        "chrome",
+        "extension",
+        "manifest v3"
+      ],
+      "capabilities": [
+        "extension",
+        "browser",
+        "typescript",
+        "web"
+      ],
+      "harness": {
+        "primary": "chrome-extension",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 74,
+        "license": 88,
+        "security_risk": 66,
+        "deployment_cost": 88,
+        "complexity": 55,
+        "maturity_months": 96
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-chrome-docs",
+          "url": "https://developer.chrome.com/docs/extensions",
+          "title": "Chrome Extensions documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Browser-integrated workflows using Manifest V3."
+        }
+      ]
     },
     {
       "id": "electron",
       "name": "Electron",
       "kind": "template",
-      "aliases": ["electron", "desktop app"],
-      "capabilities": ["desktop", "typescript", "offline", "cross-platform"],
-      "harness": {"primary": "electron", "secondary": []},
-      "baselines": {"maintenance_activity": 80, "license": 90, "security_risk": 60, "deployment_cost": 62, "complexity": 48, "maturity_months": 150},
-      "sources": [{"evidence_id": "CAT-electron-docs", "url": "https://www.electronjs.org/docs/latest/", "title": "Electron documentation", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Cross-platform desktop applications."}]
+      "aliases": [
+        "electron",
+        "desktop app"
+      ],
+      "capabilities": [
+        "desktop",
+        "typescript",
+        "offline",
+        "cross-platform"
+      ],
+      "harness": {
+        "primary": "electron",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 80,
+        "license": 90,
+        "security_risk": 60,
+        "deployment_cost": 62,
+        "complexity": 48,
+        "maturity_months": 150
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-electron-docs",
+          "url": "https://www.electronjs.org/docs/latest/",
+          "title": "Electron documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Cross-platform desktop applications."
+        }
+      ]
     },
     {
       "id": "cli",
       "name": "TypeScript CLI",
       "kind": "template",
-      "aliases": ["cli", "command line", "terminal"],
-      "capabilities": ["cli", "typescript", "automation", "local"],
-      "harness": {"primary": "cli", "secondary": []},
-      "baselines": {"maintenance_activity": 80, "license": 90, "security_risk": 78, "deployment_cost": 90, "complexity": 75, "maturity_months": 120},
-      "sources": [{"evidence_id": "CAT-cli-contract", "url": "templates/harness/cli/project-forge.yaml", "title": "Project Forge CLI harness contract", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Local terminal-first automation."}]
+      "aliases": [
+        "cli",
+        "command line",
+        "terminal"
+      ],
+      "capabilities": [
+        "cli",
+        "typescript",
+        "automation",
+        "local"
+      ],
+      "harness": {
+        "primary": "cli",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 80,
+        "license": 90,
+        "security_risk": 78,
+        "deployment_cost": 90,
+        "complexity": 75,
+        "maturity_months": 120
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-cli-contract",
+          "url": "templates/harness/cli/project-forge.yaml",
+          "title": "Project Forge CLI harness contract",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Local terminal-first automation."
+        }
+      ]
     },
     {
       "id": "nextjs-fastapi",
       "name": "Next.js + FastAPI",
       "kind": "profile",
-      "aliases": ["nextjs fastapi", "next.js fastapi", "typescript frontend python backend"],
-      "capabilities": ["web", "dashboard", "typescript", "frontend", "api", "backend", "python", "rest"],
-      "harness": {"primary": "nextjs", "secondary": ["fastapi"]},
-      "baselines": {"maintenance_activity": 86, "license": 90, "security_risk": 68, "deployment_cost": 54, "complexity": 38, "maturity_months": 80},
-      "sources": [{"evidence_id": "CAT-next-fastapi-profile", "url": "catalog/stacks.v1.json", "title": "Project Forge Next.js and FastAPI profile", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Explicitly separated TypeScript frontend and Python API."}]
+      "aliases": [
+        "nextjs fastapi",
+        "next.js fastapi",
+        "typescript frontend python backend"
+      ],
+      "capabilities": [
+        "web",
+        "dashboard",
+        "typescript",
+        "frontend",
+        "api",
+        "backend",
+        "python",
+        "rest"
+      ],
+      "harness": {
+        "primary": "nextjs",
+        "secondary": [
+          "fastapi"
+        ]
+      },
+      "baselines": {
+        "maintenance_activity": 86,
+        "license": 90,
+        "security_risk": 68,
+        "deployment_cost": 54,
+        "complexity": 38,
+        "maturity_months": 80
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-next-fastapi-profile",
+          "url": "catalog/stacks.v1.json",
+          "title": "Project Forge Next.js and FastAPI profile",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Explicitly separated TypeScript frontend and Python API."
+        }
+      ]
     },
     {
       "id": "electron-fastapi",
       "name": "Electron + FastAPI",
       "kind": "profile",
-      "aliases": ["electron fastapi", "desktop python backend"],
-      "capabilities": ["desktop", "typescript", "offline", "backend", "python", "api"],
-      "harness": {"primary": "electron", "secondary": ["fastapi"]},
-      "baselines": {"maintenance_activity": 80, "license": 90, "security_risk": 58, "deployment_cost": 46, "complexity": 32, "maturity_months": 80},
-      "sources": [{"evidence_id": "CAT-electron-fastapi-profile", "url": "catalog/stacks.v1.json", "title": "Project Forge Electron and FastAPI profile", "dimensions": ["maintenance_activity", "license", "security_risk", "deployment_cost", "complexity", "harness_availability"], "applicability": "Desktop application with an explicit Python service."}]
+      "aliases": [
+        "electron fastapi",
+        "desktop python backend"
+      ],
+      "capabilities": [
+        "desktop",
+        "typescript",
+        "offline",
+        "backend",
+        "python",
+        "api"
+      ],
+      "harness": {
+        "primary": "electron",
+        "secondary": [
+          "fastapi"
+        ]
+      },
+      "baselines": {
+        "maintenance_activity": 80,
+        "license": 90,
+        "security_risk": 58,
+        "deployment_cost": 46,
+        "complexity": 32,
+        "maturity_months": 80
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-electron-fastapi-profile",
+          "url": "catalog/stacks.v1.json",
+          "title": "Project Forge Electron and FastAPI profile",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Desktop application with an explicit Python service."
+        }
+      ]
+    },
+    {
+      "id": "miniprogram-uniapp",
+      "name": "uni-app (Mini Program)",
+      "kind": "template",
+      "aliases": [
+        "uniapp",
+        "uni-app",
+        "uni app",
+        "wechat miniprogram"
+      ],
+      "capabilities": [
+        "mini-program",
+        "web",
+        "mobile",
+        "typescript",
+        "frontend"
+      ],
+      "harness": {
+        "primary": "miniprogram-uniapp",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 78,
+        "license": 90,
+        "security_risk": 74,
+        "deployment_cost": 72,
+        "complexity": 55,
+        "maturity_months": 72
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-uniapp-docs",
+          "url": "https://uniapp.dcloud.net.cn/",
+          "title": "uni-app documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "WeChat/Alipay/ByteDance mini programs with Vue.js."
+        }
+      ]
+    },
+    {
+      "id": "miniprogram-taro",
+      "name": "Taro (Mini Program)",
+      "kind": "template",
+      "aliases": [
+        "taro",
+        "taro.js",
+        "react miniprogram"
+      ],
+      "capabilities": [
+        "mini-program",
+        "web",
+        "mobile",
+        "typescript",
+        "frontend",
+        "react"
+      ],
+      "harness": {
+        "primary": "miniprogram-taro",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 76,
+        "license": 90,
+        "security_risk": 74,
+        "deployment_cost": 72,
+        "complexity": 58,
+        "maturity_months": 60
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-taro-docs",
+          "url": "https://taro.jd.com/",
+          "title": "Taro documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "WeChat mini programs with React syntax."
+        }
+      ]
+    },
+    {
+      "id": "miniprogram-native",
+      "name": "WeChat Mini Program (Native)",
+      "kind": "template",
+      "aliases": [
+        "wechat native",
+        "微信原生",
+        "miniprogram native",
+        "wxml"
+      ],
+      "capabilities": [
+        "mini-program",
+        "frontend"
+      ],
+      "harness": {
+        "primary": "miniprogram-native",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 85,
+        "license": 88,
+        "security_risk": 76,
+        "deployment_cost": 68,
+        "complexity": 60,
+        "maturity_months": 96
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-wechat-docs",
+          "url": "https://developers.weixin.qq.com/miniprogram/dev/",
+          "title": "WeChat Mini Program documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "WeChat native mini programs using WXML/WXSS/JS."
+        }
+      ]
+    },
+    {
+      "id": "react-native",
+      "name": "React Native",
+      "kind": "template",
+      "aliases": [
+        "reactnative",
+        "react native",
+        "rn",
+        "expo"
+      ],
+      "capabilities": [
+        "mobile",
+        "typescript",
+        "react",
+        "cross-platform",
+        "ios",
+        "android"
+      ],
+      "harness": {
+        "primary": "react-native",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 82,
+        "license": 90,
+        "security_risk": 72,
+        "deployment_cost": 52,
+        "complexity": 50,
+        "maturity_months": 120
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-rn-docs",
+          "url": "https://reactnative.dev/",
+          "title": "React Native documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Cross-platform mobile apps with React."
+        }
+      ]
+    },
+    {
+      "id": "flutter",
+      "name": "Flutter",
+      "kind": "template",
+      "aliases": [
+        "flutter",
+        "dart"
+      ],
+      "capabilities": [
+        "mobile",
+        "desktop",
+        "web",
+        "cross-platform",
+        "ios",
+        "android"
+      ],
+      "harness": {
+        "primary": "flutter",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 86,
+        "license": 92,
+        "security_risk": 76,
+        "deployment_cost": 50,
+        "complexity": 48,
+        "maturity_months": 96
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-flutter-docs",
+          "url": "https://flutter.dev/",
+          "title": "Flutter documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Cross-platform mobile, web, and desktop apps with Dart."
+        }
+      ]
+    },
+    {
+      "id": "rag-pipeline",
+      "name": "RAG Pipeline (Python)",
+      "kind": "template",
+      "aliases": [
+        "rag",
+        "retrieval augmented generation",
+        "vector search"
+      ],
+      "capabilities": [
+        "ai",
+        "python",
+        "api",
+        "data"
+      ],
+      "harness": {
+        "primary": "rag-pipeline",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 70,
+        "license": 88,
+        "security_risk": 68,
+        "deployment_cost": 62,
+        "complexity": 42,
+        "maturity_months": 24
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-rag-docs",
+          "url": "https://python.langchain.com/",
+          "title": "LangChain documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Document Q&A, semantic search, and knowledge base applications."
+        }
+      ]
+    },
+    {
+      "id": "graph-rag",
+      "name": "Graph RAG (Knowledge Graph + LLM)",
+      "kind": "template",
+      "aliases": [
+        "graphrag",
+        "graph rag",
+        "knowledge graph",
+        "neo4j rag"
+      ],
+      "capabilities": [
+        "ai",
+        "python",
+        "api",
+        "data",
+        "graph"
+      ],
+      "harness": {
+        "primary": "graph-rag",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 60,
+        "license": 88,
+        "security_risk": 64,
+        "deployment_cost": 48,
+        "complexity": 30,
+        "maturity_months": 12
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-graphrag-docs",
+          "url": "https://neo4j.com/docs/",
+          "title": "Neo4j + LangChain Graph RAG",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Symptom reasoning, entity relationship Q&A, drug interaction analysis."
+        }
+      ]
+    },
+    {
+      "id": "langchain-fastapi",
+      "name": "LangChain + FastAPI",
+      "kind": "template",
+      "aliases": [
+        "langchain",
+        "llm api",
+        "ai backend"
+      ],
+      "capabilities": [
+        "ai",
+        "python",
+        "api",
+        "backend",
+        "rest"
+      ],
+      "harness": {
+        "primary": "langchain-fastapi",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 74,
+        "license": 90,
+        "security_risk": 70,
+        "deployment_cost": 65,
+        "complexity": 44,
+        "maturity_months": 36
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-langchain-docs",
+          "url": "https://python.langchain.com/",
+          "title": "LangChain documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "LLM-powered API backends with FastAPI and LangChain."
+        }
+      ]
+    },
+    {
+      "id": "llm-fine-tune",
+      "name": "LLM Fine-tuning Pipeline",
+      "kind": "template",
+      "aliases": [
+        "finetune",
+        "fine tune",
+        "llm training",
+        "model training",
+        "微调"
+      ],
+      "capabilities": [
+        "ai",
+        "python",
+        "data"
+      ],
+      "harness": {
+        "primary": "llm-fine-tune",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 55,
+        "license": 85,
+        "security_risk": 55,
+        "deployment_cost": 40,
+        "complexity": 25,
+        "maturity_months": 12
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-huggingface-docs",
+          "url": "https://huggingface.co/docs",
+          "title": "HuggingFace documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Fine-tuning LLMs on domain-specific data."
+        }
+      ]
+    },
+    {
+      "id": "unity",
+      "name": "Unity (C#)",
+      "kind": "template",
+      "aliases": [
+        "unity",
+        "unity3d",
+        "c# game",
+        "csharp game"
+      ],
+      "capabilities": [
+        "game",
+        "desktop",
+        "mobile",
+        "3d",
+        "cross-platform"
+      ],
+      "harness": {
+        "primary": "unity",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 88,
+        "license": 60,
+        "security_risk": 72,
+        "deployment_cost": 55,
+        "complexity": 40,
+        "maturity_months": 240
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-unity-docs",
+          "url": "https://docs.unity.com/",
+          "title": "Unity documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "2D/3D games for desktop, mobile, console, and web."
+        }
+      ]
+    },
+    {
+      "id": "godot",
+      "name": "Godot Engine",
+      "kind": "template",
+      "aliases": [
+        "godot",
+        "godot engine",
+        "gdscript"
+      ],
+      "capabilities": [
+        "game",
+        "desktop",
+        "mobile",
+        "2d",
+        "3d",
+        "cross-platform"
+      ],
+      "harness": {
+        "primary": "godot",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 82,
+        "license": 95,
+        "security_risk": 76,
+        "deployment_cost": 62,
+        "complexity": 44,
+        "maturity_months": 96
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-godot-docs",
+          "url": "https://docs.godotengine.org/",
+          "title": "Godot Engine documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Open-source 2D/3D game engine for indie development."
+        }
+      ]
+    },
+    {
+      "id": "iot-embedded",
+      "name": "IoT / Embedded",
+      "kind": "template",
+      "aliases": [
+        "iot",
+        "embedded",
+        "arduino",
+        "esp32",
+        "raspberry pi",
+        "mqtt"
+      ],
+      "capabilities": [
+        "embedded",
+        "iot",
+        "python",
+        "data",
+        "offline"
+      ],
+      "harness": {
+        "primary": "iot-embedded",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 72,
+        "license": 90,
+        "security_risk": 58,
+        "deployment_cost": 38,
+        "complexity": 35,
+        "maturity_months": 120
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-iot-docs",
+          "url": "https://mqtt.org/",
+          "title": "MQTT protocol specification",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Sensor data collection, edge computing, smart home automation."
+        }
+      ]
+    },
+    {
+      "id": "data-pipeline",
+      "name": "Data Pipeline (dbt + Airflow)",
+      "kind": "template",
+      "aliases": [
+        "data pipeline",
+        "etl",
+        "dbt",
+        "airflow",
+        "data engineering"
+      ],
+      "capabilities": [
+        "data",
+        "python",
+        "api"
+      ],
+      "harness": {
+        "primary": "data-pipeline",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 76,
+        "license": 88,
+        "security_risk": 74,
+        "deployment_cost": 45,
+        "complexity": 38,
+        "maturity_months": 84
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-dbt-docs",
+          "url": "https://docs.getdbt.com/",
+          "title": "dbt documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Analytics engineering, data transformation, ETL pipelines."
+        }
+      ]
+    },
+    {
+      "id": "tauri",
+      "name": "Tauri (Rust)",
+      "kind": "template",
+      "aliases": [
+        "tauri",
+        "rust desktop"
+      ],
+      "capabilities": [
+        "desktop",
+        "typescript",
+        "offline",
+        "cross-platform"
+      ],
+      "harness": {
+        "primary": "tauri",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 84,
+        "license": 92,
+        "security_risk": 78,
+        "deployment_cost": 68,
+        "complexity": 52,
+        "maturity_months": 48
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-tauri-docs",
+          "url": "https://tauri.app/",
+          "title": "Tauri documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Lightweight cross-platform desktop apps with web frontend and Rust backend."
+        }
+      ]
+    },
+    {
+      "id": "nextjs-supabase",
+      "name": "Next.js + Supabase",
+      "kind": "template",
+      "aliases": [
+        "supabase",
+        "nextjs supabase",
+        "firebase alternative"
+      ],
+      "capabilities": [
+        "web",
+        "typescript",
+        "frontend",
+        "api",
+        "data",
+        "realtime"
+      ],
+      "harness": {
+        "primary": "nextjs-supabase",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 84,
+        "license": 88,
+        "security_risk": 74,
+        "deployment_cost": 72,
+        "complexity": 56,
+        "maturity_months": 48
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-supabase-docs",
+          "url": "https://supabase.com/docs",
+          "title": "Supabase documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Full-stack apps with Next.js frontend and Supabase backend (PostgreSQL, Auth, Realtime)."
+        }
+      ]
+    },
+    {
+      "id": "sveltekit",
+      "name": "SvelteKit",
+      "kind": "template",
+      "aliases": [
+        "svelte",
+        "svelte kit",
+        "svelte.js"
+      ],
+      "capabilities": [
+        "web",
+        "typescript",
+        "frontend",
+        "api",
+        "content"
+      ],
+      "harness": {
+        "primary": "sveltekit",
+        "secondary": []
+      },
+      "baselines": {
+        "maintenance_activity": 80,
+        "license": 90,
+        "security_risk": 76,
+        "deployment_cost": 70,
+        "complexity": 52,
+        "maturity_months": 48
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-sveltekit-docs",
+          "url": "https://kit.svelte.dev/",
+          "title": "SvelteKit documentation",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Fast web apps with compile-time framework and server-side rendering."
+        }
+      ]
+    },
+    {
+      "id": "miniprogram-cloud",
+      "name": "Mini Program + Cloud Backend",
+      "kind": "profile",
+      "aliases": [
+        "miniprogram cloud",
+        "小程序云开发",
+        "uni-app backend"
+      ],
+      "capabilities": [
+        "mini-program",
+        "web",
+        "typescript",
+        "frontend",
+        "api",
+        "backend",
+        "python",
+        "rest"
+      ],
+      "harness": {
+        "primary": "miniprogram-uniapp",
+        "secondary": [
+          "fastapi"
+        ]
+      },
+      "baselines": {
+        "maintenance_activity": 82,
+        "license": 90,
+        "security_risk": 70,
+        "deployment_cost": 55,
+        "complexity": 40,
+        "maturity_months": 60
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-miniprogram-cloud-profile",
+          "url": "catalog/stacks.v1.json",
+          "title": "Project Forge Mini Program + Cloud profile",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "Mini program frontend with a Python FastAPI cloud backend."
+        }
+      ]
+    },
+    {
+      "id": "rag-web-dashboard",
+      "name": "RAG Pipeline + Web Dashboard",
+      "kind": "profile",
+      "aliases": [
+        "rag dashboard",
+        "ai dashboard",
+        "llm web app"
+      ],
+      "capabilities": [
+        "ai",
+        "python",
+        "api",
+        "web",
+        "typescript",
+        "frontend",
+        "data"
+      ],
+      "harness": {
+        "primary": "rag-pipeline",
+        "secondary": [
+          "nextjs"
+        ]
+      },
+      "baselines": {
+        "maintenance_activity": 78,
+        "license": 88,
+        "security_risk": 66,
+        "deployment_cost": 52,
+        "complexity": 35,
+        "maturity_months": 24
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-rag-dashboard-profile",
+          "url": "catalog/stacks.v1.json",
+          "title": "Project Forge RAG + Dashboard profile",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "AI-powered backend with a web dashboard frontend."
+        }
+      ]
+    },
+    {
+      "id": "mobile-api",
+      "name": "Mobile App + REST API",
+      "kind": "profile",
+      "aliases": [
+        "mobile backend",
+        "react native api",
+        "flutter api"
+      ],
+      "capabilities": [
+        "mobile",
+        "typescript",
+        "api",
+        "backend",
+        "python",
+        "rest",
+        "ios",
+        "android"
+      ],
+      "harness": {
+        "primary": "react-native",
+        "secondary": [
+          "fastapi"
+        ]
+      },
+      "baselines": {
+        "maintenance_activity": 82,
+        "license": 90,
+        "security_risk": 70,
+        "deployment_cost": 48,
+        "complexity": 42,
+        "maturity_months": 80
+      },
+      "sources": [
+        {
+          "evidence_id": "CAT-mobile-api-profile",
+          "url": "catalog/stacks.v1.json",
+          "title": "Project Forge Mobile + API profile",
+          "dimensions": [
+            "maintenance_activity",
+            "license",
+            "security_risk",
+            "deployment_cost",
+            "complexity",
+            "harness_availability"
+          ],
+          "applicability": "React Native / Flutter mobile app with a Python FastAPI backend."
+        }
+      ]
     }
   ]
 }

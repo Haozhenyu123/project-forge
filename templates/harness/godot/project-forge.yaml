@@ -1,0 +1,18 @@
+project:
+  goal: "Godot game project"
+  chosen_stack:
+    name: "godot"
+    language: "GDScript / C#"
+    runtime: "Godot Engine"
+    rationale: "Open-source 2D/3D game engine."
+commands:
+  install: "echo Download Godot and open project"
+  test: "godot --headless --script tests/run_tests.gd"
+  lint: "echo Use gdformat"
+  typecheck: "godot --headless --check-only"
+  build: "godot --headless --export-release Web"
+  run: "godot --editor"
+  smoke: "godot --headless --quit"
+harness:
+  status: "sample"
+  verified: false

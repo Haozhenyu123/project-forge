@@ -1,0 +1,18 @@
+project:
+  goal: "IoT / Embedded project"
+  chosen_stack:
+    name: "iot-embedded"
+    language: "C/C++ / MicroPython"
+    runtime: "PlatformIO / Arduino / ESP-IDF"
+    rationale: "Embedded systems with sensor data collection."
+commands:
+  install: "pio project init"
+  test: "pio test"
+  lint: "pio check"
+  typecheck: "echo Compile-time checking"
+  build: "pio run"
+  run: "pio run --target upload"
+  smoke: "pio run"
+harness:
+  status: "sample"
+  verified: false

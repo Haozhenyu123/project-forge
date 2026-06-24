@@ -1,0 +1,9 @@
+name: Project Forge CI
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required files exist
+        run: test -f app.json && test -f project.config.json && echo "Files OK"

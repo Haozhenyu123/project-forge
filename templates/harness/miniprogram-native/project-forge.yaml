@@ -1,0 +1,18 @@
+project:
+  goal: "WeChat native mini program project"
+  chosen_stack:
+    name: "miniprogram-native"
+    language: "JavaScript/WXML/WXSS"
+    runtime: "WeChat Mini Program"
+    rationale: "Native WeChat mini program for best performance and API access."
+commands:
+  install: "echo No install - open in WeChat DevTools"
+  test: "echo No test framework configured"
+  lint: "echo No lint configured"
+  typecheck: "echo No type checking configured"
+  build: "echo Use WeChat DevTools to preview and upload"
+  run: "echo Open project in WeChat DevTools"
+  smoke: "echo Verify app.json and project.config.json exist"
+harness:
+  status: "sample"
+  verified: false

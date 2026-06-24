@@ -148,6 +148,24 @@ def build_packet(project, slug):
             "superpowers_owns": ["implementation planning", "TDD", "debugging", "review", "branch completion"],
         },
     }
+
+    # Attach loop metadata when available (v0.4.0+)
+    try:
+        from project_forge.loop.storage import load_state
+        loop_state = load_state(project)
+        if loop_state:
+            last_iteration = loop_state.iterations[-1] if loop_state.iterations else None
+            packet["loop"] = {
+                "episode_id": loop_state.episode_id,
+                "iteration": len(loop_state.iterations),
+                "trigger_signal": last_iteration.signal.signal_id if last_iteration else None,
+                "decision_hash": loop_state.latest_decision_hash,
+                "latest_report": f"docs/loop/LOOP-{loop_state.episode_id}.md",
+                "feedback_location": ".project-forge/loop/inbox/",
+                "current_status": loop_state.status.value,
+            }
+    except Exception:
+        pass
     # Generate risks and effort estimate (v0.3.3)
     try:
         from project_forge.risks import generate_risks

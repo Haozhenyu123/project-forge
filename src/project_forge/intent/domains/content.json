@@ -1,0 +1,41 @@
+{
+  "domain": "content",
+  "domain_profile": "内容/媒体领域。内容交付性能、SEO、编辑工作流效率是核心。内容模型决定架构选择。",
+  "probing_axes": [
+    {
+      "axis": "content_type",
+      "prompt": "主要是什么内容类型？文章/图文 / 视频/音频 / 混合媒体？",
+      "why_matters": "视频需要转码管道和 CDN；纯文本架构很简单；混合媒体需要灵活的媒体管理系统。"
+    },
+    {
+      "axis": "publishing_model",
+      "prompt": "是个人博客 / 多作者内容平台 / 编辑审核发布系统 / UGC 平台？",
+      "why_matters": "编辑系统需要发布工作流；UGC 需要内容审核；个人博客可以静态生成。"
+    },
+    {
+      "axis": "traffic_scale",
+      "prompt": "预期的流量量级？日访问几百 / 几万 / 百万级？是否有突发峰值？",
+      "why_matters": "低流量用静态站点即可；高流量需要 CDN + 缓存层 + 可能的 SSR/SSG 混合策略。"
+    },
+    {
+      "axis": "seo_importance",
+      "prompt": "SEO 是核心获客渠道还是次要考虑？需要服务端渲染吗？",
+      "why_matters": "SEO 核心渠道需要 SSR/SSG 方案；次要的话 SPA 就够了。"
+    }
+  ],
+  "compliance": [
+    "版权法",
+    "GDPR",
+    "CCPA",
+    "内容审核要求"
+  ],
+  "risk_weights": {
+    "deployment_cost": 0.6,
+    "complexity": 0.6
+  },
+  "capabilities": [
+    "web",
+    "typescript",
+    "content"
+  ]
+}

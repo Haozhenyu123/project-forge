@@ -32,18 +32,69 @@ SRC = str(REPO_ROOT / "src")
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
-VERSION = "0.3.3"
+def cmd_loop(args):
+    """Handle project-forge loop sub-commands."""
+    from project_forge.loop.service import ingest_signal, run_loop, resume_loop, get_loop_status
+    import json as _json
+    if args.loop_command == "ingest":
+        signal_path = Path(args.file)
+        if not signal_path.is_file():
+            fail(f"Signal file not found: {args.file}")
+        try:
+            signal_data = _json.loads(signal_path.read_text(encoding="utf-8"))
+        except _json.JSONDecodeError as exc:
+            fail(f"Invalid JSON in signal file: {exc}")
+        result = ingest_signal(args.project, signal_data)
+        print(_json.dumps(result, indent=2, sort_keys=True))
+    elif args.loop_command == "run":
+        result = run_loop(args.project, args.slug)
+        if getattr(args, "json", False):
+            print(_json.dumps(result, indent=2, sort_keys=True))
+        else:
+            status = result.get("status", "unknown")
+            episode = result.get("episode_id", "?")
+            iteration = result.get("iteration", 0)
+            action = result.get("action", "?")
+            summary = result.get("summary", "")
+            print(f"Loop run: {status}")
+            print(f"  Episode: {episode}")
+            print(f"  Iteration: {iteration}")
+            print(f"  Action: {action}")
+            if summary:
+                print(f"  Summary: {summary}")
+            if result.get("report_path"):
+                print(f"  Report: {result['report_path']}")
+    elif args.loop_command == "status":
+        result = get_loop_status(args.project)
+        if getattr(args, "json", False):
+            print(_json.dumps(result, indent=2, sort_keys=True))
+        else:
+            print(f"Loop Status: {result.get('status', 'unknown')}")
+            if result.get("status") != "no_loop":
+                print(f"  Episode: {result.get('episode_id', '?')}")
+                print(f"  Slug: {result.get('slug', '?')}")
+                print(f"  Iterations: {result.get('iterations', 0)}")
+                print(f"  Signals Processed: {result.get('signals_processed', 0)}")
+                print(f"  Root Cause: {result.get('root_cause', 'none')}")
+    elif args.loop_command == "resume":
+        result = resume_loop(args.project, args.reason or "")
+        print(_json.dumps(result, indent=2, sort_keys=True))
 
-TEMPLATES = [
-    "node-ts",
-    "python",
-    "generic",
-    "nextjs",
-    "fastapi",
-    "electron",
-    "cli",
-    "chrome-extension",
-]
+
+VERSION = "1.0.0"
+
+
+
+def _load_templates():
+    """Return available harness template names derived from the live catalog."""
+    try:
+        from project_forge.decision.catalog import load_catalog
+        catalog = load_catalog()
+        return sorted({s.harness.get("primary", s.id) for s in catalog.stacks if s.harness.get("primary")})
+    except Exception:
+        return ["node-ts", "python", "generic", "nextjs", "fastapi", "electron", "cli", "chrome-extension"]
+
+
 
 
 def fail(message):
@@ -249,7 +300,7 @@ def cmd_init(args):
         else:
             stack = "generic"
 
-    if stack not in TEMPLATES:
+    if stack not in _load_templates():
         fail(f"Unknown template: {stack}. Available: {', '.join(TEMPLATES)}")
 
     forge_args = [
@@ -564,7 +615,7 @@ def cmd_doctor(args):
 
 def cmd_list_templates(args):
     print("Available harness templates:")
-    for tmpl in TEMPLATES:
+    for tmpl in _load_templates():
         tmpl_dir = REPO_ROOT / "templates" / "harness" / tmpl
         if tmpl_dir.is_dir():
             contract = tmpl_dir / "project-forge.yaml"
@@ -586,7 +637,7 @@ def main():
 
     init_parser = subparsers.add_parser("init", help="Initialize a new project with full Forge workflow")
     init_parser.add_argument("project", nargs="?", default=".", help="Project directory")
-    init_parser.add_argument("--stack", choices=TEMPLATES, help="Harness template")
+    init_parser.add_argument("--stack", choices=_load_templates(), help="Harness template")
     init_parser.add_argument("--slug", help="Project slug (auto-derived from directory name)")
     init_parser.add_argument("--goal", help="Project goal description")
     init_parser.add_argument("--evidence", help="Path to pre-existing evidence file or directory")
@@ -733,6 +784,22 @@ def main():
 
     subparsers.add_parser("doctor", help="Check Project Forge runtime and plugin installation")
 
+    loop_parser = subparsers.add_parser("loop", help="Decision Loop Engineering")
+    loop_sub = loop_parser.add_subparsers(dest="loop_command", required=True)
+    loop_ingest = loop_sub.add_parser("ingest", help="Ingest a loop signal")
+    loop_ingest.add_argument("project", nargs="?", default=".", help="Project directory")
+    loop_ingest.add_argument("--file", required=True, help="Path to signal JSON file")
+    loop_run = loop_sub.add_parser("run", help="Run one loop iteration")
+    loop_run.add_argument("project", nargs="?", default=".", help="Project directory")
+    loop_run.add_argument("--slug", required=True, help="Project slug")
+    loop_run.add_argument("--json", action="store_true", help="JSON output")
+    loop_status = loop_sub.add_parser("status", help="Show loop status")
+    loop_status.add_argument("project", nargs="?", default=".", help="Project directory")
+    loop_status.add_argument("--json", action="store_true", help="JSON output")
+    loop_resume = loop_sub.add_parser("resume", help="Resume a blocked or failed loop")
+    loop_resume.add_argument("project", nargs="?", default=".", help="Project directory")
+    loop_resume.add_argument("--reason", help="Reason for resuming")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -765,10 +832,12 @@ def main():
         "lifecycle": cmd_lifecycle,
         "e2e-test": cmd_e2e,
         "doctor": cmd_doctor,
+        "loop": cmd_loop,
     }
     commands[args.command](args)
 
 
 if __name__ == "__main__":
     main()
+
 

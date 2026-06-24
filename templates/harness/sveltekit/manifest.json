@@ -1,0 +1,64 @@
+{
+  "name": "SvelteKit",
+  "kind": "sveltekit",
+  "aliases": [
+    "svelte",
+    "svelte kit",
+    "svelte.js"
+  ],
+  "detection": {
+    "files": [
+      "package.json",
+      "svelte.config.js"
+    ],
+    "dependencies": [
+      "@sveltejs/kit",
+      "svelte"
+    ],
+    "exclude_dependencies": [
+      "next"
+    ],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "install"
+    ],
+    "test": [
+      "npm",
+      "run",
+      "test"
+    ],
+    "lint": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "typecheck": [
+      "npm",
+      "run",
+      "check"
+    ],
+    "build": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "run": [
+      "npm",
+      "run",
+      "dev"
+    ],
+    "smoke": [
+      "npm",
+      "run",
+      "build"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

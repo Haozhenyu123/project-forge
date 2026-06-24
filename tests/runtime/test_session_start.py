@@ -143,7 +143,7 @@ class PluginRuntimeConfigurationTests(unittest.TestCase):
         config = json.loads((ROOT / "hooks" / "hooks.json").read_text(encoding="utf-8"))
         entries = config["hooks"]["SessionStart"]
         self.assertEqual(len(entries), 1)
-        self.assertEqual(entries[0]["matcher"], "startup|resume|clear|compact")
+        self.assertEqual(entries[0]["matcher"], "startup|resume")
         handler = entries[0]["hooks"][0]
         self.assertEqual(handler["type"], "command")
         self.assertIn("session_start.py", handler["command"])

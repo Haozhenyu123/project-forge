@@ -89,6 +89,35 @@ def desired_capabilities(payload: Dict[str, Any]) -> Set[str]:
         "data": "data",
         "desktop": "desktop",
         "offline": "offline",
+        "mobile": "mobile",
+        "game": "game",
+        "gaming": "game",
+        "3d": "3d",
+        "2d": "2d",
+        "mini program": "mini-program",
+        "miniprogram": "mini-program",
+        "小程序": "mini-program",
+        "embedded": "embedded",
+        "iot": "iot",
+        "sensor": "iot",
+        "rag": "ai",
+        "graph rag": "ai",
+        "graphrag": "ai",
+        "knowledge graph": "ai",
+        "llm": "ai",
+        "fine-tune": "ai",
+        "finetune": "ai",
+        "nlp": "ai",
+        "machine learning": "ai",
+        "high-security": "high-security",
+        "hipaa": "high-security",
+        "gdpr": "high-security",
+        "compliance": "high-security",
+        "realtime": "realtime",
+        "real-time": "realtime",
+        "collaboration": "collaboration",
+        "multiplayer": "collaboration",
+        "multi-user": "collaboration",
     }
     for needle, cap in mapping.items():
         if needle in context:
@@ -178,13 +207,36 @@ def architecture_candidates(
     as_of: str,
     limit: bool = True,
     catalog: Optional[StackCatalog] = None,
+    domain_tag: str = "general",
 ) -> List[Dict[str, Any]]:
     scored: List[Dict[str, Any]] = []
     catalog = catalog or load_catalog()
     desired = desired_capabilities(payload)
+    # Domain aware: inject domain-specific capabilities and boost signals
+    if domain_tag and domain_tag != "general":
+        try:
+            from project_forge.intent.classifier import _load_domain_profile
+            profile = _load_domain_profile(domain_tag)
+            if profile and profile.capabilities:
+                for cap in profile.capabilities:
+                    desired.add(cap)
+        except Exception:
+            pass
     evidence = payload.get("evidence", []) or []
     weights = dict(catalog.default_weights)
     weights.update({key: float(value) for key, value in (payload.get("weights") or {}).items()})
+    # Apply domain-specific risk weights from domain profile if available
+    if domain_tag and domain_tag != "general":
+        try:
+            from project_forge.intent import classify_intent
+            from project_forge.intent.classifier import _load_domain_profile
+            profile = _load_domain_profile(domain_tag)
+            if profile and profile.risk_weights:
+                for key, multiplier in profile.risk_weights.items():
+                    if key in weights:
+                        weights[key] = round(weights[key] * multiplier, 4)
+        except (ImportError, Exception):
+            pass
     context = flatten_payload(payload)
     for stack in stack_pool(payload, catalog):
         scores = score_stack(stack, desired, evidence, weights, as_of)
@@ -272,12 +324,12 @@ def revisit_triggers(candidates: Sequence[Dict[str, Any]], conflicts):
     return triggers
 
 
-def build_decision(payload: Dict[str, Any], as_of: Optional[str] = None) -> Dict[str, Any]:
+def build_decision(payload: Dict[str, Any], as_of: Optional[str] = None, domain_tag: str = "general") -> Dict[str, Any]:
     as_of = as_of or date.today().isoformat()
     directions, selected_direction = product_directions(payload)
     conflicts = detect_conflicts(payload)
-    candidates = architecture_candidates(payload, as_of)
-    all_candidates = architecture_candidates(payload, as_of, limit=False)
+    candidates = architecture_candidates(payload, as_of, domain_tag=domain_tag)
+    all_candidates = architecture_candidates(payload, as_of, limit=False, domain_tag=domain_tag)
     selected = candidates[0]
     rejected = [
         {"id": item["id"], "name": item["name"], "reasons": item["reasons"] or [item["reason"]]}
@@ -286,6 +338,7 @@ def build_decision(payload: Dict[str, Any], as_of: Optional[str] = None) -> Dict
     ]
     result_confidence = confidence(candidates, payload.get("evidence", []) or [], conflicts)
     return {
+        "domain_tag": domain_tag,
         "schema_version": 2,
         "as_of": as_of,
         "goal": payload.get("goal", ""),

@@ -5,32 +5,40 @@
   "type": "object",
   "required": ["schema_version", "kind", "project", "artifacts", "evidence", "harness", "superpowers", "boundary"],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"const": 2},
     "kind": {"const": "project-forge.superpowers-handoff"},
     "project": {
       "type": "object",
-      "required": ["slug", "goal", "stack_signal"],
+      "required": ["slug", "goal", "primary_stack"],
       "properties": {
         "slug": {"type": "string"},
         "goal": {"type": "string"},
-        "stack_signal": {"type": "string"}
+        "primary_stack": {"type": "string"},
+        "secondary_stacks": {"type": "array", "items": {"type": "string"}}
       }
     },
     "artifacts": {"type": "object"},
     "evidence": {"type": "array", "items": {"type": "object"}},
     "harness": {
       "type": "object",
-      "required": ["required_commands", "commands", "missing_commands"],
+      "required": ["primary", "secondary", "required_commands"],
       "properties": {
-        "required_commands": {"type": "array", "items": {"type": "string"}},
-        "commands": {"type": "object"},
-        "extra_commands": {"type": "object"},
-        "missing_commands": {"type": "array", "items": {"type": "string"}}
+        "primary": {"type": "object"},
+        "secondary": {"type": "array", "items": {"type": "object"}},
+        "required_commands": {"type": "array", "items": {"type": "string"}}
       }
     },
+    "readiness": {
+      "type": "object",
+      "properties": {
+        "status": {"type": "string"},
+        "verification_report": {"type": "string"}
+      }
+    },
+    "compatibility": {"type": "object"},
     "superpowers": {
       "type": "object",
-      "required": ["assignment", "first_task", "acceptance_criteria", "guardrails", "open_questions", "consume_steps"],
+      "required": ["assignment", "first_task", "acceptance_criteria", "guardrails", "consume_steps"],
       "properties": {
         "assignment": {"type": "string"},
         "first_task": {"type": "string"},
@@ -46,6 +54,23 @@
       "properties": {
         "project_forge_owns": {"type": "array", "items": {"type": "string"}},
         "superpowers_owns": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "creative_decision": {"type": "object"},
+    "inventory": {"type": "object"},
+    "risks": {"type": "array", "items": {"type": "object"}},
+    "effort_estimate": {"type": "object"},
+    "loop": {
+      "type": "object",
+      "description": "Optional Loop Engine metadata (v0.4.0+)",
+      "properties": {
+        "episode_id": {"type": "string"},
+        "iteration": {"type": "integer"},
+        "trigger_signal": {"type": "string"},
+        "decision_hash": {"type": "string"},
+        "latest_report": {"type": "string"},
+        "feedback_location": {"type": "string"},
+        "current_status": {"enum": ["idle", "collecting", "evaluating", "revising", "handoff_ready", "awaiting_feedback", "blocked", "failed"]}
       }
     }
   }

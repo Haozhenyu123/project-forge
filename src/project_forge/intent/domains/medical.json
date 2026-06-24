@@ -1,0 +1,50 @@
+{
+  "domain": "medical",
+  "domain_profile": "医疗健康领域。患者数据安全、隐私保护、审计追溯是最高优先级。误判可能造成实际伤害，架构必须保守。",
+  "probing_axes": [
+    {
+      "axis": "clinical_depth",
+      "prompt": "判断产品深度：症状自查工具 / 辅助诊断 / 临床决策支持系统？",
+      "why_matters": "深度决定 AI 能力需求、安全等级、合规要求。自查工具可以轻量化，临床决策支持需要可解释性和完整的审计链。"
+    },
+    {
+      "axis": "platform_reach",
+      "prompt": "用户通过什么渠道使用？小程序 / Web / 移动App / 多端？是否需要医生端和患者端？",
+      "why_matters": "平台选择直接决定前端技术栈和部署策略。多端同步带来状态管理复杂度。"
+    },
+    {
+      "axis": "integration_depth",
+      "prompt": "是否需要对接医院 HIS/EMR 系统？对接程度如何（独立运行 / API对接 / 深度集成）？",
+      "why_matters": "对接深度决定数据模型复杂度、接口标准和部署模式。独立运行和深度集成的架构完全不同。"
+    },
+    {
+      "axis": "ai_capability",
+      "prompt": "AI 是核心卖点还是辅助功能？需要什么级别的 AI 能力（规则引擎 / RAG检索 / 知识图谱推理 / 多模型协同）？",
+      "why_matters": "AI 能力级别是架构的核心变量。规则引擎和知识图谱的工程复杂度不在一个量级。"
+    },
+    {
+      "axis": "data_lifecycle",
+      "prompt": "患者数据如何处理？本地存储 / 云端加密 / 脱敏后分析？是否有跨境数据传输？",
+      "why_matters": "数据生命周期决定了安全架构等级、法规适用范围和基础设施选择。"
+    }
+  ],
+  "compliance": [
+    "HIPAA",
+    "个人信息保护法",
+    "医疗器械软件注册",
+    "数据安全法"
+  ],
+  "risk_weights": {
+    "security_risk": 2.0,
+    "maintenance_activity": 0.8,
+    "constraint_fit": 1.5,
+    "complexity": 0.6
+  },
+  "capabilities": [
+    "ai",
+    "data",
+    "python",
+    "api",
+    "high-security"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "name": "RAG Pipeline",
+  "kind": "rag-pipeline",
+  "aliases": [
+    "rag",
+    "retrieval augmented generation",
+    "vector search"
+  ],
+  "detection": {
+    "files": [
+      "pyproject.toml",
+      "requirements.txt"
+    ],
+    "dependencies": [
+      "langchain",
+      "chromadb",
+      "openai"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "pip",
+      "install",
+      "-e",
+      "."
+    ],
+    "test": [
+      "pytest"
+    ],
+    "lint": [
+      "ruff",
+      "check",
+      "."
+    ],
+    "typecheck": [
+      "mypy",
+      "src"
+    ],
+    "build": [
+      "python",
+      "-c",
+      "print('No build step for Python RAG pipeline')"
+    ],
+    "run": [
+      "uvicorn",
+      "src.main:app",
+      "--reload"
+    ],
+    "smoke": [
+      "python",
+      "-c",
+      "from src.main import app; print('App loaded OK')"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

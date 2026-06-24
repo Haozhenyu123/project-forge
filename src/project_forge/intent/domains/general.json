@@ -1,0 +1,27 @@
+{
+  "domain": "general",
+  "domain_profile": "通用项目。无特定领域约束。按标准工程原则评估：简单性、可维护性、部署便利性、生态成熟度。偏好无聊的技术。",
+  "probing_axes": [
+    {
+      "axis": "product_depth",
+      "prompt": "这是一个什么类型的项目？原型验证 / MVP / 正式产品 / 企业级系统？",
+      "why_matters": "原型可以快速迭代不拘技术；企业级需要完整的质量保障体系。"
+    },
+    {
+      "axis": "platform_target",
+      "prompt": "目标平台是什么？Web / 移动端 / 桌面 / 命令行 / 多个？",
+      "why_matters": "平台决定了前端技术栈。多平台需要评估跨平台方案的成本。"
+    },
+    {
+      "axis": "scale_expectation",
+      "prompt": "预期的用户和数据规模？单人使用 / 小团队 / 大规模用户？",
+      "why_matters": "规模决定是否需要可扩展架构、数据分区、缓存策略。"
+    }
+  ],
+  "compliance": [],
+  "risk_weights": {},
+  "capabilities": [
+    "web",
+    "api"
+  ]
+}

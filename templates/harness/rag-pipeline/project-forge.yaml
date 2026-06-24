@@ -1,0 +1,18 @@
+project:
+  goal: "RAG pipeline for document Q&A and semantic search"
+  chosen_stack:
+    name: "rag-pipeline"
+    language: "Python"
+    runtime: "FastAPI + LangChain"
+    rationale: "Document Q&A and knowledge base with vector search."
+commands:
+  install: "pip install -e ."
+  test: "pytest"
+  lint: "ruff check ."
+  typecheck: "mypy src"
+  build: "python -c print(No build step)"
+  run: "uvicorn src.main:app --reload"
+  smoke: "python -c from src.main import app; print(App loaded)"
+harness:
+  status: "sample"
+  verified: false

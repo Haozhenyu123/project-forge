@@ -1,0 +1,59 @@
+{
+  "name": "IoT / Embedded",
+  "kind": "iot-embedded",
+  "aliases": [
+    "iot",
+    "embedded",
+    "arduino",
+    "esp32",
+    "micropython"
+  ],
+  "detection": {
+    "files": [
+      "platformio.ini",
+      "main.py",
+      "main.cpp"
+    ],
+    "dependencies": [],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "pio",
+      "project",
+      "init"
+    ],
+    "test": [
+      "pio",
+      "test"
+    ],
+    "lint": [
+      "pio",
+      "check"
+    ],
+    "typecheck": [
+      "echo",
+      "Uses compile-time checking"
+    ],
+    "build": [
+      "pio",
+      "run"
+    ],
+    "run": [
+      "pio",
+      "run",
+      "--target",
+      "upload"
+    ],
+    "smoke": [
+      "pio",
+      "run"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

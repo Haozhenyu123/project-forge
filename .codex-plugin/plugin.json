@@ -2,7 +2,7 @@
   "author": {
     "name": "Project Forge Contributors"
   },
-  "description": "Decide what to build and why before coding. AI Creative Director + AI Architect + Harness Engineer for evidence-backed architecture and Superpowers-ready handoffs.",
+  "description": "AI project architect: evidence-backed architecture decisions, creative direction, domain-aware stack selection, and Superpowers-ready handoffs. Automatically classifies project domains (medical, finance, gaming, etc.) and recommends the right tech stack.",
   "homepage": "https://github.com/Haozhenyu123/project-forge",
   "hooks": "./hooks/hooks.json",
   "interface": {
@@ -13,15 +13,15 @@
     ],
     "category": "Developer Tools",
     "defaultPrompt": [
-      "Use Project Forge to turn this idea into an implementation-ready architecture and harness plan.",
-      "Review this project with Project Forge and identify the evidence, verification, and CI gaps.",
-      "Check whether this project is Superpowers-ready and explain any blocking gaps.",
-      "Help me define a Project Forge evaluation scenario for this agent workflow."
+      "I have a project idea and need help deciding what to build and which tech stack to use.",
+      "Help me turn this idea into an implementation-ready architecture plan.",
+      "Review my project architecture and identify gaps in evidence, verification, and CI.",
+      "I want to start a new project — help me figure out the best approach."
     ],
     "developerName": "Project Forge Contributors",
     "displayName": "Project Forge",
-    "longDescription": "Project Forge adds a Creative Design Director, AI Architect, Harness Engineer, and evaluator to the front of a coding workflow. It turns vague ideas into product direction, researches GitHub/web evidence, compares architecture options, writes ADRs, generates harness contracts and CI, and exports Markdown plus JSON handoff packets that can be checked with superpowers-ready before Superpowers takes over implementation.",
-    "shortDescription": "AI project architect: research-backed stack selection, creative direction, harness contracts, and Superpowers-ready handoffs."
+    "longDescription": "Project Forge v1.0 adds a Creative Director, AI Architect, and Domain Classifier to the front of any coding workflow. It classifies your project idea into a domain (medical, finance, gaming, mini-program, etc.), asks domain-specific questions, researches evidence, compares architecture options, writes ADRs, generates harness contracts, and exports Superpowers-ready handoff packets.",
+    "shortDescription": "AI project architect with domain-aware stack selection and creative direction."
   },
   "keywords": [
     "codex",
@@ -40,5 +40,5 @@
   "name": "project-forge",
   "repository": "https://github.com/Haozhenyu123/project-forge",
   "skills": "./skills/",
-  "version": "0.3.3"
+  "version": "1.0.0"
 }

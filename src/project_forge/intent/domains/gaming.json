@@ -1,0 +1,43 @@
+{
+  "domain": "gaming",
+  "domain_profile": "游戏领域。性能、帧率、玩家体验是核心。引擎选择是第一决策，后端服务于玩法需求而非反之。",
+  "probing_axes": [
+    {
+      "axis": "game_engine",
+      "prompt": "用什么引擎？Unity / Godot / Unreal / 纯Web / 自研？2D还是3D？",
+      "why_matters": "引擎选择是游戏项目的第一架构决策，决定了整个技术栈和团队技能需求。"
+    },
+    {
+      "axis": "target_platforms",
+      "prompt": "目标平台是什么？PC / 移动端 / 浏览器 WebGL / 主机 / 多平台？",
+      "why_matters": "多平台发布增加构建管道复杂度；WebGL 有性能限制；主机需要认证流程。"
+    },
+    {
+      "axis": "multiplayer_depth",
+      "prompt": "是单机游戏还是联网游戏？联网的话是实时对战、异步还是仅排行榜？",
+      "why_matters": "实时多人需要专用游戏服务器、状态同步、延迟补偿——基础设施复杂度远高于单机。"
+    },
+    {
+      "axis": "monetization_model",
+      "prompt": "商业模式是什么？买断制 / 免费+内购 / 订阅 / 广告？",
+      "why_matters": "内购需要支付集成和防刷机制；广告需要 SDK 集成；订阅需要账户系统。"
+    }
+  ],
+  "compliance": [
+    "COPPA (面向儿童时)",
+    "GDPR",
+    "平台商店政策"
+  ],
+  "risk_weights": {
+    "complexity": 0.5,
+    "deployment_cost": 0.7,
+    "maintenance_activity": 0.9
+  },
+  "capabilities": [
+    "game",
+    "realtime",
+    "desktop",
+    "mobile",
+    "typescript"
+  ]
+}

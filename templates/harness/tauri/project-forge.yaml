@@ -1,0 +1,18 @@
+project:
+  goal: "Desktop app built with Tauri"
+  chosen_stack:
+    name: "tauri"
+    language: "TypeScript + Rust"
+    runtime: "Tauri"
+    rationale: "Lightweight desktop app with web frontend and Rust backend."
+commands:
+  install: "npm install"
+  test: "npm run test"
+  lint: "npm run lint"
+  typecheck: "npm run typecheck"
+  build: "npm run tauri build"
+  run: "npm run tauri dev"
+  smoke: "npm run tauri build"
+harness:
+  status: "sample"
+  verified: false

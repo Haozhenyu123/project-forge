@@ -1,0 +1,62 @@
+{
+  "name": "Next.js + Supabase",
+  "kind": "nextjs-supabase",
+  "aliases": [
+    "supabase",
+    "nextjs supabase",
+    "firebase alternative"
+  ],
+  "detection": {
+    "files": [
+      "package.json",
+      "supabase/config.toml"
+    ],
+    "dependencies": [
+      "next",
+      "@supabase/supabase-js"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "install"
+    ],
+    "test": [
+      "npm",
+      "run",
+      "test"
+    ],
+    "lint": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "typecheck": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "build": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "run": [
+      "npm",
+      "run",
+      "dev"
+    ],
+    "smoke": [
+      "npm",
+      "run",
+      "build"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

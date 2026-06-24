@@ -1,0 +1,61 @@
+{
+  "name": "uni-app Mini Program",
+  "kind": "miniprogram-uniapp",
+  "aliases": [
+    "uniapp",
+    "uni-app",
+    "wechat miniprogram"
+  ],
+  "detection": {
+    "files": [
+      "manifest.json",
+      "pages.json"
+    ],
+    "dependencies": [
+      "@dcloudio/uni-app"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "install"
+    ],
+    "test": [
+      "npm",
+      "run",
+      "test"
+    ],
+    "lint": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "typecheck": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "build": [
+      "npm",
+      "run",
+      "build:mp-weixin"
+    ],
+    "run": [
+      "npm",
+      "run",
+      "dev:mp-weixin"
+    ],
+    "smoke": [
+      "npm",
+      "run",
+      "build:mp-weixin"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

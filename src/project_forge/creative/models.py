@@ -1,7 +1,7 @@
 """Typed creative-decision records."""
 
 from dataclasses import asdict, dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -32,7 +32,8 @@ class CreativeDecision:
     selected_direction_id: str
     directions: List[CreativeDirection]
     created_at: str
-    schema_version: int = 1
+    domain_tag: str = "general"
+    schema_version: int = 2
     assumptions: List[str] = field(default_factory=list)
     next_decision: str = "Confirm the selected direction before architecture is treated as accepted."
 
@@ -40,6 +41,7 @@ class CreativeDecision:
         return {
             "schema_version": self.schema_version,
             "goal": self.goal,
+            "domain_tag": self.domain_tag,
             "created_at": self.created_at,
             "selected_direction_id": self.selected_direction_id,
             "selected_direction": next(
@@ -49,4 +51,3 @@ class CreativeDecision:
             "assumptions": self.assumptions,
             "next_decision": self.next_decision,
         }
-

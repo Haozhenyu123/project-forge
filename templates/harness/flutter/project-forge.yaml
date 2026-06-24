@@ -1,0 +1,18 @@
+project:
+  goal: "Cross-platform app built with Flutter"
+  chosen_stack:
+    name: "flutter"
+    language: "Dart"
+    runtime: "Flutter"
+    rationale: "Cross-platform mobile, web, and desktop with single codebase."
+commands:
+  install: "flutter pub get"
+  test: "flutter test"
+  lint: "flutter analyze"
+  typecheck: "dart analyze"
+  build: "flutter build apk"
+  run: "flutter run"
+  smoke: "flutter test"
+harness:
+  status: "sample"
+  verified: false

@@ -1,0 +1,62 @@
+{
+  "name": "React Native",
+  "kind": "react-native",
+  "aliases": [
+    "reactnative",
+    "react native",
+    "rn",
+    "expo"
+  ],
+  "detection": {
+    "files": [
+      "app.json",
+      "package.json"
+    ],
+    "dependencies": [
+      "react-native",
+      "expo"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "npm",
+      "install"
+    ],
+    "test": [
+      "npx",
+      "jest"
+    ],
+    "lint": [
+      "npx",
+      "eslint",
+      "."
+    ],
+    "typecheck": [
+      "npx",
+      "tsc",
+      "--noEmit"
+    ],
+    "build": [
+      "npx",
+      "expo",
+      "export"
+    ],
+    "run": [
+      "npx",
+      "expo",
+      "start"
+    ],
+    "smoke": [
+      "npx",
+      "expo",
+      "export"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

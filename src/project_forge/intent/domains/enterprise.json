@@ -1,0 +1,45 @@
+{
+  "domain": "enterprise",
+  "domain_profile": "企业内部工具。RBAC、SSO、审计日志、运维可靠性是标配。不需要 ToC 级别的用户体验，但需要零学习成本的操作效率。",
+  "probing_axes": [
+    {
+      "axis": "deployment_mode",
+      "prompt": "部署模式是什么？SaaS 公有云 / 私有化部署 / 混合云 / 纯内网离线？",
+      "why_matters": "私有化需要自包含打包和离线运行；SaaS 需要多租户；纯内网不能用外部 API。"
+    },
+    {
+      "axis": "identity_integration",
+      "prompt": "需要对接什么身份系统？LDAP / SAML / OIDC / 企业微信 / 飞书？",
+      "why_matters": "决定了认证架构。LDAP 和 SAML 的实现复杂度完全不同。"
+    },
+    {
+      "axis": "user_scale",
+      "prompt": "用户规模多大？50人内部工具 / 500人部门系统 / 5000+人企业平台？",
+      "why_matters": "50人不需要微服务；5000人需要认真考虑性能和权限模型。"
+    },
+    {
+      "axis": "workflow_complexity",
+      "prompt": "是简单的 CRUD 管理后台还是包含复杂审批流程的工作流引擎？",
+      "why_matters": "简单 CRUD 用低代码框架即可；复杂工作流需要专门的工作流引擎和状态机设计。"
+    }
+  ],
+  "compliance": [
+    "SOC 2",
+    "ISO 27001",
+    "GDPR",
+    "SAML/OIDC"
+  ],
+  "risk_weights": {
+    "security_risk": 1.8,
+    "maintenance_activity": 1.2,
+    "deployment_cost": 0.7
+  },
+  "capabilities": [
+    "web",
+    "api",
+    "typescript",
+    "data",
+    "high-security",
+    "desktop"
+  ]
+}

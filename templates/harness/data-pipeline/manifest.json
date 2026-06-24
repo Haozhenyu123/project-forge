@@ -1,0 +1,61 @@
+{
+  "name": "Data Pipeline",
+  "kind": "data-pipeline",
+  "aliases": [
+    "data pipeline",
+    "etl",
+    "dbt",
+    "airflow",
+    "data engineering"
+  ],
+  "detection": {
+    "files": [
+      "dbt_project.yml",
+      "airflow.cfg",
+      "pyproject.toml"
+    ],
+    "dependencies": [
+      "dbt-core",
+      "apache-airflow"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "pip",
+      "install",
+      "-e",
+      "."
+    ],
+    "test": [
+      "pytest"
+    ],
+    "lint": [
+      "ruff",
+      "check",
+      "."
+    ],
+    "typecheck": [
+      "mypy",
+      "src"
+    ],
+    "build": [
+      "dbt",
+      "build"
+    ],
+    "run": [
+      "airflow",
+      "standalone"
+    ],
+    "smoke": [
+      "dbt",
+      "compile"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

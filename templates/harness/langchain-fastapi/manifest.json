@@ -1,0 +1,61 @@
+{
+  "name": "LangChain + FastAPI",
+  "kind": "langchain-fastapi",
+  "aliases": [
+    "langchain",
+    "llm api",
+    "ai backend"
+  ],
+  "detection": {
+    "files": [
+      "pyproject.toml"
+    ],
+    "dependencies": [
+      "langchain",
+      "fastapi",
+      "openai"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "pip",
+      "install",
+      "-e",
+      "."
+    ],
+    "test": [
+      "pytest"
+    ],
+    "lint": [
+      "ruff",
+      "check",
+      "."
+    ],
+    "typecheck": [
+      "mypy",
+      "src"
+    ],
+    "build": [
+      "python",
+      "-c",
+      "print('No build step')"
+    ],
+    "run": [
+      "uvicorn",
+      "src.main:app",
+      "--reload"
+    ],
+    "smoke": [
+      "python",
+      "-c",
+      "from src.main import app; print('OK')"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "domain": "ecommerce",
+  "domain_profile": "电商领域。支付安全、商品搜索性能、转化率优化是核心。平台的流量峰值可能极高。",
+  "probing_axes": [
+    {
+      "axis": "commerce_model",
+      "prompt": "什么商业模式？B2C 品牌商城 / C2C 多卖家平台 / B2B 批发 / 社交电商小程序？",
+      "why_matters": "B2C 架构简单；C2C 需要多租户和结算系统；社交电商需要小程序生态适配。"
+    },
+    {
+      "axis": "catalog_scale",
+      "prompt": "预期的商品数量级？几百个 SKU / 几万个 / 百万级？",
+      "why_matters": "决定搜索方案（简单数据库查询 vs. Elasticsearch）、缓存策略和数据库选型。"
+    },
+    {
+      "axis": "payment_complexity",
+      "prompt": "支付方式有哪些？微信支付 / 支付宝 / 银行卡 / 跨境支付？",
+      "why_matters": "跨境支付引入汇率、合规和多语言复杂度。每种支付方式需要独立的集成和测试。"
+    },
+    {
+      "axis": "geographic_scope",
+      "prompt": "是国内电商还是跨境？单语言/单币种还是多语言/多币种？",
+      "why_matters": "跨境需要多语言 i18n、多币种结算、多地区合规和 CDN 全球部署。"
+    }
+  ],
+  "compliance": [
+    "PCI-DSS",
+    "消费者保护法",
+    "税务合规",
+    "电子商务法"
+  ],
+  "risk_weights": {
+    "security_risk": 1.5,
+    "deployment_cost": 0.8,
+    "complexity": 0.8
+  },
+  "capabilities": [
+    "web",
+    "api",
+    "typescript",
+    "data",
+    "mini-program"
+  ]
+}

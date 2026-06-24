@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Haozhenyu123/project-forge/docs/schemas/loop-signal.schema.json",
+  "title": "Project Forge Loop Signal",
+  "type": "object",
+  "required": ["signal_id", "kind", "severity", "summary"],
+  "properties": {
+    "signal_id": {"type": "string", "description": "Unique signal identifier"},
+    "source": {"type": "string", "description": "Origin of the signal (e.g., superpowers, verification, manual)"},
+    "kind": {"enum": ["verification_failure", "architecture_feedback", "constraint_change", "evidence_expiry", "security_advisory", "license_conflict", "superpowers_feedback", "manual"]},
+    "severity": {"enum": ["critical", "high", "medium", "low"]},
+    "observed_at": {"type": "string", "format": "date-time", "description": "ISO-8601 timestamp when the signal was observed"},
+    "summary": {"type": "string", "description": "Human-readable description of the signal"},
+    "affected_constraints": {"type": "array", "items": {"type": "string"}},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}, "description": "Referenced evidence IDs"},
+    "verification_report": {"type": "string", "description": "Path to verification report JSON"},
+    "suggested_owner": {"enum": ["forge", "superpowers", "human"]},
+    "artifact_refs": {"type": "array", "items": {"type": "string"}, "description": "Referenced artifact paths"},
+    "fingerprint": {"type": "string", "description": "Content-based dedup fingerprint (auto-computed if omitted)"}
+  }
+}

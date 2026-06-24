@@ -1,0 +1,55 @@
+{
+  "name": "Flutter",
+  "kind": "flutter",
+  "aliases": [
+    "flutter",
+    "dart"
+  ],
+  "detection": {
+    "files": [
+      "pubspec.yaml"
+    ],
+    "dependencies": [
+      "flutter"
+    ],
+    "exclude_dependencies": [],
+    "has_bin": false
+  },
+  "commands": {
+    "install": [
+      "flutter",
+      "pub",
+      "get"
+    ],
+    "test": [
+      "flutter",
+      "test"
+    ],
+    "lint": [
+      "flutter",
+      "analyze"
+    ],
+    "typecheck": [
+      "dart",
+      "analyze"
+    ],
+    "build": [
+      "flutter",
+      "build",
+      "apk"
+    ],
+    "run": [
+      "flutter",
+      "run"
+    ],
+    "smoke": [
+      "flutter",
+      "test"
+    ]
+  },
+  "ci": {
+    "matrix": [
+      "ubuntu-latest"
+    ]
+  }
+}

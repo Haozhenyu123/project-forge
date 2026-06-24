@@ -1,0 +1,44 @@
+{
+  "domain": "legal",
+  "domain_profile": "法律领域。信息准确性、来源可追溯性、数据保密性是最优先事项。AI 输出不可凭空捏造引用。",
+  "probing_axes": [
+    {
+      "axis": "legal_service_type",
+      "prompt": "是法律信息检索工具还是提供法律建议？面向律师还是普通公众？",
+      "why_matters": "提供法律建议的产品面临更严格的合规要求和更高的准确性标准。"
+    },
+    {
+      "axis": "document_processing",
+      "prompt": "需要处理什么格式的法律文书？PDF扫描件 / 电子文档 / 合同结构化解析？",
+      "why_matters": "PDF 扫描件需要 OCR 管道，结构化合同需要 schema 设计，技术栈完全不同。"
+    },
+    {
+      "axis": "jurisdiction_scope",
+      "prompt": "覆盖哪些司法管辖区？中国大陆 / 普通法系 / 多法系？",
+      "why_matters": "多法系支持需要多语言 NLP、不同的法律本体模型和跨辖区检索能力。"
+    },
+    {
+      "axis": "confidentiality_level",
+      "prompt": "是否涉及律师-客户保密数据？部署模式是 SaaS 还是私有化？",
+      "why_matters": "保密数据 + SaaS = 需要零信任架构；私有化部署需要自包含打包方案。"
+    }
+  ],
+  "compliance": [
+    "律师-客户保密特权",
+    "GDPR",
+    "数据本地化",
+    "律师协会规则"
+  ],
+  "risk_weights": {
+    "security_risk": 2.2,
+    "constraint_fit": 1.4,
+    "complexity": 0.7
+  },
+  "capabilities": [
+    "python",
+    "api",
+    "ai",
+    "data",
+    "high-security"
+  ]
+}
