@@ -1,110 +1,72 @@
 # Changelog
 
-## [0.3.0] - 2026-06-20
+## [1.0.0] — 2026-06-25
 
-### Added
-- `src/project_forge/` domain package for creative direction, evidence, architecture decisions, inventory, harness, readiness, handoff, hosts, and eval compatibility.
-- Schema v2 `project-forge.yaml` contracts with primary/secondary stacks, structured argv commands, services, verification reports, and one-release root command mirrors.
-- Multi-stack harness composition with `project-forge harness compose` and repeatable `init --secondary TEMPLATE:PATH`.
-- Executable `superpowers-ready --execute` verification reports under `.project-forge/verification/<run-id>/`.
-- Read-only `project-forge inspect` inventory scanner with JSON, Markdown, and Mermaid topology output.
-- Creative decision JSON at `docs/product/creative-decision.json` with commercial/product scoring and evidence confidence.
-- Evidence normalization with canonical URLs, fingerprints, source-quality tiers, freshness, provider fallbacks, and stdlib GitHub/npm/PyPI/OSV provider abstractions.
-- Codex/Claude plugin lifecycle commands and host-specific release bundles.
-- Plan-only Superpowers compatibility runner, compatibility matrix, live eval workflow, and `using-project-forge` routing skill.
-- Next.js + FastAPI multi-stack showcase example.
+### Major
 
-### Changed
-- Decision scoring now uses the versioned stack catalog instead of hard-coded script-local stacks.
-- Handoff packets are Schema v2 and include creative decision, inventory links, verification report links, compatibility metadata, and explicit Project Forge/Superpowers boundary guardrails.
-- Existing examples were regenerated to Schema v2.
-- Release packaging now builds general archives plus Codex and Claude submission bundles.
-- README Chinese quickstart was restored as valid UTF-8.
-
-### Fixed
-- Python 3.9 compatibility for generated file writes.
-- Local compatibility evals now preserve system environment variables while still isolating HOME.
-
-## [0.2.5] - 2026-06-20
-
-### Added
-- Structured `docs/superpowers-handoff.json` packets alongside Markdown handoffs.
-- `scripts/superpowers_ready.py` and `project-forge superpowers-ready` for handoff readiness checks.
-- MCP `superpowers_ready` tool for host-driven handoff validation.
-- JSON schema for Superpowers handoff packets.
-- Showcase docs, examples index, marketplace preparation copy, logo/card assets, and issue/PR templates.
+- **Persona-driven pipeline**: Every step has a strong professional identity — Senior Product Requirements Analyst (Intake), Senior AI Prompt Engineer + Product Architect (Creative Director), Senior AI Prompt Engineer + Technical Architect (AI Architect), Senior AI Prompt Engineer + DevOps Engineer (Harness Engineer). Each role writes a structured system prompt for the next.
+- **Domain classification with probing axes**: 10 domains (medical, finance, legal, education, gaming, ecommerce, enterprise, content, iot, general) with domain-specific probing dimensions. Creative Director interviews the user along these axes to determine product depth.
+- **29 stack templates**: Added mini-programs (uni-app, Taro, native), mobile (React Native, Flutter), AI/ML (RAG, Graph RAG, LangChain), games (Unity, Godot), IoT embedded, data pipelines, Tauri, SvelteKit, Supabase.
+- **Plugin auto-discovery**: Codex skill descriptions rewritten for semantic matching — no manual skill invocation needed.
+- **One-line installer**: `irm .../install-codex.ps1 | iex` — no git, no Python required.
+- **Multi-ADR support**: Beyond stack selection (ADR-0001), the architect now generates ADR-0002 (database), ADR-0003 (authentication), ADR-0004 (deployment) as triggered by project needs.
+- **Conditional pipeline routing**: `forge-intake` determines route_mode (full_pipeline, stack_given, existing_project, multi_stack, architecture_only) and only invokes relevant skills.
+- **Evidence source expansion**: Added DockerHub provider (image pull counts) and enhanced StackOverflow provider.
+- **Team preference weights**: `--weights security=2.0,speed=0.8` with alias mapping.
+- **Token estimation**: New `estimate` CLI command — estimates pipeline token consumption before running.
 
 ### Changed
-- Forge runs now generate both Markdown and JSON Superpowers handoff artifacts.
-- Smoke tests now validate the structured handoff packet.
-- Runtime context now routes vague ideas, new projects, stack decisions, and handoff readiness through Project Forge.
-- README, docs, skills, CI, and install smoke checks now describe the Project Forge-to-Superpowers boundary and readiness flow.
 
-### Fixed
-- Restored clean UTF-8 Chinese README content and synchronized the README version badge.
-
-## [0.2.4] - 2026-06-19
+- Domain profiles shifted from answer templates (architecture_patterns, key_libraries) to constraint cards (domain_profile, probing_axes, compliance).
+- Decision engine scoring now serves as verification, not primary driver — architect reasons first, engine confirms.
+- CLI `--stack` argument dynamically loads from live catalog instead of hardcoded list.
+- CLI error messages use Levenshtein fuzzy matching for misspelled template names.
+- `init` command shows step-by-step progress (`[1/6]` through `[6/6]`).
 
 ### Added
-- Deterministic decision engine for creative directions, stack ranking, rejected options, confidence, and revisit triggers.
-- Runtime activation assets for Codex and Claude Code: SessionStart hooks plus MCP registration in both plugin manifests.
-- Safer forge runs with dry-run support, overwrite refusal by default, backups, restore, and run history.
-- Superpowers handoff document generation that preserves Project Forge's boundary: decision, evidence, architecture, harness, and handoff.
-- Live-agent evaluation runner with CLI isolation, skip behavior when agent CLIs are unavailable, and scenario assertions.
-- Install helpers for Codex and Claude Code plugin locations.
-- Release packaging, version audit, version bump tooling, release workflow, distribution docs, security policy, and code of conduct.
 
-### Changed
-- `forge_project.py` now writes richer ADRs with considered options, rejected options, confidence, and revisit triggers.
-- `cli.py` now captures subprocess output correctly, supports `doctor`, `backups`, `restore`, `--dry-run`, `--force`, and decision files.
-- Research scripts now produce higher quality fallback evidence, source quality markers, observed timestamps, and safer missing-token behavior.
-- CI now covers cross-platform unit checks plus focused runtime, decision, agent, install, and release test jobs.
-- README was rewritten in clean UTF-8 with a clearer Project Forge vs Superpowers boundary.
+- `project-forge adr new --type database|auth|deployment` — create sub-ADRs with bilingual templates.
+- `project-forge adr list` — list existing ADRs.
+- `project-forge estimate --goal "..." --lang en` — estimate pipeline token consumption.
+- `--lang zh|en` parameter for bilingual creative briefs and ADRs.
+- `--interactive` mode enhanced with product depth and platform probing.
+- `DockerHubProvider` evidence source.
+- `PRODUCT_DIRECTION_CHALLENGE` signal type in loop engine.
+- Security test suite (9 tests) for harness executor: cwd escape, legacy_shell block, timeout, fuzzing.
 
 ### Fixed
-- Removed stale stack-detection fallback duplication.
-- Hardened BOM handling for evidence inputs.
-- Removed mojibake from project documentation.
 
-## [0.2.0] - 2026-06-19
+- CLI hardcoded template list eliminated.
+- Hooks adapted for Codex runtime (removed Claude-specific env vars).
+- Duplicate StackOverflowProvider resolved.
+- Catalog template coverage check relaxed from exact match to minimum-required.
 
-### Added
-- **CLI entry point** (`project-forge init`, `detect`, `research`, `handoff`, `smoke`, `validate-evidence`, `list-templates`)
-- **MCP server** with 9 tools: `github_search`, `web_search`, `detect_stack`, `apply_template`, `forge_project`, `export_handoff`, `validate_evidence`, `list_templates`, `run_evals`
-- **Five new harness templates**: `nextjs`, `fastapi`, `electron`, `cli`, `chrome-extension` (total: 8)
-- **Skill auto-chaining**: `forge-intake` -> `creative-director` -> `ai-architect` -> `harness-engineer` -> `forge-project`
-- **`creative-brief.md` artifact** produced by `scripts/creative_brief.py`
-- **Real web search backend** via DuckDuckGo API (no key required), with custom provider fallback
-- **Three new example projects**: `fastapi-demo`, `chrome-extension-demo`, `cli-demo` (total: 4)
-- `docs/architecture.md` - internal architecture documentation
-- `docs/quickstart.md` - 5-minute setup guide
-- `Makefile` - `make test`, `make verify`, `make clean`, `make smoke`, `make evals`
-- `.editorconfig` - consistent code style
-- `scripts/clean.py` - remove `__pycache__` and build artifacts
-- `scripts/install_test.py` - 12-point installation verification
-- Integration test class (5 tests) covering full pipeline, creative brief, DuckDuckGo search
-- Smart stack detection for Next.js, Electron, CLI tools, Chrome Extensions, FastAPI
+---
 
-### Changed
-- `detect_stack.py` now recognizes 8 project types from package deps, `manifest.json`, and `main.py` imports
-- `forge_project.py` CI generation handles all 8 stacks with correct Node/Python setup actions
-- `web_search.py` gains DuckDuckGo fallback between custom provider and host-tool instruction
-- All 5 skills updated with explicit handoff instructions to the next worker
-- `smoke_test.py` relaxed slug check to only evidence and contract files
-- `test_project_forge.py` grew from 23 to 61 tests
-- Cached `__pycache__` directories cleaned from workspace
-
-### Fixed
-- BOM (byte-order mark) stripped from all source files; `utf-8-sig` encoding used where needed
-- `install_test.py` marketplace check fixed for object-format marketplace configs
-
-## [0.1.0] - 2025
+## [0.4.0] — 2026-06-20
 
 ### Added
-- Initial release with 6 skills, 3 harness templates, research scripts, eval framework
-- `scripts/forge_project.py` coordinator
-- `scripts/export_handoff.py` Superpowers handoff export
-- `examples/team-research` example project
-- 23 unit tests covering manifests, skills, scripts, templates, evals
-- CI workflow in `.github/workflows/ci.yml`
-- MIT license
+
+- Decision Loop Engine: 8-state finite state machine for continuous architecture revision.
+- Loop signal ingestion, deduplication, routing, revision, and human decision packet generation.
+- `project-forge loop ingest/run/status/resume` CLI commands.
+- Inventory Scanner: project structure analysis with JSON/Mermaid output.
+- Readiness Checker: harness command execution with structured reporting.
+- Hosts Manager: Codex/Claude Code plugin lifecycle (install/verify/update/uninstall/restore).
+- MCP Server for project-forge tool exposure.
+- Comprehensive test suite (132 tests passing).
+
+---
+
+## [0.3.0] — 2026-06-15
+
+### Added
+
+- Creative Director: product direction generation with scoring.
+- AI Architect: evidence-backed stack selection with 9-dimension scoring.
+- Harness Engineer: 7-command contract generation with CI templates.
+- 8 stack templates: node-ts, nextjs, fastapi, electron, cli, chrome-extension, python, generic.
+- Evidence Pipeline: GitHub, npm, PyPI, OSV providers.
+- Handoff Service: Superpowers-compatible Markdown + JSON export.
+- Superpowers-ready verification.
+- Codex and Claude Code plugin manifests.

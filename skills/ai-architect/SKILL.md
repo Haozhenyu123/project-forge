@@ -125,6 +125,29 @@ Write this as a structured prompt, not a chat message. The Harness Engineer uses
 [Key directories, files, and conventions the Harness Engineer should establish]
 ```
 
+
+
+## Multi-ADR Support (v1.0)
+
+A real project needs more than a stack decision. Based on the architectural brief, determine which sub-ADRs are needed:
+
+| Trigger | ADR | Decision Scope |
+|---|---|---|
+| Project involves persistent storage | `ADR-0002-database.md` | PostgreSQL vs MySQL vs MongoDB vs SQLite vs Supabase |
+| Project involves user accounts/login | `ADR-0003-auth.md` | JWT vs Session vs OAuth/OIDC vs API Keys |
+| Project needs a deployment target | `ADR-0004-deployment.md` | Vercel vs Docker vs Bare Metal vs Cloud VM |
+
+Each sub-ADR follows the same structure as ADR-0001:
+- Context (from the architectural brief)
+- Considered options (2-3 with evidence for/against)
+- Decision (with reasoning chain)
+- Rejected alternatives (with specific reasons)
+- Consequences, Risks, Verification Strategy
+
+Only generate sub-ADRs that are triggered by the project. A CLI tool with no database does not need ADR-0002. A static landing page with no users does not need ADR-0003.
+
+All ADRs share the same evidence file and the same `project-forge.yaml`. Write each as a separate file under `docs/architecture/`.
+
 ## Handoff to Harness Engineer
 
 Pass the system prompt directly. The Harness Engineer applies the template, generates the scaffold, and runs the readiness check.

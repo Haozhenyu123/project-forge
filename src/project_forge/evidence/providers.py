@@ -8,6 +8,7 @@ All providers are registered via a common interface.
 import json
 import urllib.parse
 import urllib.request
+import urllib.parse
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Mapping, Optional, Protocol, Sequence
 
@@ -270,15 +271,8 @@ class NpmTrendsProvider(BaseProvider):
 # --- Provider Registry ---
 
 
-_PROVIDER_REGISTRY: Dict[str, type] = {
-    "github": GitHubProvider,
-    "npm": NpmProvider,
-    "pypi": PyPIProvider,
-    "osv": OsvProvider,
-    "stackoverflow": StackOverflowProvider,
-    "bundlephobia": BundlephobiaProvider,
-    "npm-trends": NpmTrendsProvider,
-}
+# Provider registry initialized below after all classes are defined
+
 
 
 def register_provider(name: str, provider_cls: type) -> None:
@@ -297,6 +291,56 @@ def create_provider(name: str, **kwargs: Any) -> Optional[BaseProvider]:
     if cls is None:
         return None
     return cls(**kwargs)
+
+
+class DockerHubProvider(BaseProvider):
+    """Evidence from Docker Hub — image pull counts as adoption signal."""
+
+    PROVIDER_NAME = "dockerhub"
+
+    def fetch(self, package: str) -> ProviderResult:
+        namespace, _, image = package.partition("/")
+        if not image:
+            image = namespace
+            namespace = "library"
+        url = f"https://hub.docker.com/v2/repositories/{namespace}/{image}"
+        try:
+            resp = urllib.request.urlopen(url, timeout=10)
+            data = json.loads(resp.read().decode())
+        except Exception:
+            return ProviderResult(self.PROVIDER_NAME, source=url, rows=[], provisional=True)
+
+        pull_count = data.get("pull_count", 0)
+        star_count = data.get("star_count", 0)
+        row = make_evidence_row(
+            source=self.PROVIDER_NAME,
+            evidence_id=f"dockerhub-{namespace}-{image}",
+            url=url,
+            title=f"Docker Hub: {package}",
+            summary=f"{pull_count} pulls, {star_count} stars on Docker Hub.",
+            observed_at=_now(),
+            provisional=False,
+            dimensions=["deployment_cost", "maintenance_activity"],
+        )
+        row["docker_pull_count"] = pull_count
+        row["docker_star_count"] = star_count
+        return ProviderResult(self.PROVIDER_NAME, source=url, rows=[row], provisional=False)
+
+
+
+
+
+
+_PROVIDER_REGISTRY: Dict[str, type] = {
+    "github": GitHubProvider,
+    "npm": NpmProvider,
+    "pypi": PyPIProvider,
+    "osv": OsvProvider,
+    "stackoverflow": StackOverflowProvider,
+    "bundlephobia": BundlephobiaProvider,
+    "npm-trends": NpmTrendsProvider,
+    "dockerhub": DockerHubProvider,
+}
 
 
 def collect_evidence(package_name: str, providers: Optional[Sequence[str]] = None, domain_tag: str = "general") -> List[Dict[str, Any]]:

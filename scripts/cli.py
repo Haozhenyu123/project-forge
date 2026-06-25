@@ -96,6 +96,34 @@ def _load_templates():
 
 
 
+def _closest_match(value, choices):
+    """Return the closest matching choice using Levenshtein distance, or None if too far."""
+    best, best_dist = None, 999
+    for choice in choices:
+        if value.lower() == choice.lower():
+            return choice
+        # Simple edit distance for short strings
+        dist = _edit_distance(value.lower()[:20], choice.lower()[:20])
+        if dist < best_dist:
+            best, best_dist = choice, dist
+    return best if best_dist <= 3 else None
+
+
+def _edit_distance(a, b):
+    """Levenshtein distance for short strings."""
+    if len(a) < len(b):
+        a, b = b, a
+    if len(b) == 0:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a):
+        curr = [i + 1]
+        for j, cb in enumerate(b):
+            curr.append(min(curr[-1] + 1, prev[j + 1] + 1, prev[j] + (ca != cb)))
+        prev = curr
+    return prev[-1]
+
+
 
 def fail(message):
     print(f"error: {message}", file=sys.stderr)
@@ -176,9 +204,11 @@ def cmd_init(args):
         )
         return
 
+    print(f"[1/6] Initializing project: {project}")
     if not project.exists():
         project.mkdir(parents=True)
 
+    print("[2/6] Gathering evidence...")
     evidence_dir = Path(args.evidence) if args.evidence else None
     if not evidence_dir:
         evidence_dir = project / "evidence"
@@ -206,6 +236,7 @@ def cmd_init(args):
             "--out", str(normalized),
         )
 
+    print("[3/6] Selecting architecture stack...")
     generated_decision = None
     if not stack and not args.decision_file:
         decision_dir = project / ".project-forge" / "decisions"
@@ -224,10 +255,25 @@ def cmd_init(args):
         decision_payload = json.loads(generated_decision.read_text(encoding="utf-8"))
         stack = decision_payload.get("selected_stack") or "generic"
 
-        # Interactive mode: let user pick direction and stack
+        # Interactive mode: guided probing for product depth
         if args.interactive:
             print()
-            print("=== Interactive Decision Mode ===")
+            print("=" * 60)
+            print("  Project Forge Interactive Mode")
+            print("  Answer a few questions to refine your architecture.")
+            print("=" * 60)
+            print()
+            print(f"  Domain detected: {decision_payload.get('selected_direction', {}).get('id', 'unknown')}")
+            print(f"  Goal: {goal}")
+            print()
+
+            # Step 0: Probe product depth
+            print("--- Product Depth ---")
+            depth = input("  Is this a prototype/MVP or a production system? [prototype/mvp/production] (default: mvp): ").strip().lower() or "mvp"
+            platform = input("  Target platforms? [web/mobile/mini-program/desktop/multi] (default: web): ").strip().lower() or "web"
+            print()
+
+            # Step 1: Pick creative direction
             print(f"Goal: {goal}")
             print()
 
@@ -303,6 +349,7 @@ def cmd_init(args):
     if stack not in _load_templates():
         fail(f"Unknown template: {stack}. Available: {', '.join(TEMPLATES)}")
 
+    print("[4/6] Generating project artifacts...")
     forge_args = [
         "forge_project.py",
         "--project", str(project),
@@ -311,6 +358,8 @@ def cmd_init(args):
         "--stack", stack,
         "--evidence", str(normalized),
     ]
+    if hasattr(args, "lang") and args.lang and args.lang != "zh":
+        forge_args.extend(["--lang", args.lang])
     if args.decision_file:
         forge_args.extend(["--decision-file", str(Path(args.decision_file).resolve())])
     if args.force:
@@ -319,9 +368,11 @@ def cmd_init(args):
         forge_args.extend(["--secondary", secondary])
     forge_output = run_script(*forge_args)
 
+    print("[5/6] Exporting Superpowers handoff...")
     handoff = project / "docs" / "superpowers-handoff.md"
     handoff_json = project / "docs" / "superpowers-handoff.json"
-    print(f"Project Forge initialized: {project}")
+    print("[6/6] Complete! Summary:")
+    print(f"  Project: {project}")
     print(f"  Stack: {stack}")
     print(f"  Slug: {args.slug}")
     print(f"  ADR: {project / 'docs' / 'architecture' / 'ADR-0001-stack.md'}")
@@ -523,6 +574,165 @@ def cmd_feature(args):
     output = run_script(*feature_args)
     print(output, end="")
 
+def cmd_adr(args):
+    """Handle ADR sub-commands."""
+    import json as _json
+    from datetime import date as _date
+
+    project = Path(args.project or ".")
+    adr_dir = project / "docs" / "architecture"
+    adr_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.adr_command == "list":
+        adrs = sorted(adr_dir.glob("ADR-*.md"))
+        if not adrs:
+            print("No ADRs found.")
+        else:
+            print(f"Found {len(adrs)} ADR(s):")
+            for adr in adrs:
+                first_line = adr.read_text(encoding="utf-8").splitlines()[0]
+                print(f"  {adr.name} — {first_line.lstrip('# ')}")
+        return
+
+    if args.adr_command == "new":
+        # Determine ADR number
+        existing = sorted(adr_dir.glob("ADR-*.md"))
+        next_num = len(existing) + 1
+        adr_name = f"ADR-{next_num:04d}-{args.type}.md"
+        adr_path = adr_dir / adr_name
+
+        lang_labels = {
+            "zh": {"title": "标题", "context": "上下文", "options": "候选方案",
+                    "decision": "决策", "reason": "理由", "rejected": "被拒绝的方案",
+                    "consequences": "影响", "risks": "风险", "verification": "验证策略"},
+            "en": {"title": "Title", "context": "Context", "options": "Considered Options",
+                    "decision": "Decision", "reason": "Rationale", "rejected": "Rejected Alternatives",
+                    "consequences": "Consequences", "risks": "Risks", "verification": "Verification Strategy"},
+        }
+        L = lang_labels.get(args.lang, lang_labels["en"])
+
+        options_list = []
+        if args.options:
+            try:
+                options_list = _json.loads(args.options)
+            except _json.JSONDecodeError:
+                options_list = [args.options]
+
+        md = f"# {adr_name} — {args.title}\n\n"
+        md += f"**{L['title']}**: {args.title}\n\n"
+        md += f"## {L['context']}\n\n[Describe the context from the project brief.]\n\n"
+        md += f"## {L['options']}\n\n"
+        for opt in options_list:
+            md += f"- {opt}\n"
+        if not options_list:
+            md += "[List 2-3 candidate options with evidence for/against each.]\n"
+        md += f"\n## {L['decision']}\n\n**{args.decision}**\n\n"
+        md += f"### {L['reason']}\n\n{args.reason}\n\n"
+        md += f"## {L['rejected']}\n\n[What was NOT chosen and why.]\n\n"
+        md += f"## {L['consequences']}\n\n[What becomes easier. What becomes harder.]\n\n"
+        md += f"## {L['risks']}\n\n[What could make this decision wrong.]\n\n"
+        md += f"## {L['verification']}\n\n[How to confirm this decision works.]\n"
+
+        adr_path.write_text(md, encoding="utf-8")
+        print(f"ADR created: {adr_path}")
+        print(f"Fill in the bracketed sections to complete.")
+
+def cmd_estimate(args):
+    """Estimate pipeline token consumption for a given project goal."""
+    sys.path.insert(0, str(REPO_ROOT / "src"))
+
+    # Auto-detect domain if not provided
+    domain = args.domain
+    if not domain:
+        try:
+            from project_forge.intent import classify_intent
+            result = classify_intent(args.goal)
+            domain = result.primary_domain
+        except Exception:
+            domain = "general"
+
+    # Token estimation model
+    # Based on empirical observation of GPT-4o system prompt + user + assistant patterns
+    BASE_STEPS = {
+        "forge-intake":       {"tokens": 3000,  "label": "Intake & domain classification"},
+        "creative-director":  {"tokens": 0,     "label": "Creative Director probing"},
+        "ai-architect":       {"tokens": 5000,  "label": "Architecture reasoning + ADR"},
+        "harness-engineer":   {"tokens": 3000,  "label": "Harness template application"},
+        "forge-project":      {"tokens": 2000,  "label": "Coordinator & handoff export"},
+    }
+
+    # Creative Director costs scale with probing depth
+    probing = args.probing_depth
+    BASE_STEPS["creative-director"]["tokens"] = 4000 + probing * 3000  # ~3K per probing round
+
+    # Architect costs scale with sub-ADRs
+    sub_adrs = args.sub_adrs
+    BASE_STEPS["ai-architect"]["tokens"] = 5000 + sub_adrs * 4000  # ~4K per sub-ADR
+
+    # Route-based adjustments
+    route_skip = {
+        "full_pipeline":     set(),
+        "stack_given":       {"creative-director", "ai-architect"},
+        "existing_project":  {"forge-intake", "creative-director", "ai-architect"},
+        "multi_stack":       set(),  # Same as full but with extra harness compose
+        "architecture_only": {"harness-engineer", "forge-project"},
+    }
+
+    skipped = route_skip.get(args.route, set())
+
+    # Model pricing per 1M tokens (input+output blended)
+    MODEL_PRICES = {
+        "gpt-4o":        {"input": 2.50, "output": 10.00, "blended": 5.00},
+        "gpt-4o-mini":   {"input": 0.15, "output": 0.60,  "blended": 0.30},
+        "claude-3.5":    {"input": 3.00, "output": 15.00, "blended": 8.00},
+        "deepseek-v3":   {"input": 0.27, "output": 1.10,  "blended": 0.50},
+    }
+    price = MODEL_PRICES.get(args.model, MODEL_PRICES["gpt-4o"])
+
+    print()
+    print("=" * 60)
+    print(f"  Project Forge Token Estimation")
+    print(f"  Goal: {args.goal[:50]}{'...' if len(args.goal) > 50 else ''}")
+    print(f"  Domain: {domain}  |  Route: {args.route}")
+    print(f"  Probing depth: {probing} rounds  |  Sub-ADRs: {sub_adrs}")
+    print(f"  Model: {args.model}")
+    print("=" * 60)
+    print()
+
+    total = 0
+    print(f"{'Step':<25s} {'Tokens':>10s} {'Cost':>10s}")
+    print("-" * 47)
+
+    for step_name, info in BASE_STEPS.items():
+        if step_name in skipped:
+            print(f"{info['label']:<25s} {'skipped':>10s} {'---':>10s}")
+            continue
+        tokens = info["tokens"]
+        cost = (tokens / 1_000_000) * price["blended"]
+        total += tokens
+        print(f"{info['label']:<25s} {tokens:>8,}  ${cost:>8.4f}")
+
+    total_cost = (total / 1_000_000) * price["blended"]
+
+    # Extra: multi-stack adds harness compose overhead
+    if args.route == "multi_stack":
+        extra = 4000
+        total += extra
+        print(f"{'Harness compose (multi)':<25s} {extra:>8,}  ${(extra/1_000_000)*price['blended']:>8.4f}")
+        total_cost = (total / 1_000_000) * price["blended"]
+
+    print("-" * 47)
+    print(f"{'TOTAL':<25s} {total:>8,}  ${total_cost:>8.4f}")
+    print()
+    print(f"  Range (low-confidence inputs):   {int(total*0.7):,} — {int(total*1.5):,} tokens")
+    print(f"  Equivalent GPT-4o-mini cost:     ${(total/1_000_000)*0.30:.4f}")
+    print()
+
+    if args.route == "stack_given":
+        print("  Tip: You already know your stack. Skipping creative")
+        print("  direction and architecture saves ~50% of the pipeline.")
+    print()
+
 def cmd_revise(args):
     revise_args = ["revise_project.py", args.project, "--slug", args.slug, "--reason", args.reason]
     for c in getattr(args, "constraint", []): revise_args.extend(["--constraint", c])
@@ -613,6 +823,69 @@ def cmd_doctor(args):
         raise SystemExit(1)
 
 
+def cmd_template(args):
+    """Manage harness templates: list, install from external sources."""
+    import json as _json, shutil, zipfile as _zipfile
+
+    templates_dir = REPO_ROOT / "templates" / "harness"
+
+    if args.template_command == "list":
+        templates = sorted(d.name for d in templates_dir.iterdir() if d.is_dir() and (d / "manifest.json").is_file())
+        if args.json:
+            print(_json.dumps({"templates": templates, "count": len(templates)}, indent=2))
+        else:
+            print(f"Available templates ({len(templates)}):")
+            for t in templates:
+                manifest = _json.loads((templates_dir / t / "manifest.json").read_text(encoding="utf-8"))
+                print(f"  {t:<24s} {manifest.get('name', t)}")
+        return
+
+    if args.template_command == "install":
+        source = Path(args.source)
+        name = args.name
+
+        if not source.exists():
+            fail(f"Source not found: {source}")
+
+        # If zip, extract first
+        if source.suffix == ".zip":
+            import tempfile
+            extract_dir = Path(tempfile.mkdtemp(prefix="pf-tmpl-"))
+            with _zipfile.ZipFile(source, "r") as zf:
+                zf.extractall(extract_dir)
+            # Find the template root (contains manifest.json)
+            for root_dir, dirs, files in os.walk(extract_dir):
+                if "manifest.json" in files:
+                    source = Path(root_dir)
+                    break
+            else:
+                fail("No manifest.json found in zip archive")
+
+        manifest_path = source / "manifest.json"
+        if not manifest_path.is_file():
+            fail(f"No manifest.json found in {source}")
+
+        manifest = _json.loads(manifest_path.read_text(encoding="utf-8"))
+        if not name:
+            name = manifest.get("kind", source.name)
+
+        dest = templates_dir / name
+        if dest.exists() and not args.force:
+            fail(f"Template '{name}' already exists. Use --force to overwrite.")
+
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(source, dest, ignore=shutil.ignore_patterns("__pycache__", ".git"))
+
+        # Validate
+        required = ["manifest.json", "project-forge.yaml", "docs/harness.md"]
+        missing = [f for f in required if not (dest / f).is_file()]
+        if missing:
+            shutil.rmtree(dest)
+            fail(f"Template missing required files: {missing}")
+
+        print(f"Template '{name}' installed: {dest}")
+
 def cmd_list_templates(args):
     print("Available harness templates:")
     for tmpl in _load_templates():
@@ -643,9 +916,13 @@ def main():
     init_parser.add_argument("--evidence", help="Path to pre-existing evidence file or directory")
     init_parser.add_argument("--decision-file", help="Structured architecture decision JSON")
     init_parser.add_argument("--secondary", action="append", default=[], help="Secondary TEMPLATE[:PATH]")
-    init_parser.add_argument("--weights", help="JSON file with custom scoring weights")
+    init_parser.add_argument(
+    "--weights",
+    help="Custom scoring weights as JSON file path or inline key=value pairs (e.g. security=2.0,speed=0.8,maintain=1.2)"
+)
     init_parser.add_argument("--force", action="store_true", help="Back up and replace generated files")
     init_parser.add_argument("--interactive", action="store_true", help="Pause at creative direction and architecture for manual selection")
+    init_parser.add_argument("--lang", choices=["zh", "en"], default="zh", help="Output language for creative brief and ADR (zh=中文, en=English)")
     init_parser.add_argument("--dry-run", action="store_true", help="Show planned changes without writing")
 
     detect_parser = subparsers.add_parser("detect", help="Detect project stack")
@@ -720,6 +997,17 @@ def main():
     validate_parser = subparsers.add_parser("validate-evidence", help="Validate evidence file")
     validate_parser.add_argument("evidence_file", help="Path to evidence.jsonl")
 
+    
+    # --- Template management ---
+    template_parser = subparsers.add_parser("template", help="Manage harness templates")
+    tmpl_sub = template_parser.add_subparsers(dest="template_command", required=True)
+    tmpl_list = tmpl_sub.add_parser("list", help="List available templates")
+    tmpl_list.add_argument("--json", action="store_true")
+    tmpl_install = tmpl_sub.add_parser("install", help="Install a template from a directory or zip")
+    tmpl_install.add_argument("source", help="Path to template directory or zip file")
+    tmpl_install.add_argument("--name", help="Template name (auto-detected if omitted)")
+    tmpl_install.add_argument("--force", action="store_true")
+
     list_parser = subparsers.add_parser("list-templates", help="List available harness templates")
 
     backups_parser = subparsers.add_parser("backups", help="List Project Forge backups")
@@ -749,6 +1037,22 @@ def main():
     feat_handoff.add_argument("--feature", required=True, dest="feature_id")
     feat_handoff.add_argument("project", nargs="?", default=".")
 
+    
+    # --- ADR management ---
+    adr_parser = subparsers.add_parser("adr", help="Manage Architecture Decision Records")
+    adr_sub = adr_parser.add_subparsers(dest="adr_command", required=True)
+    adr_new = adr_sub.add_parser("new", help="Create a new ADR")
+    adr_new.add_argument("project", nargs="?", default=".", help="Project directory")
+    adr_new.add_argument("--type", choices=["stack", "database", "auth", "deployment"], required=True, help="ADR type")
+    adr_new.add_argument("--title", required=True, help="ADR title")
+    adr_new.add_argument("--slug", required=True, help="Project slug")
+    adr_new.add_argument("--decision", required=True, help="Selected option")
+    adr_new.add_argument("--options", help="JSON list of considered options")
+    adr_new.add_argument("--reason", required=True, help="Decision rationale")
+    adr_new.add_argument("--lang", choices=["zh", "en"], default="zh")
+    adr_list = adr_sub.add_parser("list", help="List existing ADRs")
+    adr_list.add_argument("project", nargs="?", default=".", help="Project directory")
+    
     revise_parser = subparsers.add_parser("revise", help="Revise architecture when Superpowers signals issues")
     revise_parser.add_argument("project", nargs="?", default=".")
     revise_parser.add_argument("--slug", required=True)
@@ -781,6 +1085,15 @@ def main():
     lifecycle_parser.add_argument("--json", action="store_true")
 
     e2e_parser = subparsers.add_parser("e2e-test", help="Run real end-to-end pipeline tests")
+
+    # --- Token estimation ---
+    estimate_parser = subparsers.add_parser("estimate", help="Estimate pipeline token consumption before running")
+    estimate_parser.add_argument("--goal", required=True, help="Project goal description")
+    estimate_parser.add_argument("--domain", help="Domain tag (auto-detected if omitted)")
+    estimate_parser.add_argument("--route", choices=["full_pipeline", "stack_given", "existing_project", "multi_stack", "architecture_only"], default="full_pipeline", help="Pipeline route mode")
+    estimate_parser.add_argument("--probing-depth", type=int, choices=[1, 2, 3, 4, 5], default=3, help="Expected number of probing rounds")
+    estimate_parser.add_argument("--sub-adrs", type=int, choices=[0, 1, 2, 3], default=0, help="Expected sub-ADR count")
+    estimate_parser.add_argument("--model", choices=["gpt-4o", "gpt-4o-mini", "claude-3.5", "deepseek-v3"], default="gpt-4o", help="LLM model for cost estimation")
 
     subparsers.add_parser("doctor", help="Check Project Forge runtime and plugin installation")
 
@@ -818,7 +1131,8 @@ def main():
         "plugin": cmd_plugin,
         "smoke": cmd_smoke,
         "validate-evidence": cmd_validate_evidence,
-        "list-templates": cmd_list_templates,
+        "template": cmd_template,
+    "list-templates": cmd_list_templates,
         "backups": cmd_backups,
         "restore": cmd_restore,
         "audit": cmd_audit,
@@ -832,7 +1146,9 @@ def main():
         "lifecycle": cmd_lifecycle,
         "e2e-test": cmd_e2e,
         "doctor": cmd_doctor,
-        "loop": cmd_loop,
+        "adr": cmd_adr,
+    "estimate": cmd_estimate,
+    "loop": cmd_loop,
     }
     commands[args.command](args)
 
